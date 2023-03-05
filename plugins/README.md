@@ -1,5 +1,21 @@
 # Collections Plugins Directory
 
+
+```python
+from ansible_collections.bodsch.core.plugins.module_utils.checksum import Checksum
+
+c = Checksum()
+
+print(c.checksum("fooo"))
+print(c.checksum_from_file("/etc/fstab"))
+
+# ???
+c.compare("aaa", "bbb")
+c.save("test-check", "aaa")
+c.load("test-check")
+```
+
+
 This directory can be used to ship various plugins inside an Ansible collection. Each plugin is placed in a folder that
 is named after the type of plugin it is in. It can also include the `module_utils` and `modules` directory that
 would contain module utils and modules respectively.
