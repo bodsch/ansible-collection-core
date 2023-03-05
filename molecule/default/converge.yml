@@ -1,0 +1,15 @@
+---
+
+- name: converge
+  hosts: all
+
+  any_errors_fatal: false
+  become: false
+
+  collections:
+    - bodsch.core
+
+  #tasks:
+  #  - name: foo
+
+...
