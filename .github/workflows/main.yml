@@ -11,12 +11,13 @@ on:
     types:
       - completed
 
+env:
+  COLLECTION_NAMESPACE: bodsch
+  COLLECTION_NAME: core
+
 defaults:
   run:
     working-directory: 'ansible-collection-core'
-  env:
-    COLLECTION_NAMESPACE: bodsch
-    COLLECTION_NAME: core
 
 jobs:
   deb:
