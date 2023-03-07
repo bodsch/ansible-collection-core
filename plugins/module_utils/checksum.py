@@ -9,6 +9,7 @@ import os
 import time
 import hashlib
 
+
 class Checksum():
     """
     """
@@ -26,7 +27,6 @@ class Checksum():
         checksum.update(plaintext.encode('utf-8'))
 
         return checksum.hexdigest()
-
 
     def checksum_from_file(self, path, read_chunksize=65536, algorithm='sha256'):
         """

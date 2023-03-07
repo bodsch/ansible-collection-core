@@ -3,12 +3,47 @@
 
 # (c) 2022-2023, Bodo Schulz <bodo@boone-schulz.de>
 
-
 from __future__ import absolute_import, division, print_function
-import os
-import re
-
 from ansible.module_utils.basic import AnsibleModule
+import re
+import os
+__metaclass__ = type
+
+DOCUMENTATION = """
+module: remove_ansible_backups
+short_description: Remove older backup files created by ansible
+version_added: 0.9.0
+description:
+    - Remove older backup files created by ansible
+author: Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
+options:
+  path:
+    description:
+      - Path for the search for backup files
+    type: str
+    required: true
+  hold:
+    description:
+      - How many backup files should be retained
+    type: int
+    default: 2
+    required: false
+"""
+
+EXAMPLES = """
+- name: remove older ansible backup files
+  bodsch.core.remove_ansible_backups:
+    path: /etc
+    holds: 4
+"""
+
+RETURN = """
+removed:
+    returned: on success
+    description: >
+        Job's up to date information
+    type: dict
+"""
 
 
 class RemoveAnsibleBackups(object):
