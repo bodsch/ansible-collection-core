@@ -19,7 +19,7 @@ class Checksum():
         """
         self.module = module
 
-    def checksum(self, algorithm="sha256", plaintext):
+    def checksum(self, plaintext, algorithm="sha256"):
         """
             compute checksum for plaintext
         """

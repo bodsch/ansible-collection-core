@@ -1,5 +1,10 @@
 # Collections Plugins Directory
 
+## modules
+
+### remove_ansible_backups
+
+## module_utils
 
 ```python
 from ansible_collections.bodsch.core.plugins.module_utils.checksum import Checksum
