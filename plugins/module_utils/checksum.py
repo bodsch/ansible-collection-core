@@ -20,14 +20,13 @@ class Checksum():
 
     def checksum(self, algorithm="sha256", plaintext):
         """
+            compute checksum for plaintext
         """
-        _bytes = plaintext.encode('utf-8')
-        if algorithm == "sha256":
-            _hash = hashlib.sha256(_bytes)
-        elif algorithm == "sha512":
-            _hash = hashlib.sha512(_bytes)
+        checksum = hashlib.new(algorithm)
+        checksum.update(plaintext.encode('utf-8'))
 
-        return _hash.hexdigest()
+        return checksum.hexdigest()
+
 
     def checksum_from_file(self, path, read_chunksize=65536, algorithm='sha256'):
         """
