@@ -23,8 +23,7 @@ jobs:
         with:
           path: 'ansible-collection-core'
 
-      - name: galaxy
-        uses: robertdebock/galaxy-action@1.2.1
+      - name: Deploy Ansible Galaxy Collection
+        uses: artis3n/ansible_galaxy_collection@v2.6.2
         with:
-          galaxy_api_key: ${{ secrets.galaxy_api_key }}
-          git_branch: main
+          api_key: '${{ secrets.GALAXY_API_KEY }}'
