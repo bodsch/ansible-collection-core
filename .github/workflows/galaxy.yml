@@ -20,8 +20,8 @@ jobs:
     steps:
       - name: Check out the codebase
         uses: actions/checkout@v3
-        with:
-          path: 'ansible-collection-core'
+
+
 
       - name: Deploy Ansible Galaxy Collection
         uses: artis3n/ansible_galaxy_collection@v2.6.2
