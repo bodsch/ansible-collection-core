@@ -24,6 +24,6 @@ jobs:
 
 
       - name: Deploy Ansible Galaxy Collection
-        uses: artis3n/ansible_galaxy_collection@v2.6.2
+        uses: artis3n/ansible_galaxy_collection@v2.8.3
         with:
           api_key: '${{ secrets.GALAXY_API_KEY }}'
