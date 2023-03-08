@@ -23,25 +23,26 @@ __metaclass__ = type
 
 DOCUMENTATION = """
 module: aur
-short_description: Install packages for ArchLinux based with aur
+short_description: Installing packages for ArchLinux with aur
 version_added: 0.9.0
 description:
-    - Install packages for ArchLinux based with aur
+    - This modules manages packages for ArchLinux on a target with aur (like M(ansible.builtin.yum), M(ansible.builtin.apt), ...).
+
 author: Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
 options:
   state:
     description:
-      -
-    type: str
+      - Whether to install (C(present)), or remove (C(absent)) a package.
     required: true
   repository:
     description:
-      -
+      - Name of the repository from which the code for aur is obtained.
+      - This is usually a Git repository listed under U(https://aur.archlinux.org).
     type: str
     required: true
   name:
     description:
-      -
+      - Package name under which the result is installed.
     type: str
     required: true
 """

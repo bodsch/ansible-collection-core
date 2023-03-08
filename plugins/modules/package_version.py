@@ -19,37 +19,88 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = """
+DOCUMENTATION = r"""
 ---
-module: package_version.py
+module: package_version
+author:
+    - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
+version_added: 0.9.0
+
 short_description: Attempts to determine the version of a package to be installed or already installed.
 description:
     - Attempts to determine the version of a package to be installed or already installed.
     - Supports apt, pacman, dnf (or yum) as package manager.
-author:
-    - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
 
+options:
+  state:
+    description:
+      - The status of a package.
+      - Defines whether the version of an already installed (C(installed)) package or the
+        version of a package available for installation (C(available)) is output.
+    default: available
+    required: true
+  repository:
+    description:
+      - Name of the repository in which the search is being conducted.
+      - This is only necessary for RedHat-based distributions.
+    type: str
+    default: ""
+    required: false
+  package_name:
+    description:
+      - Package name which is searched for in the system or via the package management.
+    type: str
+    required: true
 """
 
-EXAMPLES = """
+EXAMPLES = r"""
 - name: get version of available package
-  package_version:
+  bodsch.core.package_version:
     package_name: nano
   register: package_version
 
 - name: get version of available mariadb-server
-  package_version:
+  bodsch.core.package_version:
     state: available
     package_name: mariadb-server
   register: package_version
 
 - name: get version of installed php-fpm
-  package_version:
+  bodsch.core.package_version:
     package_name: php-fpm
     state: installed
   register: package_version
+
+- name: detect available mariadb version for RedHat based
+  bodsch.core.package_version:
+    state: available
+    package_name: mariadb-server
+    repository: MariaDB
+  register: package_version
+  when:
+    - ansible_os_family | lower == 'redhat'
+    - mariadb_use_external_repo
 """
 
+RETURN = r"""
+full_version:
+    description:
+        - Version String
+    type: string
+platform_version:
+    description:
+        - Version String with major and minor Part (e.g. 8.1)
+    type: string
+major_version:
+    description:
+        - major Version (e.g. 8)
+    type: string
+version_string_compressed:
+    description:
+        - Compressed variant of (C(platform_version)) (e.g. 81).
+        - Only needed for RedHat-based distributions.
+    type: string
+"""
 
 class PackageVersion(object):
     """

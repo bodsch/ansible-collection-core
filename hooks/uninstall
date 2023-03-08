@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+. hooks/_tox_base
+
+set -x
+
+if [ -z "${COLLECTION_DIR}" ]
+then
+  echo "missing collection directory"
+  exit 1
+fi
+
+if [ -d ${COLLECTION_DIR} ]
+then
+  rm \
+    --recursive \
+    --force \
+    "${COLLECTION_DIR}"
+fi
+
+exit 0
