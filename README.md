@@ -45,7 +45,7 @@ be manually installed using pip:
 ## Using this collection
 
 
-You can either call modules by their Fully Qualified Collection Namespace (FQCN), such as `bodsch.core.remove_ansible_backups`, 
+You can either call modules by their Fully Qualified Collection Name (FQCN), such as `bodsch.core.remove_ansible_backups`, 
 or you can call modules by their short name if you list the `bodsch.core` collection in the playbook's `collections` keyword:
 
 ```yaml
