@@ -80,9 +80,9 @@ class RemoveAnsibleBackups(object):
             _msg = removed
 
         return dict(
-            failed = _failed,
-            changed = _changed,
-            removed = _msg
+            failed=_failed,
+            changed=_changed,
+            removed=_msg
         )
 
     def find_backup_files(self):

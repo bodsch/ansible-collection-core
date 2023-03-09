@@ -102,6 +102,7 @@ version_string_compressed:
     type: string
 """
 
+
 class PackageVersion(object):
     """
     """
