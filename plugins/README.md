@@ -4,6 +4,33 @@
 
 ### remove_ansible_backups
 
+```shell
+ansible-doc --type module bodsch.core.remove_ansible_backups
+> BODSCH.CORE.REMOVE_ANSIBLE_BACKUPS    (./collections/ansible_collections/bodsch/core/plugins/modules/remove_ansible_backups.py)
+
+        Remove older backup files created by ansible
+```
+
+### package_version
+
+```shell
+ansible-doc --type module bodsch.core.package_version
+> BODSCH.CORE.PACKAGE_VERSION    (./collections/ansible_collections/bodsch/core/plugins/modules/package_version.py)
+
+        Attempts to determine the version of a package to be installed or already installed. Supports apt, pacman, dnf (or yum) as
+        package manager.
+
+```
+
+### aur
+
+```shell
+ansible-doc --type module bodsch.core.aur
+> BODSCH.CORE.AUR    (./collections/ansible_collections/bodsch/core/plugins/modules/aur.py)
+
+        This modules manages packages for ArchLinux on a target with aur (like [ansible.builtin.yum], [ansible.builtin.apt], ...).
+```
+
 ## module_utils
 
 ```python
@@ -20,6 +47,7 @@ c.save("test-check", "aaa")
 c.load("test-check")
 ```
 
+## misc
 
 This directory can be used to ship various plugins inside an Ansible collection. Each plugin is placed in a folder that
 is named after the type of plugin it is in. It can also include the `module_utils` and `modules` directory that
