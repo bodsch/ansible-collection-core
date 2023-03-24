@@ -85,6 +85,10 @@ class Checksum():
         """
         if isinstance(data, dict):
             _data = json.dumps(data, sort_keys=True)
+
+        if isinstance(data, list):
+            _data = ''.join(str(x) for x in data)
+
         if isinstance(data, str):
             _data = data
         else:

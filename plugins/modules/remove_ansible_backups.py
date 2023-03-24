@@ -13,11 +13,14 @@ __metaclass__ = type
 
 DOCUMENTATION = """
 module: remove_ansible_backups
-short_description: Remove older backup files created by ansible
 version_added: 0.9.0
+author:
+  - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
+short_description: Remove older backup files created by ansible
+
 description:
     - Remove older backup files created by ansible
-author: Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
+
 options:
   path:
     description:
