@@ -23,12 +23,14 @@ __metaclass__ = type
 
 DOCUMENTATION = """
 module: aur
+author:
+  - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
 short_description: Installing packages for ArchLinux with aur
 version_added: 0.9.0
+
 description:
     - This modules manages packages for ArchLinux on a target with aur (like M(ansible.builtin.yum), M(ansible.builtin.apt), ...).
 
-author: Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
 options:
   state:
     description:

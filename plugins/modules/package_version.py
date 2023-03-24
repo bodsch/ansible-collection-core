@@ -13,20 +13,15 @@ from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
-ANSIBLE_METADATA = {
-    'metadata_version': '0.1',
-    'status': ['preview'],
-    'supported_by': 'community'
-}
 
 DOCUMENTATION = r"""
 ---
 module: package_version
 author:
     - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
+short_description: Attempts to determine the version of a package to be installed or already installed.
 version_added: 0.9.0
 
-short_description: Attempts to determine the version of a package to be installed or already installed.
 description:
     - Attempts to determine the version of a package to be installed or already installed.
     - Supports apt, pacman, dnf (or yum) as package manager.
@@ -101,6 +96,7 @@ version_string_compressed:
         - Only needed for RedHat-based distributions.
     type: string
 """
+
 
 class PackageVersion(object):
     """
