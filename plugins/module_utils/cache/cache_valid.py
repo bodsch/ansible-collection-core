@@ -15,11 +15,13 @@ import datetime
 def cache_valid(module, cache_file_name, cache_minutes=60, cache_file_remove=True) -> bool:
     """
         read local file and check the creation time against local time
+
+        returns 'False' when cache are out of sync
     """
     out_of_cache = False
 
-    if os.path.exists(cache_file_name):
-        module.debug(msg=f"read cache file {cache_file_name}")
+    if os.path.isfile(cache_file_name):
+        module.debug(msg=f"read cache file '{cache_file_name}'")
         now = datetime.datetime.now()
         creation_time = datetime.datetime.fromtimestamp(os.path.getctime(cache_file_name))
         diff = now - creation_time
@@ -32,9 +34,11 @@ def cache_valid(module, cache_file_name, cache_minutes=60, cache_file_remove=Tru
         module.debug(msg=f" - cached since   {cached_time}")
         module.debug(msg=f" - out of cache   {out_of_cache}")
 
-    if out_of_cache and cache_file_remove:
-        os.remove(cache_file_name)
+        if out_of_cache and cache_file_remove:
+            os.remove(cache_file_name)
+    else:
+        out_of_cache = True
 
-    module.debug(msg="cache is {0} valid".format('not' if out_of_cache else ''))
+    module.debug(msg="cache is {0}valid".format('not ' if out_of_cache else ''))
 
     return out_of_cache
