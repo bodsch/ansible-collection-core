@@ -20,7 +20,10 @@ def write_template(file_name, template, data):
         if isinstance(data, str):
             data = json.loads(data)
 
-    tm = Template(template)
+    if isinstance(data, list):
+        data = ":".join(data)
+
+    tm = Template(template, trim_blocks=True, lstrip_blocks = True)
     d = tm.render(item=data)
 
     with open(file_name, "w") as f:

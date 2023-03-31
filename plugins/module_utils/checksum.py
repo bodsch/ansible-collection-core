@@ -13,7 +13,7 @@ import time
 import hashlib
 
 
-class Checksum():
+class Checksum:
     def __init__(self, module):
         self.module = module
 
@@ -22,7 +22,6 @@ class Checksum():
             compute checksum for plaintext
         """
         _data = self._harmonize_data(plaintext)
-
         checksum = hashlib.new(algorithm)
         checksum.update(_data.encode('utf-8'))
 
@@ -31,7 +30,7 @@ class Checksum():
     def validate(self, checksum_file, data=None):
         """
         """
-        # self.module.log(msg=f" - checksum_file '{checksum_file}'")
+        self.module.log(msg=f" - checksum_file '{checksum_file}'")
         old_checksum = None
 
         if not isinstance(data, str) or not isinstance(data, dict):
@@ -43,7 +42,6 @@ class Checksum():
                 old_checksum = f.readlines()[0]
 
         _data = self._harmonize_data(data)
-
         checksum = self.checksum(_data)
         changed = not (old_checksum == checksum)
 
@@ -53,15 +51,14 @@ class Checksum():
         """
             Compute checksum of a file's contents.
 
-        :param path: Path to the file
-        :param read_chunksize: Maximum number of bytes to be read from the file
-                                at once. Default is 65536 bytes or 64KB
-        :param algorithm: The hash algorithm name to use. For example, 'md5',
-                                'sha256', 'sha512' and so on. Default is 'sha256'. Refer to
-                                hashlib.algorithms_available for available algorithms
-        :return: Hex digest string of the checksum
+            :param path: Path to the file
+            :param read_chunksize: Maximum number of bytes to be read from the file
+                                    at once. Default is 65536 bytes or 64KB
+            :param algorithm: The hash algorithm name to use. For example, 'md5',
+                                    'sha256', 'sha512' and so on. Default is 'sha256'. Refer to
+                                    hashlib.algorithms_available for available algorithms
+            :return: Hex digest string of the checksum
         """
-
         if os.path.isfile(path):
             checksum = hashlib.new(algorithm)  # Raises appropriate exceptions.
             with open(path, 'rb') as f:
@@ -83,15 +80,16 @@ class Checksum():
     def _harmonize_data(self, data):
         """
         """
+        self.module.log(msg=f" - type before:  '{type(data)}'")
+
         if isinstance(data, dict):
             _data = json.dumps(data, sort_keys=True)
-
-        if isinstance(data, list):
+        elif isinstance(data, list):
             _data = ''.join(str(x) for x in data)
-
-        if isinstance(data, str):
+        elif isinstance(data, str):
             _data = data
         else:
             _data = data.copy()
 
+        self.module.log(msg=f" - type after :  '{type(_data)}'")
         return _data

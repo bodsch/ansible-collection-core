@@ -2,8 +2,6 @@
 
 . hooks/_tox_base
 
-# set -x
-
 echo "install collection ${COLLECTION_NAMESPACE}.${COLLECTION_NAME} to ${COLLECTION_DIR}"
 
 mkdir \
@@ -14,5 +12,8 @@ rsync \
   --archive \
   --verbose \
   --recursive \
+  --exclude hooks \
+  --exclude __pycache__ \
+  --delete \
   ../ansible-collection-$COLLECTION_NAME/* \
   "${COLLECTION_DIR}/"
