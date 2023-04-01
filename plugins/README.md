@@ -19,7 +19,6 @@ ansible-doc --type module bodsch.core.package_version
 
         Attempts to determine the version of a package to be installed or already installed. Supports apt, pacman, dnf (or yum) as
         package manager.
-
 ```
 
 ### aur
@@ -32,6 +31,8 @@ ansible-doc --type module bodsch.core.aur
 ```
 
 ## module_utils
+
+### `checksum`
 
 ```python
 from ansible_collections.bodsch.core.plugins.module_utils.checksum import Checksum
@@ -46,6 +47,46 @@ c.compare("aaa", "bbb")
 c.save("test-check", "aaa")
 c.load("test-check")
 ```
+
+### `file`
+
+```python
+from ansible_collections.bodsch.core.plugins.module_utils.file import remove_file, create_link
+```
+
+- `create_link(source, destination, force=False)`
+- `remove_file(file_name)`
+
+### `directory`
+
+```python
+from ansible_collections.bodsch.core.plugins.module_utils.directory import create_directory
+```
+
+- `create_directory(directory)`
+- `permstr_to_octal(modestr, umask)`
+- `current_state(directory)`
+- `fix_ownership(directory, force_owner=None, force_group=None, force_mode=False)`
+
+
+### `cache`
+
+```python
+from ansible_collections.bodsch.core.plugins.module_utils.cache.cache_valid import cache_valid
+```
+
+- `cache_valid(module, cache_file_name, cache_minutes=60, cache_file_remove=True)`
+
+### `template`
+
+## lookup
+
+### `file_glob`
+
+## filter
+
+### `types`
+
 
 ## misc
 
