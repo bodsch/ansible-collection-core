@@ -13,6 +13,7 @@ This collection aims to offer an set of small ansible modules or helper function
 | [remove_ansible_backups](./plugins/modules/remove_ansible_backups.py) | Remove older backup files created by ansible |
 | [package_version](./plugins/modules/package_version.py)               | Attempts to determine the version of a package to be installed or already installed. |
 | [aur](./plugins/modules/aur.py)                                       | Installing packages for ArchLinux with aur |
+| [journalctl](./plugins/modules/journalctl.py)                         | Query the systemd journal with a very limited number of possible parameters |
 
 
 ## Installing this collection

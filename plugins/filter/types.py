@@ -7,6 +7,7 @@ from ansible.utils.display import Display
 
 display = Display()
 
+
 class FilterModule(object):
     """
         Ansible file jinja2 tests

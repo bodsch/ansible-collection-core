@@ -30,6 +30,15 @@ ansible-doc --type module bodsch.core.aur
         This modules manages packages for ArchLinux on a target with aur (like [ansible.builtin.yum], [ansible.builtin.apt], ...).
 ```
 
+### journalctl
+
+```shell
+> BODSCH.CORE.JOURNALCTL    (./collections/ansible_collections/bodsch/core/plugins/modules/journalctl.py)
+
+        Query the systemd journal with a very limited number of possible parameters. In certain cases there are errors that are not
+        clearly traceable but are logged in the journal. This module is intended to be a tool for error analysis.
+```
+
 ## module_utils
 
 ### `checksum`

@@ -5,10 +5,8 @@
 # "MODIFED WITH https://github.com/philfry/ansible/blob/37c616dc76d9ebc3cbf0285a22e55f0e4db4185e/lib/ansible/plugins/lookup/fileglob.py"
 
 from __future__ import (absolute_import, division, print_function)
-from ansible.module_utils._text import to_bytes, to_text
 from ansible.utils.display import Display
 from ansible.plugins.lookup import LookupBase
-import glob
 import os
 
 __metaclass__ = type
@@ -83,6 +81,7 @@ RETURN = """
 """
 
 display = Display()
+
 
 class LookupModule(LookupBase):
 
