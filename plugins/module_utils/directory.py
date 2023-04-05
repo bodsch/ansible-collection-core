@@ -9,8 +9,10 @@ import os
 import pwd
 import grp
 
+from ansible_collections.bodsch.core.plugins.module_utils.lists import find_in_list
 
-def create_directory(directory):
+
+def create_directory(directory, owner=None, group=None, mode=None):
     """
     """
     try:
@@ -18,10 +20,101 @@ def create_directory(directory):
     except FileExistsError:
         pass
 
+    if mode is not None:
+        os.chmod(directory, int(mode, base=8))
+
+    if owner is not None:
+        try:
+            owner = pwd.getpwnam(owner).pw_uid
+        except KeyError:
+            owner = int(owner)
+            pass
+    else:
+        owner = 0
+
+    if group is not None:
+        try:
+            group = grp.getgrnam(group).gr_gid
+        except KeyError:
+            group = int(group)
+            pass
+    else:
+        group = 0
+
+    os.chown(directory, int(owner), int(group))
+
     if os.path.isdir(directory):
         return True
     else:
         return False
+
+
+def create_directory_tree(directory_tree, current_state):
+    """
+    """
+    for entry in directory_tree:
+        """
+        """
+        source = entry.get('source')
+        source_handling = entry.get('source_handling', {})
+        force_create = source_handling.get('create', None)
+        force_owner = source_handling.get('owner', None)
+        force_group = source_handling.get('group', None)
+        force_mode = source_handling.get('mode', None)
+
+        curr = find_in_list(current_state, source)
+
+        current_owner = curr[source].get('owner')
+        current_group = curr[source].get('group')
+
+        # create directory
+        if force_create is not None and not force_create:
+            pass
+        else:
+            try:
+                os.makedirs(source, exist_ok=True)
+            except FileExistsError:
+                pass
+
+        # change mode
+        if os.path.isdir(source) and force_mode is not None:
+            if isinstance(force_mode, int):
+                mode = int(str(force_mode), base=8)
+            if isinstance(force_mode, str):
+                mode = int(force_mode, base=8)
+
+            os.chmod(source, mode)
+
+        # change ownership
+        if force_owner is not None or force_group is not None:
+            """
+            """
+            if os.path.isdir(source):
+                """
+                """
+                if force_owner is not None:
+                    try:
+                        force_owner = pwd.getpwnam(str(force_owner)).pw_uid
+                    except KeyError:
+                        force_owner = int(force_owner)
+                        pass
+                elif current_owner is not None:
+                    force_owner = current_owner
+                else:
+                    force_owner = 0
+
+                if force_group is not None:
+                    try:
+                        force_group = grp.getgrnam(str(force_group)).gr_gid
+                    except KeyError:
+                        force_group = int(force_group)
+                        pass
+                elif current_group is not None:
+                    force_group = current_group
+                else:
+                    force_group = 0
+
+                os.chown(source, int(force_owner), int(force_group))
 
 
 def permstr_to_octal(modestr, umask):

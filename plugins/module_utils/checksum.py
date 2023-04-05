@@ -14,6 +14,9 @@ import hashlib
 
 
 class Checksum:
+    """
+    """
+
     def __init__(self, module):
         self.module = module
 
@@ -30,7 +33,7 @@ class Checksum:
     def validate(self, checksum_file, data=None):
         """
         """
-        self.module.log(msg=f" - checksum_file '{checksum_file}'")
+        # self.module.log(msg=f" - checksum_file '{checksum_file}'")
         old_checksum = None
 
         if not isinstance(data, str) or not isinstance(data, dict):
@@ -39,7 +42,7 @@ class Checksum:
 
         if os.path.exists(checksum_file):
             with open(checksum_file, "r") as f:
-                old_checksum = f.readlines()[0]
+                old_checksum = f.readlines()[0].strip()
 
         _data = self._harmonize_data(data)
         checksum = self.checksum(_data)
@@ -71,16 +74,17 @@ class Checksum:
         else:
             return None
 
-    def write_checksum(self, checksum_file, checksum=None):
+    def write_checksum(self, checksum_file, checksum):
         """
         """
-        with open(checksum_file, "w") as f:
-            f.write(checksum)
+        if checksum and len(str(checksum)) != 0:
+            with open(checksum_file, "w") as f:
+                f.write(checksum + "\n")
 
     def _harmonize_data(self, data):
         """
         """
-        self.module.log(msg=f" - type before:  '{type(data)}'")
+        # self.module.log(msg=f" - type before:  '{type(data)}'")
 
         if isinstance(data, dict):
             _data = json.dumps(data, sort_keys=True)
@@ -91,5 +95,5 @@ class Checksum:
         else:
             _data = data.copy()
 
-        self.module.log(msg=f" - type after :  '{type(_data)}'")
+        # self.module.log(msg=f" - type after :  '{type(_data)}'")
         return _data
