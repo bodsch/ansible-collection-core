@@ -16,6 +16,7 @@ class FilterModule(object):
     def filters(self):
         return {
             'type': self.var_type,
+            'config_bool': self.config_bool_as_string,
         }
 
     def var_type(self, var):
@@ -23,3 +24,23 @@ class FilterModule(object):
             Get the type of a variable
         """
         return type(var).__name__
+
+    def config_bool_as_string(self, data, true_as="yes", false_as="no"):
+        """
+        """
+        # display.v(f"config_bool({data}, {type(data)}, {true_as}, {false_as})")
+
+        result = false_as
+
+        if isinstance(data, bool):
+            result = true_as if data else false_as
+
+        if type(data) is None:
+            result = False
+        elif type(data) is bool:
+            result = true_as if data else false_as
+        else:
+            result = data
+
+        # display.v(f"return : {result}")
+        return result
