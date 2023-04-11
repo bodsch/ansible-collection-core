@@ -41,7 +41,8 @@ def create_directory(directory, owner=None, group=None, mode=None):
     else:
         group = 0
 
-    os.chown(directory, int(owner), int(group))
+    if os.path.isdir(directory) and owner and group:
+        os.chown(directory, int(owner), int(group))
 
     if os.path.isdir(directory):
         return True
