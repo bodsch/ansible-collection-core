@@ -27,3 +27,11 @@ def remove_file(file_name):
         return True
 
     return False
+
+
+def chmod(file_name, mode):
+    """
+    """
+    if os.path.exists(file_name):
+        if mode is not None:
+            os.chmod(file_name, int(mode, base=8))

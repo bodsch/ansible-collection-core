@@ -14,6 +14,8 @@ This collection aims to offer an set of small ansible modules or helper function
 | [package_version](./plugins/modules/package_version.py)               | Attempts to determine the version of a package to be installed or already installed. |
 | [aur](./plugins/modules/aur.py)                                       | Installing packages for ArchLinux with aur |
 | [journalctl](./plugins/modules/journalctl.py)                         | Query the systemd journal with a very limited number of possible parameters |
+| [facts](./plugins/modules/facts.py)                                   | Write ansible facts |
+
 
 
 ## Installing this collection

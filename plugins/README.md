@@ -39,6 +39,15 @@ ansible-doc --type module bodsch.core.aur
         clearly traceable but are logged in the journal. This module is intended to be a tool for error analysis.
 ```
 
+### facts
+
+```shell
+
+> BODSCH.CORE.FACTS    (./collections/ansible_collections/bodsch/core/plugins/modules/facts.py)
+
+        Write Ansible Facts
+```
+
 ## module_utils
 
 ### `checksum`
