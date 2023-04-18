@@ -105,6 +105,17 @@ from ansible_collections.bodsch.core.plugins.module_utils.cache.cache_valid impo
 
 ### `types`
 
+- `type()`
+- `config_bool(data, true_as="yes", false_as="no")`
+
+### `verify`
+
+- `compare_list(data_list, compare_to_list)`
+- `upgrade(install_path, bin_path)`
+
+### `dns`
+
+- `dns_lookup(timeout=3, extern_resolver=[])`
 
 ## misc
 
