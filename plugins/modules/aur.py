@@ -119,6 +119,13 @@ class Aur():
         if self.state == "present":
             if self.repository:
                 rc, out, err, changed = self.install_from_repository(installed_version)
+
+                if rc == 99:
+                    msg = out
+                    rc = 0
+                else:
+                    msg = f"package {self.name} succesfull installed."
+
             else:
                 rc, out, err, changed = self.install_from_aur()
 
@@ -126,7 +133,12 @@ class Aur():
                 return dict(
                     failed=False,
                     changed=changed,
-                    msg=f"package {self.name} succesfull installed."
+                    msg=msg
+                )
+            else:
+                return dict(
+                    failed=True,
+                    msg=err
                 )
 
         return dict(
@@ -162,8 +174,8 @@ class Aur():
         """
           run makepkg to build and install pakage
         """
-        # self.module.log(msg=f"run_makepkg({directory})")
-        # self.module.log(msg=f"  current dir : {os.getcwd()}")
+        self.module.log(msg=f"run_makepkg({directory})")
+        self.module.log(msg=f"  current dir : {os.getcwd()}")
 
         local_directory = os.path.exists(directory)
 
@@ -182,7 +194,7 @@ class Aur():
             args.append("--needed")
             args.append("--clean")
 
-            rc, out, err = self._exec(args, check=True)
+            rc, out, err = self._exec(args, check=False)
 
         return (rc, out, err)
 
@@ -224,6 +236,9 @@ class Aur():
     def install_from_repository(self, installed_version):
         """
           use repository for installation
+
+          return:
+            tupple (rc, out, err, changed)
         """
         os.chdir(str(Path.home()))
         # self.module.log(msg="  current dir : {}".format(os.getcwd()))
@@ -249,11 +264,11 @@ class Aur():
                 err = "can't run 'git pull ...'"
                 return (rc, out, err, False)
 
-                return dict(
-                    failed=True,
-                    msg="can't run 'git pull ...'",
-                    error=err
-                )
+                # return dict(
+                #     failed=True,
+                #     msg="can't run 'git pull ...'",
+                #     error=err
+                # )
 
         pkgbuild_file = "PKGBUILD"
         if not os.path.exists(pkgbuild_file):
@@ -261,12 +276,12 @@ class Aur():
               whaaaat?
             """
             err = "can't found PKGBUILD"
-            return (1, None, err)
+            return (1, None, err, False)
 
-            return dict(
-                failed=True,
-                msg="can't found PKGBUILD"
-            )
+            # return dict(
+            #     failed=True,
+            #     msg="can't found PKGBUILD"
+            # )
 
         """
           read first 10 lines of file
@@ -284,11 +299,11 @@ class Aur():
             package_version = version.group('version')
 
         if installed_version == package_version:
-            return (0, f"Version {installed_version} is already installed.", None, False)
-            return dict(
-                changed=False,
-                msg=f"Version {installed_version} are installed."
-            )
+            return (99, f"Version {installed_version} is already installed.", None, False)
+            # return dict(
+            #     changed=False,
+            #     msg=f"Version {installed_version} are installed."
+            # )
 
         self.module.log(msg=f"new version: {package_version}")
 
@@ -332,7 +347,7 @@ class Aur():
 
         return (rc, out, err)
 
-    def _exec(self, cmd, check=True):
+    def _exec(self, cmd, check=False):
         """
           execute shell commands
         """

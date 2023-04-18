@@ -23,6 +23,9 @@ class FilterModule(object):
         """
             Get the type of a variable
         """
+        if isinstance(var, str) or type(var).__name__ == "AnsibleUnsafeText":
+            return "str"
+
         return type(var).__name__
 
     def config_bool_as_string(self, data, true_as="yes", false_as="no"):
