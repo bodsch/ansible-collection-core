@@ -20,58 +20,68 @@ class FilterModule(object):
             'dns_lookup': self.dns_lookup
         }
 
-    def dns_lookup(dns_name, timeout=3, extern_resolver=[]):
+    def dns_lookup(self, dns_name, timeout=3, dns_resolvers=[]):
         """
           Perform a simple DNS lookup, return results in a dictionary
         """
+        # display.v(f"dns_lookup({dns_name}, {timeout}, {dns_resolvers})")
+
         resolver = Resolver()
         resolver.timeout = float(timeout)
         resolver.lifetime = float(timeout)
 
         result = {}
 
-        if extern_resolver:
-            resolver.nameservers = extern_resolver
+        if dns_resolvers:
+            resolver.nameservers = dns_resolvers
         try:
             records = resolver.resolve(dns_name)
             result = {
                 "addrs": [ii.address for ii in records],
-                "error": "",
+                "error": False,
+                "error_msg": "",
                 "name": dns_name,
             }
 
         except dns.resolver.NXDOMAIN:
             result = {
                 "addrs": [],
-                "error": f"No such domain {dns_name}",
+                "error": True,
+                "error_msg": f"No such domain {dns_name}",
                 "name": dns_name,
             }
 
         except dns.resolver.NoNameservers as e:
             result = {
                 "addrs": [],
-                "error": repr(e),
+                "error": True,
+                "error_msg": repr(e),
                 "name": dns_name,
             }
 
         except dns.resolver.Timeout:
             result = {
                 "addrs": [],
-                "error": f"Timed out while resolving {dns_name}",
+                "error": True,
+                "error_msg": f"Timed out while resolving {dns_name}",
                 "name": dns_name,
             }
         except dns.resolver.NameError as e:
             result = {
                 "addrs": [],
-                "error": repr(e),
+                "error": True,
+                "error_msg": repr(e),
                 "name": dns_name,
             }
         # print(f"Timed out while resolving {dns_name}")
         except dns.exception.DNSException as e:
             result = {
                 "addrs": [],
-                "error": f"Unhandled exception ({repr(e)})",
+                "error": True,
+                "error_msg": f"Unhandled exception ({repr(e)})",
                 "name": dns_name,
             }
+
+        # display.v(f"= return : {result}")
 
         return result
