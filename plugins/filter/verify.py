@@ -19,7 +19,6 @@ class FilterModule(object):
             'upgrade': self.upgrade,
         }
 
-
     def compare_list(self, data_list, compare_to_list):
         """
         """
