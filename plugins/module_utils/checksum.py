@@ -50,6 +50,27 @@ class Checksum:
 
         return (changed, checksum, old_checksum)
 
+    def validate_from_file(self, checksum_file, data_file):
+        """
+        """
+        # self.module.log(msg=f" - checksum_file '{checksum_file}'")
+        old_checksum = ""
+
+        if not os.path.exists(data_file) and os.path.exists(checksum_file):
+            """
+                remove checksum_file, when data_file are removed
+            """
+            os.remove(checksum_file)
+
+        if os.path.exists(checksum_file):
+            with open(checksum_file, "r") as f:
+                old_checksum = f.readlines()[0].strip()
+
+        checksum_from_file = self.checksum_from_file(data_file)
+        changed = not (old_checksum == checksum_from_file)
+
+        return (changed, checksum_from_file, old_checksum)
+
     def checksum_from_file(self, path, read_chunksize=65536, algorithm='sha256'):
         """
             Compute checksum of a file's contents.

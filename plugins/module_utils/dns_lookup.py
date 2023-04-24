@@ -23,6 +23,14 @@ def dns_lookup(dns_name, timeout=3, dns_resolvers=[]):
 
     result = {}
 
+    if not dns_name:
+        return {
+            "addrs": [],
+            "error": True,
+            "error_msg": "No DNS Name for resolving given",
+            "name": dns_name,
+        }
+
     if dns_resolvers:
         resolver.nameservers = dns_resolvers
     try:
