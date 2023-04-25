@@ -4,6 +4,16 @@ Documentation for the collection.
 
 This collection aims to offer an set of small ansible modules or helper functions.
 
+
+## Requirements & Dependencies
+
+- `dnspython`
+
+```bash
+pip install dnspython
+```
+
+
 ## Included content
 
 ### Modules
