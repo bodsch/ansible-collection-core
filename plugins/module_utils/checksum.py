@@ -37,7 +37,8 @@ class Checksum:
         old_checksum = None
 
         if not isinstance(data, str) or not isinstance(data, dict):
-            if not data and os.path.exists(checksum_file):
+            self.module.log(msg=f" - {type(data)} {len(data)}")
+            if data is None and os.path.exists(checksum_file):
                 os.remove(checksum_file)
 
         if os.path.exists(checksum_file):
@@ -106,7 +107,6 @@ class Checksum:
         """
         """
         # self.module.log(msg=f" - type before:  '{type(data)}'")
-
         if isinstance(data, dict):
             _data = json.dumps(data, sort_keys=True)
         elif isinstance(data, list):
