@@ -28,10 +28,10 @@ def compare_two_lists(list1: list, list2: list, debug=False):
 
     diff = [x for x in list2 if x not in list1]
 
-    result = len(diff) == 0
+    changed = not (len(diff) == 0)
     if debug:
-        if not result:
+        if not changed:
             debug_msg.append(f"There are {len(diff)} differences:")
             debug_msg.append(f"  {diff[:5]}")
 
-    return result, diff, debug_msg
+    return changed, diff, debug_msg
