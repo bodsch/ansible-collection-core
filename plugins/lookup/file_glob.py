@@ -111,9 +111,6 @@ class LookupModule(LookupBase):
         ret = []
         found_files = []
 
-        display.vv(f"terms {terms}")
-        display.vv(f"lookup_search_regex {lookup_search_regex}")
-
         for term in terms:
             """
             """
@@ -126,8 +123,6 @@ class LookupModule(LookupBase):
                         found_files.append(r)
 
         ret = self._flatten(found_files)
-
-        display.vv(f"found_files {ret}")
 
         return ret
 
