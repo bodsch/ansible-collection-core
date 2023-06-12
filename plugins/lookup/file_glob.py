@@ -8,6 +8,7 @@ from __future__ import (absolute_import, division, print_function)
 from ansible.utils.display import Display
 from ansible.plugins.lookup import LookupBase
 import os
+import re
 
 __metaclass__ = type
 
@@ -93,6 +94,7 @@ class LookupModule(LookupBase):
         ansible_search_path = variables.get('ansible_search_path', None)
         role_path = variables.get('role_path')
         lookup_search_path = variables.get('search_path', None)
+        lookup_search_regex = variables.get('search_regex', None)
 
         if ansible_search_path:
             paths = ansible_search_path
@@ -107,7 +109,10 @@ class LookupModule(LookupBase):
         search_path = ['templates', 'files']
 
         ret = []
-        found_templates = []
+        found_files = []
+
+        display.vv(f"terms {terms}")
+        display.vv(f"lookup_search_regex {lookup_search_regex}")
 
         for term in terms:
             """
@@ -116,24 +121,30 @@ class LookupModule(LookupBase):
                 for sp in search_path:
                     path = os.path.join(p, sp)
                     display.vv(f" - lookup in directory: {path}")
-                    r = self._find_recursive(folder=path, extension=term)
+                    r = self._find_recursive(folder=path, extension=term, search_regex=lookup_search_regex)
                     if len(r) > 0:
-                        found_templates.append(r)
+                        found_files.append(r)
 
-        ret = self._flatten(found_templates)
+        ret = self._flatten(found_files)
 
-        display.vv(f"found_templates {ret}")
+        display.vv(f"found_files {ret}")
 
         return ret
 
-    def _find_recursive(self, folder, extension):
+    def _find_recursive(self, folder, extension, search_regex=None):
         """
         """
+
         matches = []
 
         for root, dirnames, filenames in os.walk(folder):
             for filename in filenames:
                 if filename.endswith(extension):
-                    matches.append(os.path.join(root, filename))
+                    if search_regex:
+                        reg = re.compile(search_regex)
+                        if reg.match(filename):
+                            matches.append(os.path.join(root, filename))
+                    else:
+                        matches.append(os.path.join(root, filename))
 
         return matches
