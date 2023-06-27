@@ -16,72 +16,70 @@ from ansible.module_utils.mysql import (
     mysql_driver, mysql_driver_fail_msg
 )
 
-
 DOCUMENTATION = r"""
----
-module: mysql_schema.py
-author:
-    - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
-short_description: check it the named schema exists in a mysql.
-version_added: 1.0.15
+module: mysql_schema
+author: Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
+short_description: check the named schema exists in a mysql.
+description:
+  - check the named schema exists in a mysql (or compatible) database.
 
-description: ''
-    - check it the named schema exists in a mysql
+version_added: '1.0.15'
 
 options:
   login_user:
     description:
-      - user name to login into database
+      - user name to login into database.
     type: str
-    default: ""
     required: false
+
   login_password:
     description:
-      - password for user name to login into database
+      - password for user name to login into database.
     type: str
-    default: ""
     required: false
+
   login_host:
     description:
       - database hostname
     type: str
-    default: "127.0.0.1"
+    default: 127.0.0.1
     required: false
+
   login_port:
     description:
       - database port
     type: int
-    default: "3306"
+    default: 3306
     required: false
+
   login_unix_socket:
     description:
       - database socket
     type: str
-    default: ""
     required: false
+
   database_config_file:
     description:
       - optional config file with credentials
     type: str
-    default: ""
     required: false
+
   table_schema:
     description:
       - database schema to check
     type: str
-    default: ""
     required: true
+
   table_name:
     description:
       - optional table name
     type: str
-    default: ""
     required: false
 """
 
 EXAMPLES = r"""
 - name: ensure, table_schema is present
-  mysql_schema:
+  bodsch.core.mysql_schema:
     login_host: ::1
     login_user: root
     login_password: password
@@ -93,7 +91,6 @@ EXAMPLES = r"""
     login_user:root
     login_password: root
     table_schema: icingadb
-  # no_log: true
   register: mysql_icingawebdb_schema
 
 """
@@ -104,11 +101,11 @@ exists:
     - is the named schema present
   type: bool
 failed:
-  description: "TODO"
+  description: TODO
   type: bool
 changed:
 failed
-  description: "TODO"
+  description: TODO
   type: bool
 """
 

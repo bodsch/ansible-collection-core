@@ -117,6 +117,18 @@ from ansible_collections.bodsch.core.plugins.module_utils.cache.cache_valid impo
 
 - `dns_lookup(timeout=3, extern_resolver=[])`
 
+### `python`
+
+- `python_extra_args(python_version=ansible_python.version, extra_args=[], break_system_packages=True)`
+
+### `union_by`
+
+- `union(docker_defaults_python_packages, union_by='name'))`
+
+### - `parse_checksum`
+
+- `parse_checksum('nginx-prometheus-exporter', ansible_facts.system, system_architecture)`
+
 ## misc
 
 This directory can be used to ship various plugins inside an Ansible collection. Each plugin is placed in a folder that

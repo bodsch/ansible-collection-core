@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import absolute_import, division, print_function
+import os
 import json
 import difflib
 import itertools
@@ -206,3 +207,32 @@ class SideBySide:
         """
         """
         return self.better_diff(self.left, self.right, width, as_string, separator, left_title, right_title)
+
+    def diff_between_files(self, file_1, file_2):
+        """
+        """
+        self.module.log(f"diff_between_files({file_1}, {file_2})")
+        old_data = ""
+        tmp_data = ""
+        diff_side_by_side = ""
+
+        if os.path.isfile(file_1):
+            self.module.log(f"  file_1: {file_1}")
+            with open(file_1, "r") as f:
+                old_data = f.readlines()
+                old_data = "\n".join(old_data)
+
+        if os.path.isfile(file_2):
+            self.module.log(f"  file_2: {file_2}")
+            with open(file_2, "r") as f:
+                tmp_data = f.readlines()
+                tmp_data = "\n".join(tmp_data)
+
+        self.module.log(f"  old_data: {old_data}")
+        self.module.log(f"  tmp_data: {tmp_data}")
+
+        diff_side_by_side = self.diff(width=140, left_title="  Original", right_title="  Update")
+
+        self.module.log(f"  diff_side_by_side: {diff_side_by_side}")
+
+        return diff_side_by_side

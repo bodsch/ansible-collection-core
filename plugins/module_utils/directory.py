@@ -175,12 +175,14 @@ def fix_ownership(directory, force_owner=None, force_group=None, force_mode=Fals
                     mode = int(str(force_mode), base=8)
             except Exception as e:
                 error_msg = f" - ERROR '{e}'"
+                print(error_msg)
 
             try:
                 if isinstance(force_mode, str):
                     mode = int(force_mode, base=8)
             except Exception as e:
                 error_msg = f" - ERROR '{e}'"
+                print(error_msg)
 
             os.chmod(directory, mode)
 

@@ -30,6 +30,11 @@ class FilterModule(object):
         display.v(f"parse_checksum(self, data, {application}, {os}, {arch})")
 
         checksum = None
+        os = os.lower()
+        display.v(f" data: {data}")
+        display.v(f" os: {os}")
+        display.v(f" arch: {arch}")
+        display.v(f" file_extension: {file_extension}")
 
         if isinstance(data, list):
             # 206cf787c01921574ca171220bb9b48b043c3ad6e744017030fed586eb48e04b  alertmanager-0.25.0.linux-amd64.tar.gz
