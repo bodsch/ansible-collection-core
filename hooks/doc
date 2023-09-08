@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-. hooks/_tox_base
+. hooks/molecule.rc
 
-# set -x
+set -x
 
 if [ -z "${COLLECTION_DIR}" ]
 then
@@ -14,10 +14,11 @@ fi
 
 if [ -d ${COLLECTION_DIR} ]
 then
-  ansible_modules=$(
-    ansible-doc --list -t module bodsch.core --json | jq -r 'keys[]'
-  )
+  # ansible-doc --list --list_files -t module ${COLLECTION_NAMESPACE}.${COLLECTION_NAME}
 
+  ansible_modules=$(
+    ansible-doc --list ${COLLECTION_NAMESPACE}.${COLLECTION_NAME} --json | jq -r 'keys[]'
+  )
 
   for i in ${ansible_modules}
   do
