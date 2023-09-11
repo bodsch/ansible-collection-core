@@ -87,13 +87,15 @@ class AnsibleFacts(object):
 
         self.cache_directory = f"/var/cache/ansible/{self.name}"
         self.cache_file_name = os.path.join(self.cache_directory, "facts.checksum")
-        self.facts_file = os.path.join("/etc/ansible/facts.d", f"{self.name}.fact")
+        self.facts_directory = "/etc/ansible/facts.d"
+        self.facts_file = os.path.join(self.facts_directory, f"{self.name}.fact")
 
     def run(self):
         """
           runner
         """
         create_directory(self.cache_directory)
+        create_directory(self.facts_directory, mode="0775")
 
         _failed = False
         _changed = False
