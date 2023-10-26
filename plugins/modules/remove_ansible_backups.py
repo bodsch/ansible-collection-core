@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# (c) 2022-2023, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
@@ -14,8 +14,8 @@ __metaclass__ = type
 DOCUMENTATION = """
 module: remove_ansible_backups
 version_added: 0.9.0
-author:
-  - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
+author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+
 short_description: Remove older backup files created by ansible
 
 description:

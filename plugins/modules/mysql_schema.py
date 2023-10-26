@@ -1,29 +1,19 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import absolute_import, division, print_function
-import os
-import warnings
-
-from ansible.module_utils._text import to_native
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.six.moves import configparser
-from ansible.module_utils.mysql import (
-    mysql_driver, mysql_driver_fail_msg
-)
-
 DOCUMENTATION = r"""
 module: mysql_schema
-author: Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
+version_added: '1.0.15'
+author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+
 short_description: check the named schema exists in a mysql.
+
 description:
   - check the named schema exists in a mysql (or compatible) database.
-
-version_added: '1.0.15'
 
 options:
   login_user:
@@ -80,7 +70,7 @@ options:
 EXAMPLES = r"""
 - name: ensure, table_schema is present
   bodsch.core.mysql_schema:
-    login_host: ::1
+    login_host: '::1'
     login_user: root
     login_password: password
     table_schema: icingaweb2
@@ -88,11 +78,10 @@ EXAMPLES = r"""
 - name: ensure table_schema is created
   bodsch.core.mysql_schema:
     login_host: database
-    login_user:root
+    login_user: root
     login_password: root
     table_schema: icingadb
   register: mysql_icingawebdb_schema
-
 """
 
 RETURN = r"""
@@ -100,17 +89,28 @@ exists:
   description:
     - is the named schema present
   type: bool
-failed:
+changed:
   description: TODO
   type: bool
-changed:
-failed
+failed:
   description: TODO
   type: bool
 """
 
 # ---------------------------------------------------------------------------------------
 
+from __future__ import absolute_import, division, print_function
+import os
+import warnings
+
+from ansible.module_utils._text import to_native
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.six.moves import configparser
+from ansible.module_utils.mysql import (
+    mysql_driver, mysql_driver_fail_msg
+)
+
+# ---------------------------------------------------------------------------------------
 
 class MysqlSchema(object):
     """

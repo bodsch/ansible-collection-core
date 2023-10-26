@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -17,10 +17,10 @@ __metaclass__ = type
 DOCUMENTATION = r"""
 ---
 module: package_version
-author:
-    - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
-short_description: Attempts to determine the version of a package to be installed or already installed.
 version_added: 0.9.0
+author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+
+short_description: Attempts to determine the version of a package to be installed or already installed.
 
 description:
     - Attempts to determine the version of a package to be installed or already installed.
@@ -111,9 +111,17 @@ class PackageVersion(object):
         self.package_version = module.params.get("package_version")
         self.repository = module.params.get("repository")
 
-        (self.distribution, self.version, self.codename) = distro.linux_distribution(
-            full_distribution_name=False
-        )
+        self.distribution = distro.id()
+        self.version = distro.version()
+        self.codename = distro.codename()
+
+        self.module.log(msg=f"  - pkg       : {self.distribution} - {self.version} - {self.codename}")
+
+        # (self.distribution, self.version, self.codename) = distro.linux_distribution(
+        #     full_distribution_name=False
+        # )
+        #
+        # self.module.log(msg=f"  - pkg       : {self.distribution} - {self.version} - {self.codename}")
 
     def run(self):
         """
@@ -178,8 +186,14 @@ class PackageVersion(object):
         # else:
         #     cache.open()
 
-        cache.update()
-        cache.open()
+        try:
+            cache.update()
+            cache.open()
+        except SystemError as error:
+            self.module.log(msg=f"error         : {error}")
+            return False, None, f"package {self.package_name} is not installed"
+        except Exception as error:
+            self.module.log(msg=f"error         : {error}")
 
         try:
             pkg = cache[self.package_name]

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -14,25 +14,22 @@ display = Display()
 
 
 class FilterModule(object):
-    """
-    """
-
     def filters(self):
         return {
             'dns_lookup': self.lookup
         }
 
-    def lookup(self, dns_name, timeout=3, dns_resolvers=[]):
+    def lookup(self, dns_name, timeout=3, dns_resolvers=["9.9.9.9"]):
         """
           use a simple DNS lookup, return results in a dictionary
 
           similar to
           {'addrs': [], 'error': True, 'error_msg': 'No such domain instance', 'name': 'instance'}
         """
-        display.v(f"lookup({dns_name}, {timeout}, {dns_resolvers})")
+        display.vvv(f"lookup({dns_name}, {timeout}, {dns_resolvers})")
 
         result = dns_lookup(dns_name, timeout, dns_resolvers)
 
-        display.v(f"= return : {result}")
+        display.vv(f"= return : {result}")
 
         return result

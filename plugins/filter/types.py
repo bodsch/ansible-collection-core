@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -14,10 +14,6 @@ display = Display()
 
 
 class FilterModule(object):
-    """
-        Ansible file jinja2 tests
-    """
-
     def filters(self):
         return {
             'type': self.var_type,
@@ -35,6 +31,7 @@ class FilterModule(object):
 
     def config_bool_as_string(self, data, true_as="yes", false_as="no"):
         """
+            return string for boolean
         """
         # display.v(f"config_bool({data}, {type(data)}, {true_as}, {false_as})")
 
@@ -50,5 +47,4 @@ class FilterModule(object):
         else:
             result = data
 
-        # display.v(f"return : {result}")
         return result

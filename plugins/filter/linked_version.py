@@ -1,4 +1,9 @@
-# python 3 headers, required if submitting to Ansible
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
+# Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
+# SPDX-License-Identifier: Apache-2.0
 
 from __future__ import (absolute_import, print_function)
 __metaclass__ = type
@@ -10,10 +15,6 @@ display = Display()
 
 
 class FilterModule(object):
-    """
-        Ansible file jinja2 tests
-    """
-
     def filters(self):
         return {
             'linked_version': self.linked_version,
@@ -21,27 +22,28 @@ class FilterModule(object):
 
     def linked_version(self, data, install_path, version):
         """
+            check for linked version in `install_path`
         """
-        # display.v(f"linked_version(self, {data}, {install_path}, {version})")
+        display.vvv(f"linked_version(self, {data}, {install_path}, {version})")
 
         _exists = data.get("exists", False)
 
         if _exists:
-            # _islink = data.get("islink", False)
+            _islink = data.get("islnk", False)
             _lnk_source = data.get("lnk_source", None)
-            _path = data.get("path", False)
+            _path = data.get("path", None)
 
             if _lnk_source:
                 _path = os.path.dirname(_lnk_source)
 
-            # display.v(f" - exists  : {_exists}")
-            # display.v(f" - is link : {_islink}")
-            # display.v(f" - link src: {_lnk_source}")
-            # display.v(f" - path    : {_path}")
+            display.vvv(f" - exists  : {_exists}")
+            display.vvv(f" - is link : {_islink}")
+            display.vvv(f" - link src: {_lnk_source}")
+            display.vvv(f" - path    : {_path}")
 
             state = (install_path == _path)
 
-            # display.v(f" - state    : {state}")
+            display.vv(f" - state    : {state}")
 
             return state
         else:

@@ -8,9 +8,11 @@ This collection aims to offer an set of small ansible modules or helper function
 ## Requirements & Dependencies
 
 - `dnspython`
+- `dirsync`
 
 ```bash
 pip install dnspython
+pip install dirsync
 ```
 
 
@@ -25,6 +27,7 @@ pip install dnspython
 | [aur](./plugins/modules/aur.py)                                       | Installing packages for ArchLinux with aur |
 | [journalctl](./plugins/modules/journalctl.py)                         | Query the systemd journal with a very limited number of possible parameters |
 | [facts](./plugins/modules/facts.py)                                   | Write ansible facts |
+| [sync_directory](./plugins/modules/sync_directory.py)                 | Syncronises directories similar to rsync |
 
 
 

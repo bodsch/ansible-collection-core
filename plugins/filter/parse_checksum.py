@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -15,10 +15,6 @@ display = Display()
 
 
 class FilterModule(object):
-    """
-        Ansible file jinja2 tests
-    """
-
     def filters(self):
         return {
             'parse_checksum': self.parse_checksum,
@@ -26,26 +22,27 @@ class FilterModule(object):
 
     def parse_checksum(self, data, application, os, arch, file_extension="tar.gz"):
         """
+            parse version string
         """
-        display.v(f"parse_checksum(self, data, {application}, {os}, {arch})")
+        display.vvv(f"parse_checksum(self, data, {application}, {os}, {arch})")
 
         checksum = None
         os = os.lower()
-        display.v(f" data: {data}")
-        display.v(f" os: {os}")
-        display.v(f" arch: {arch}")
-        display.v(f" file_extension: {file_extension}")
+        display.vvv(f" data: {data}")
+        display.vvv(f" os: {os}")
+        display.vvv(f" arch: {arch}")
+        display.vvv(f" file_extension: {file_extension}")
 
         if isinstance(data, list):
             # 206cf787c01921574ca171220bb9b48b043c3ad6e744017030fed586eb48e04b  alertmanager-0.25.0.linux-amd64.tar.gz
             # (?P<checksum>[a-zA-Z0-9]+).*alertmanager[-_].*linux-amd64\.tar\.gz$
             checksum = [x for x in data if re.search(fr"(?P<checksum>[a-zA-Z0-9]+).*{application}[-_].*{os}[-_]{arch}\.{file_extension}", x)][0]
 
-            display.v(f"  found checksum: {checksum}")
+            display.vvv(f"  found checksum: {checksum}")
 
         if isinstance(checksum, str):
             checksum = checksum.split(" ")[0]
 
-        display.v(f"= checksum: {checksum}")
+        display.vv(f"= checksum: {checksum}")
 
         return checksum

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -19,11 +19,11 @@ import os.path
 __metaclass__ = type
 
 DOCUMENTATION = """
-module: aur
-author:
-  - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
-short_description: Installing packages for ArchLinux with aur
+module: pip_requirements
 version_added: 1.0.16
+author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+
+short_description: This modules creates an requirement file to install python modules via pip.
 
 description:
     - This modules creates an requirement file to install python modules via pip.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -14,8 +14,6 @@ display = Display()
 
 
 class FilterModule(object):
-    """
-    """
     def filters(self):
         return {
             'union_by': self.union,
@@ -23,6 +21,7 @@ class FilterModule(object):
 
     def union(self, data, defaults, union_by):
         """
+            union by ..
         """
         result = []
 

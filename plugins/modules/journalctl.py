@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -11,10 +11,10 @@ from ansible.module_utils.basic import AnsibleModule
 
 DOCUMENTATION = """
 module: journalctl
-author:
-  - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
-short_description: Query the systemd journal with a very limited number of possible parameters.
 version_added: 1.0.6
+author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+
+short_description: Query the systemd journal with a very limited number of possible parameters.
 
 description:
   - Query the systemd journal with a very limited number of possible parameters.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -23,10 +23,10 @@ __metaclass__ = type
 
 DOCUMENTATION = """
 module: aur
-author:
-  - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
-short_description: Installing packages for ArchLinux with aur
 version_added: 0.9.0
+author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+
+short_description: Installing packages for ArchLinux with aur
 
 description:
     - This modules manages packages for ArchLinux on a target with aur (like M(ansible.builtin.yum), M(ansible.builtin.apt), ...).

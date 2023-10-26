@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -13,9 +13,6 @@ display = Display()
 
 
 class FilterModule(object):
-    """
-    """
-
     def filters(self):
         return {
             'python_extra_args': self.python_extra_args
@@ -23,6 +20,7 @@ class FilterModule(object):
 
     def python_extra_args(self, data, python_version, extra_args=[], break_system_packages=True):
         """
+            add extra args for python pip installation
         """
         result = list(set(extra_args))
 
@@ -37,5 +35,5 @@ class FilterModule(object):
 
         result = " ".join(result)
 
-        display.v(f"= {result}")
+        display.vv(f"= {result}")
         return result

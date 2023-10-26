@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -14,10 +14,6 @@ display = Display()
 
 
 class FilterModule(object):
-    """
-      ansible filter
-    """
-
     def filters(self):
         return {
             'compare_list': self.compare_list,
@@ -26,8 +22,9 @@ class FilterModule(object):
 
     def compare_list(self, data_list, compare_to_list):
         """
+            compare two lists
         """
-        display.v(f"compare_list({data_list}, {compare_to_list})")
+        display.vvv(f"compare_list({data_list}, {compare_to_list})")
 
         result = []
 
@@ -35,11 +32,12 @@ class FilterModule(object):
             if i in compare_to_list:
                 result.append(i)
 
-        display.v(f"return : {result}")
+        display.vv(f"return : {result}")
         return result
 
     def upgrade(self, install_path, bin_path):
         """
+            upgrade ...
         """
         directory = None
         link_to_bin = None
@@ -62,5 +60,5 @@ class FilterModule(object):
         else:
             result = False
 
-        display.v(f"return : {result}")
+        display.vv(f"return : {result}")
         return result

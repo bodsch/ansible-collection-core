@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -18,8 +18,8 @@ from ansible_collections.bodsch.core.plugins.module_utils.checksum import Checks
 DOCUMENTATION = """
 module: facts
 version_added: 1.0.10
-author:
-  - Bodo 'bodsch' Schulz <bodo@boone-schulz.de>
+author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+
 short_description: Write Ansible Facts
 
 description:
