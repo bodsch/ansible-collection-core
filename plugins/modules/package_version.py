@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -6,13 +6,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import print_function
-import re
 
 from ansible.module_utils import distro
 from ansible.module_utils.basic import AnsibleModule
 
+import re
+
 __metaclass__ = type
 
+# ---------------------------------------------------------------------------------------
 
 DOCUMENTATION = r"""
 ---
@@ -96,6 +98,8 @@ version_string_compressed:
         - Only needed for RedHat-based distributions.
     type: string
 """
+
+# ---------------------------------------------------------------------------------------
 
 
 class PackageVersion(object):

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -6,14 +6,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import absolute_import, division, print_function
+
+from ansible.module_utils.basic import AnsibleModule
+
 import os
 import logging
 import collections
 import re
 import dirsync
 
-from ansible.module_utils.basic import AnsibleModule
-
+# ---------------------------------------------------------------------------------------
 
 DOCUMENTATION = r"""
 ---
@@ -76,6 +78,8 @@ msg:
         - statusinformation
     type: string
 """
+
+# ---------------------------------------------------------------------------------------
 
 
 class TailLogHandler(logging.Handler):

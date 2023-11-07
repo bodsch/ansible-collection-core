@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import absolute_import, print_function
-
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url
@@ -20,6 +19,8 @@ import urllib.parse
 
 from pathlib import Path
 __metaclass__ = type
+
+# ---------------------------------------------------------------------------------------
 
 DOCUMENTATION = """
 module: aur
@@ -62,6 +63,8 @@ EXAMPLES = """
 
 RETURN = """
 """
+
+# ---------------------------------------------------------------------------------------
 
 
 class Aur():

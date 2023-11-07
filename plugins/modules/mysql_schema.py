@@ -1,9 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
+
+from __future__ import absolute_import, division, print_function
+
+from ansible.module_utils._text import to_native
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.six.moves import configparser
+from ansible.module_utils.mysql import (
+    mysql_driver, mysql_driver_fail_msg
+)
+
+import os
+import warnings
+
+# ---------------------------------------------------------------------------------------
 
 DOCUMENTATION = r"""
 module: mysql_schema
@@ -99,18 +113,6 @@ failed:
 
 # ---------------------------------------------------------------------------------------
 
-from __future__ import absolute_import, division, print_function
-import os
-import warnings
-
-from ansible.module_utils._text import to_native
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.six.moves import configparser
-from ansible.module_utils.mysql import (
-    mysql_driver, mysql_driver_fail_msg
-)
-
-# ---------------------------------------------------------------------------------------
 
 class MysqlSchema(object):
     """

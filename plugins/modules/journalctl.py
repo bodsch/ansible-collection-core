@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
@@ -8,6 +8,8 @@
 from __future__ import absolute_import, division, print_function
 
 from ansible.module_utils.basic import AnsibleModule
+
+# ---------------------------------------------------------------------------------------
 
 DOCUMENTATION = """
 module: journalctl
@@ -85,6 +87,8 @@ stderr:
     - The output as a list on stderr
   type: list
 """
+
+# ---------------------------------------------------------------------------------------
 
 
 class JournalCtl(object):
