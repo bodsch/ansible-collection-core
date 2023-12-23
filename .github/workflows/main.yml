@@ -2,14 +2,29 @@
 name: CI
 
 on:
-  schedule:
-    - cron: "0 4 * * 0"
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - "code linter"
-    types:
-      - completed
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+  push:
+    branches:
+      - 'main'
+      - 'feature/**'
+      - 'fix/**'
+      - '!doc/**'
+  pull_request:
+    branches:
+      - 'main'
+      - 'feature/**'
+      - 'fix/**'
+      - '!doc/**'
 
 env:
   COLLECTION_NAMESPACE: bodsch
@@ -20,21 +35,24 @@ defaults:
     working-directory: 'ansible-collection-core'
 
 jobs:
-  deb:
-    name: "${{ matrix.image }} / ansible: ${{ matrix.ansible-version }}"
+  arch:
+    name: "${{ matrix.image }}: ${{ matrix.collection_role }} (ansible ${{ matrix.ansible-version }}, python ${{ matrix.python_version }})"
     runs-on: ubuntu-20.04
     if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
     strategy:
       fail-fast: false
       matrix:
         image:
-          - debian:11
+          - archlinux:latest
         ansible-version:
-          - '5.10'
           - '6.7'
-          - '7.0'
+        python_version:
+          - "3.10.11"
+          - "3.11.3"
         scenario:
           - default
+        collection_role:
+          - pacman
 
     steps:
       - name: check out the codebase.
@@ -45,7 +63,7 @@ jobs:
       - name: 🐍 set up python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: "${{ matrix.python_version }}"
 
       - name: install dependencies
         run: |
@@ -54,8 +72,8 @@ jobs:
 
       - name: Install collection
         run: |
-          mkdir -p ~/.ansible/collections/ansible_collections/$COLLECTION_NAMESPACE
-          cp -a ../ansible-collection-$COLLECTION_NAME ~/.ansible/collections/ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
+          make \
+            install
 
       - name: test with tox
         run: |
@@ -63,6 +81,61 @@ jobs:
             test \
               -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
               -e DISTRIBUTION="${{ matrix.image }}" \
+              -e COLLECTION_ROLE="${{ matrix.collection_role }}" \
+              -e COLLECTION_SCENARIO="${{ matrix.scenario }}"
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          DISTRIBUTION: ${{ matrix.image }}
+
+  deb:
+    name: "${{ matrix.image }}: ${{ matrix.collection_role }} (ansible ${{ matrix.ansible-version }}, python ${{ matrix.python_version }})"
+    runs-on: ubuntu-20.04
+    if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - debian:11
+          - debian:12
+        ansible-version:
+          - '6.7'
+        python_version:
+          - "3.10.11"
+          - "3.11.3"
+        scenario:
+          - default
+        collection_role:
+          - pacman
+
+    steps:
+      - name: check out the codebase.
+        uses: actions/checkout@v3
+        with:
+          path: 'ansible-collection-core'
+
+      - name: 🐍 set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "${{ matrix.python_version }}"
+
+      - name: install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r test-requirements.txt
+
+      - name: Install collection
+        run: |
+          make \
+            install
+
+      - name: test with tox
+        run: |
+          make \
+            test \
+              -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
+              -e DISTRIBUTION="${{ matrix.image }}" \
+              -e COLLECTION_ROLE="${{ matrix.collection_role }}" \
               -e COLLECTION_SCENARIO="${{ matrix.scenario }}"
         env:
           PY_COLORS: '1'

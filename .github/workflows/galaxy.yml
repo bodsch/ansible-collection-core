@@ -4,14 +4,16 @@ name: push to ansible galaxy
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - "CI"
-    branches:
-      - main
-    types:
-      - completed
-
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
 jobs:
   galaxy:
     name: galaxy
