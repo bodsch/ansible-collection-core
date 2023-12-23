@@ -1,0 +1,22 @@
+---
+
+# pacman_custom_mirrors:
+#   - file: /etc/pacman.d/mirrorlist-arch
+#     "ARCH MIRRORS":
+#       enabled: true
+#       servers:
+#         - http://mirror.i3d.net/pub/archlinux/$repo/os/$arch
+
+pacman_custom_mirrors:
+  - file: /etc/pacman.d/mirrorlist-universe
+    "universe":
+      enabled: true
+      servers:
+        - https://universe.artixlinux.org/$arch
+        - https://mirror1.artixlinux.org/universe/$arch
+        - https://mirror.pascalpuffke.de/artix-universe/$arch
+        - https://artixlinux.qontinuum.space/artixlinux/universe/os/$arch
+        - https://mirror1.cl.netactuate.com/artix/universe/$arch
+        - https://ftp.crifo.org/artix-universe/
+
+...

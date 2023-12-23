@@ -1,0 +1,9 @@
+---
+
+- name: prepare
+  ansible.builtin.include_tasks: prepare.yml
+
+- name: configure
+  ansible.builtin.include_tasks: configure.yml
+
+...
