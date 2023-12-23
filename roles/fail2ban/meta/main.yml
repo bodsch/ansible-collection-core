@@ -1,0 +1,31 @@
+---
+
+galaxy_info:
+  role_name: fail2ban
+
+  author: Bodo Schulz
+  description: install and configure fail2ban on various systems
+
+  license: Apache 2.0
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: ArchLinux
+    - name: Ubuntu
+      versions:
+        # 20.04
+        - focal
+    - name: Debian
+      versions:
+        # 10
+        - buster
+        # 11
+        - bullseye
+        - bookworm
+
+  galaxy_tags:
+    - system
+    - networking
+    - security
+
+dependencies: []

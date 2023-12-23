@@ -1,0 +1,55 @@
+---
+
+# "ignoreip" can be an IP address, a CIDR mask or a DNS host
+fail2ban_ignoreips:
+  - 127.0.0.1/8
+
+fail2ban_conf: {}
+
+fail2ban_jail: {}
+
+fail2ban_path_definitions:
+  # ARTIX - ArchLinux based, buth without systemd
+  artixlinux:
+    includes:
+      before: paths-common.conf
+      after: paths-overrides.local
+    defaults:
+      syslog_mail: /var/log/mail.log
+      # control the `mail.warn` setting, see `/etc/rsyslog.d/50-default.conf` (if commented `mail.*` wins).
+      # syslog_mail_warn = /var/log/mail.warn
+      syslog_mail_warn: '%(syslog_mail)s'
+      syslog_user: /var/log/user.log
+      syslog_daemon: /var/log/daemon.log
+      auth_log: /var/log/auth.log
+  # ARCH
+  archlinux:
+    includes:
+      before: paths-common.conf
+      after: paths-overrides.local
+    defaults:
+      apache_error_log: /var/log/httpd/*error_log
+      apache_access_log: /var/log/httpd/*access_log
+      exim_main_log: /var/log/exim/main.log
+      mysql_log:
+        - /var/log/mariadb/mariadb.log
+        - /var/log/mysqld.log
+      roundcube_errors_log: /var/log/roundcubemail/errors
+      # These services will log to the journal via syslog, so use the journal by
+      # default.
+      syslog_backend: systemd
+      sshd_backend: systemd
+      dropbear_backend: systemd
+      proftpd_backend: systemd
+      pureftpd_backend: systemd
+      wuftpd_backend: systemd
+      postfix_backend: systemd
+      dovecot_backend: systemd
+
+fail2ban_jails: []
+
+fail2ban_actions: []
+
+fail2ban_filters: []
+
+...

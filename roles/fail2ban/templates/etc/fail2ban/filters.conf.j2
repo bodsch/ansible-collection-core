@@ -1,0 +1,64 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+{% if item.author is defined and
+      item.author | string | length > 0 %}
+
+# Author: {{ item.author }}
+{% endif %}
+{% if item.description is defined and
+      item.description | string | length > 0 %}
+
+  {% for line in item.description.split('\n') %}
+# {{ line }}
+  {% endfor %}
+{% endif %}
+{% if item.includes is defined %}
+
+  {% set _attr = ['before', 'after'] %}
+[INCLUDES]
+  {% for k, v in item.includes.items() %}
+    {% if k in _attr %}
+      {% if v | bodsch.core.type == 'list' %}
+{{ "%-15s" | format(k,) }} = {{ v | join('\n') | indent(18, False) }}
+      {% else %}
+{{ "%-15s" | format(k,) }} = {{ v }}
+      {% endif %}
+    {% endif %}
+
+  {% endfor %}
+{% endif %}
+{% if item.default is defined %}
+
+[DEFAULT]
+  {% if item.default.daemon is defined %}
+_daemon         = {{ item.default.daemon }}
+  {% endif %}
+{% endif %}
+{% if item.definition is defined %}
+
+[Definition]
+  {% if item.definition.daemon is defined %}
+_daemon         = {{ item.definition.daemon }}
+    {% set _ = item.definition.pop('daemon') %}
+  {% endif %}
+  {% if item.definition.port is defined %}
+_port           = {{ item.definition.port }}
+    {% set _ = item.definition.pop('port') %}
+  {% endif %}
+  {% for k, v in item.definition.items() %}
+    {% if v | bodsch.core.type == 'list' %}
+{{ "%-15s" | format(k,) }} = {{ v | join('\n') | indent(18, False) }}
+    {% else %}
+{{ "%-15s" | format(k,) }} = {{ v }}
+    {% endif %}
+
+  {% endfor %}
+{% endif %}
+{% if item.init is defined %}
+
+[Init]
+  {% for k, v in item.init.items() %}
+{{ "%-15s" | format(k,) }} = {{ v }}
+  {% endfor %}
+
+{% endif %}
