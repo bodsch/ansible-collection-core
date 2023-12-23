@@ -1,0 +1,14 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% for value, key in item.value.items() %}
+[{{ value | upper }}]
+  {% for k, v  in key.items() %}
+    {% if v | bodsch.core.type in ["str", "int"] %}
+{{ "%-15s" | format(k,) }} = {{ v }}
+    {% elif v | bodsch.core.type == "list" %}
+{{ "%-15s" | format(k,) }} = {{ v | join(' ') }}
+    {% endif %}
+  {% endfor %}
+
+{% endfor %}

@@ -1,0 +1,14 @@
+---
+
+- name: converge
+  hosts: all
+  any_errors_fatal: false
+  become: false
+
+  environment:
+    NETRC: ''
+
+  roles:
+    - role: bodsch.core.fail2ban
+
+...

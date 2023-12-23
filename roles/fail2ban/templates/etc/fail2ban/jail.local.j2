@@ -1,0 +1,17 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% for service in fail2ban_jails  %}
+[{{ service.name }}]
+enabled = {{ service.enabled | default(true) | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+  {% for option, value in service.items() %}
+    {% if option not in ['name', 'enabled'] %}
+      {% if value | bodsch.core.type == "list" %}
+{{ "%-15s" | format(option,) }} = {{ value | join(' ') }}
+      {% elif value | bodsch.core.type in ["str", "int"] %}
+{{ "%-15s" | format(option,) }} = {{ value }}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+
+{% endfor %}

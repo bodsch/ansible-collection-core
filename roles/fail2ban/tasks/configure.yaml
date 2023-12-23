@@ -1,0 +1,77 @@
+---
+
+- name: update configuration file - /etc/fail2ban/fail2ban.conf
+  ansible.builtin.template:
+    src: etc/fail2ban/fail2ban.conf.j2
+    dest: /etc/fail2ban/fail2ban.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: true
+  notify:
+    - restart fail2ban
+
+- name: create path configs
+  ansible.builtin.template:
+    src: etc/fail2ban/paths.conf.j2
+    dest: /etc/fail2ban/paths-{{ item.key }}.conf
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    "{{ fail2ban_path_definitions | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when:
+    - fail2ban_path_definitions is defined
+
+- name: update configuration file - /etc/fail2ban/jail.conf
+  ansible.builtin.template:
+    src: etc/fail2ban/jail.conf.j2
+    dest: /etc/fail2ban/jail.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: true
+  notify:
+    - restart fail2ban
+
+- name: update configuration file - /etc/fail2ban/jail.local
+  ansible.builtin.template:
+    src: etc/fail2ban/jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart fail2ban
+
+- name: create filter configs
+  ansible.builtin.template:
+    src: etc/fail2ban/filters.conf.j2
+    dest: /etc/fail2ban/filter.d/{{ item.name }}.conf
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    "{{ fail2ban_filters }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - fail2ban_filters is defined
+
+- name: create action configs
+  ansible.builtin.template:
+    src: etc/fail2ban/actions.conf.j2
+    dest: /etc/fail2ban/action.d/{{ item.name }}.conf
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    "{{ fail2ban_actions }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - fail2ban_actions is defined
+
+...

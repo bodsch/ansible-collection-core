@@ -9,7 +9,7 @@ export COLLECTION_SCENARIO  ?= default
 
 .PHONY: install uninstall doc converge test destroy verify lint
 
-# default: install
+default: converge
 
 install:
 	@hooks/install

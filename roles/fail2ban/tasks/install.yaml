@@ -1,0 +1,8 @@
+---
+
+- name: install
+  ansible.builtin.package:
+    name: "{{ fail2ban_packages }}"
+    state: present
+
+...

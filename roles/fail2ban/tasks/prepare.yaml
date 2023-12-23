@@ -1,0 +1,37 @@
+---
+
+- name: include OS specific configuration
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      paths:
+        - "vars"
+      files:
+        # eg. debian-10 / ubuntu-20 / centos-8 / oraclelinux-8
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yaml"
+        # eg. archlinux-systemd / archlinux-openrc
+        - "{{ ansible_distribution | lower }}-{{ ansible_service_mgr | lower }}.yaml"
+        # eg. artixlinux-systemd / artixlinux-openrc
+        - "{{ ansible_distribution | lower | replace(' ', '') }}-{{ ansible_service_mgr | lower }}.yaml"
+        # eg. debian / ubuntu / centos / oraclelinux
+        - "{{ ansible_distribution | lower }}.yaml"
+        # eg. artixlinux
+        - "{{ ansible_distribution | lower | replace(' ', '') }}.yaml"
+        # eg. redhat / debian / archlinux
+        - "{{ ansible_os_family | lower }}.yaml"
+        - default.yaml
+      skip: true
+
+- name: merge fail2ban configuration between defaults and custom
+  ansible.builtin.set_fact:
+    fail2ban_jails: "{{ fail2ban_defaults_jails | bodsch.core.merge_jails(fail2ban_jails) }}"
+    fail2ban_filters: "{{ fail2ban_defaults_filters | bodsch.core.merge_jails(fail2ban_filters) }}"
+    fail2ban_actions: "{{ fail2ban_defaults_actions | bodsch.core.merge_jails(fail2ban_actions) }}"
+    fail2ban_conf: "{{ fail2ban_defaults_conf | combine(fail2ban_conf, recursive=True) }}"
+    fail2ban_jail: "{{ fail2ban_defaults_jail | combine(fail2ban_jail, recursive=True) }}"
+
+- name: update package cache
+  ansible.builtin.package:
+    update_cache: true
+
+...

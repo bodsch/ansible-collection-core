@@ -1,0 +1,88 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% set _backend_attr = ['pyinotify','gamin','polling','systemd','auto'] %}
+
+[INCLUDES]
+
+before        = {{ fail2ban_jail.includes.before }}
+# after       = {{ fail2ban_jail.includes.after }}
+
+[DEFAULT]
+ignorself     = true
+ignoreip      = {{ fail2ban_ignoreips | join(' ') }}
+ignorecommand =
+
+bantime       = {{ fail2ban_jail.default.bantime }}
+findtime      = {{ fail2ban_jail.default.findtime }}
+maxretry      = {{ fail2ban_jail.default.maxretry }}
+backend       = {{ fail2ban_jail.default.backend if fail2ban_jail.default.backend in _backend_attr else 'auto' }}
+usedns        = {{ fail2ban_jail.default.usedns }}
+logencoding   = {{ fail2ban_jail.default.logencoding }}
+enabled       = {{ fail2ban_jail.default.jails_enabled | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+mode          = normal
+filter        = %(__name__)s[mode=%(mode)s]
+
+# -------------------------------------------------------------------------------------------------
+# ACTIONS
+#
+
+destemail     = {{ fail2ban_jail.actions.destemail }}
+sender        = {{ fail2ban_jail.actions.sender }}
+mta           = {{ fail2ban_jail.actions.mta }}
+protocol      = {{ fail2ban_jail.actions.protocol }}
+chain         = {{ fail2ban_jail.actions.chain }}
+port          = 0:65535
+fail2ban_agent = Fail2Ban/%(fail2ban_version)s
+
+# Action shortcuts. To be used to define action parameter
+
+banaction          = {{ fail2ban_jail.actions.banaction }}
+banaction_allports = iptables-allports
+
+# The simplest action to take: ban only
+action_            = %(banaction)s[name=%(__name__)s, bantime="%(bantime)s", port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+
+# ban & send an e-mail with whois report to the destemail.
+action_mw          = %(banaction)s[name=%(__name__)s, bantime="%(bantime)s", port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+                     %(mta)s-whois[name=%(__name__)s, sender="%(sender)s", dest="%(destemail)s", protocol="%(protocol)s", chain="%(chain)s"]
+
+# ban & send an e-mail with whois report and relevant log lines
+# to the destemail.
+action_mwl         = %(banaction)s[name=%(__name__)s, bantime="%(bantime)s", port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+                     %(mta)s-whois-lines[name=%(__name__)s, sender="%(sender)s", dest="%(destemail)s", logpath=%(logpath)s, chain="%(chain)s"]
+
+# See the IMPORTANT note in action.d/xarf-login-attack for when to use this action
+#
+# ban & send a xarf e-mail to abuse contact of IP address and include relevant log lines
+# to the destemail.
+action_xarf        = %(banaction)s[name=%(__name__)s, bantime="%(bantime)s", port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+                     xarf-login-attack[service=%(__name__)s, sender="%(sender)s", logpath=%(logpath)s, port="%(port)s"]
+
+# ban IP on CloudFlare & send an e-mail with whois report and relevant log lines
+# to the destemail.
+action_cf_mwl      = cloudflare[cfuser="%(cfemail)s", cftoken="%(cfapikey)s"]
+                     %(mta)s-whois-lines[name=%(__name__)s, sender="%(sender)s", dest="%(destemail)s", logpath=%(logpath)s, chain="%(chain)s"]
+
+# Report block via blocklist.de fail2ban reporting service API
+action_blocklist_de = blocklist_de[email="%(sender)s", service=%(filter)s, apikey="%(blocklist_de_apikey)s", agent="%(fail2ban_agent)s"]
+
+# Report ban via badips.com, and use as blacklist
+action_badips      = badips.py[category="%(__name__)s", banaction="%(banaction)s", agent="%(fail2ban_agent)s"]
+
+# Report ban via badips.com (uses action.d/badips.conf for reporting only)
+action_badips_report = badips[category="%(__name__)s", agent="%(fail2ban_agent)s"]
+
+# Report ban via abuseipdb.com.
+#
+# See action.d/abuseipdb.conf for usage example and details.
+
+action_abuseipdb   = abuseipdb
+
+action             = %(action_)s
+
+# -------------------------------------------------------------------------------------------------
+# JAILS
+#
+
+# in /etc/fail2ban/jail.local.
