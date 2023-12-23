@@ -53,6 +53,7 @@ jobs:
           - default
         collection_role:
           - pacman
+          - fail2ban
 
     steps:
       - name: check out the codebase.
@@ -107,6 +108,7 @@ jobs:
           - default
         collection_role:
           - pacman
+          - fail2ban
 
     steps:
       - name: check out the codebase.

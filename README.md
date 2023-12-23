@@ -24,6 +24,7 @@ pip install dirsync
 | Role                                                                       | | Description |
 |:---------------------------------------------------------------------------| :---- | :---- |
 | [bodsch.core.pacman](./roles/pacman/README.md)                             |       |       |
+| [bodsch.core.fail2ban](./roles/fail2ban/README.md)                         |       |       |
 
 
 ### Modules
