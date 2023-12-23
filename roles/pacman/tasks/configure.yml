@@ -1,0 +1,36 @@
+---
+
+- name: create default pacman mirrors
+  ansible.builtin.template:
+    src: pacman.d/mirrorlist.j2
+    dest: /etc/pacman.d/mirrorlist
+    backup: true
+    mode: 0644
+  notify:
+    - update package cache
+
+- name: create custom pacman mirrors
+  ansible.builtin.template:
+    src: pacman.d/mirrorlist.j2
+    dest: "{{ item.file }}"
+    backup: true
+    mode: 0644
+  loop:
+    "{{ pacman_custom_mirrors }}"
+  loop_control:
+    label: "{{ item.file }}"
+  when:
+    - pacman_custom_mirrors | default([]) | count > 0
+  notify:
+    - update package cache
+
+- name: create pacman configuration
+  ansible.builtin.template:
+    src: pacman.conf.j2
+    dest: /etc/pacman.conf
+    backup: true
+    mode: 0644
+  notify:
+    - update package cache
+
+...

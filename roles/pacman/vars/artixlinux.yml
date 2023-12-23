@@ -1,0 +1,81 @@
+---
+
+pacman_defaults_repositories:
+  custom:
+    enabled: false
+    sig_level:
+      - Optional
+      - TrustAll
+    server: file:///home/custompkgs
+    usage:
+      - All
+
+  system:
+    enabled: true
+    include: /etc/pacman.d/mirrorlist
+
+  world:
+    enabled: true
+    include: /etc/pacman.d/mirrorlist
+
+  galaxy:
+    enabled: true
+    include: /etc/pacman.d/mirrorlist
+
+  # testing
+  gremlins:
+    enabled: false
+    include: /etc/pacman.d/mirrorlist
+
+  galaxy-gremlins:
+    enabled: false
+    include: /etc/pacman.d/mirrorlist
+
+  universe:
+    enabled: false
+    include: /etc/pacman.d/mirrorlist-universe
+
+  # staging
+  goblins:
+    enabled: false
+    include: /etc/pacman.d/mirrorlist
+
+  goblins-gremlins:
+    enabled: false
+    include: /etc/pacman.d/mirrorlist
+
+  # ARCH Linux
+  core:
+    enabled: false
+    include: /etc/pacman.d/mirrorlist-arch
+
+  extra:
+    enabled: false
+    include: /etc/pacman.d/mirrorlist-arch
+
+  community-testing:
+    enabled: false
+    include: /etc/pacman.d/mirrorlist-arch
+
+  community:
+    enabled: false
+    include: /etc/pacman.d/mirrorlist-arch
+
+pacman_defaults_mirrors:
+  "Default mirrors":
+    enabled: true
+    servers:
+      - https://mirrors.dotsrc.org/artix-linux/repos/$repo/os/$arch
+      - http://ftp.ntua.gr/pub/linux/artix-linux/$repo/os/$arch
+      - https://artix.wheaton.edu/repos/$repo/os/$arch
+      - https://mirror.clarkson.edu/artix-linux/repos/$repo/os/$arch
+      - https://ftp.cc.uoc.gr/mirrors/linux/artixlinux/$repo/os/$arch
+      - https://artix.unixpeople.org/repos/$repo/os/$arch
+      - https://artix.rw-net.de/repos/$repo/os/$arch
+      - https://mirrors.tuna.tsinghua.edu.cn/artixlinux/$repo/os/$arch
+      - http://www.nylxs.com/mirror/repos/$repo/os/$arch
+      - https://ftp.sh.cvut.cz/artix-linux/$repo/os/$arch
+      - https://mirrors.nettek.us/artix-linux/$repo/os/$arch
+      - http://mirror1.artixlinux.org/repos/$repo/os/$arch
+
+...

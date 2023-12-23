@@ -18,6 +18,14 @@ pip install dirsync
 
 ## Included content
 
+
+## Roles
+
+| Role                                                                       | | Description |
+|:---------------------------------------------------------------------------| :---- | :---- |
+| [bodsch.core.pacman](./roles/pacman/README.md)                             |       |       |
+
+
 ### Modules
 
 | Name                      | Description |

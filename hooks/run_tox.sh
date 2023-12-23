@@ -23,11 +23,6 @@ then
     echo "collection role ${COLLECTION_ROLE} not found"
   fi
 else
-  if [ ! -d roles ]
-  then
-    exit 0
-  fi
-
   for role in $(find roles -maxdepth 1 -mindepth 1 -type d -printf "%f\n")
   do
     echo "- ${role} - ${COLLECTION_SCENARIO}"

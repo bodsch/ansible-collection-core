@@ -1,0 +1,116 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+#
+# /etc/pacman.conf
+#
+# See the pacman.conf(5) manpage for option and repository directives
+
+[options]
+RootDir         = {{ pacman_config.root_dir }}
+DBPath          = {{ pacman_config.db_path }}
+CacheDir        = {{ pacman_config.cache_dir }}
+LogFile         = {{ pacman_config.log_file }}
+GPGDir          = {{ pacman_config.gpg_dir }}
+HookDir         = {{ pacman_config.hook_dir }}
+HoldPkg         = {{ pacman_config.hold_pkg | join(' ') }}
+{% if pacman_config.xfer_command is defined and
+      pacman_config.xfer_command | string | length > 0 %}
+XferCommand     = {{ pacman_config.xfer_command }}
+{% endif %}
+CleanMethod     = {{ pacman_config.clean_method }}
+Architecture    = {{ pacman_config.architecture }}
+
+# Pacman won't upgrade packages listed in IgnorePkg and members of IgnoreGroup
+{% if pacman_config.ignore_pkg is defined and
+      pacman_config.ignore_pkg | count > 0 %}
+IgnorePkg       = {{ pacman_config.ignore_pkg | join(' ') }}
+{% endif %}
+{% if pacman_config.ignore_group is defined and
+      pacman_config.ignore_group | count > 0 %}
+IgnoreGroup     = {{ pacman_config.ignore_group | join(' ') }}
+{% endif %}
+{% if pacman_config.no_upgrade is defined and
+      pacman_config.no_upgrade | count > 0 %}
+NoUpgrade       = {{ pacman_config.no_upgrade | join(' ') }}
+{% endif %}
+{% if pacman_config.no_extract is defined and
+      pacman_config.no_extract | count > 0 %}
+NoExtract       = {{ pacman_config.no_extract | join(' ') }}
+{% endif %}
+
+{% if pacman_config.use_syslog is defined %}
+UseSyslog
+{% endif %}
+{% if pacman_config.color is defined %}
+Color
+{% endif %}
+{% if pacman_config.no_progress_bar is defined %}
+NoProgressBar
+{% endif %}
+{% if pacman_config.check_space is defined %}
+CheckSpace
+{% endif %}
+{% if pacman_config.verbose_pkg_lists is defined %}
+VerbosePkgLists
+{% endif %}
+{% if pacman_config.parallel_downloads is defined %}
+ParallelDownloads = {{ pacman_config.parallel_downloads }}
+{% endif %}
+
+SigLevel              = {{ pacman_config.sig_level | join(' ') }}
+LocalFileSigLevel     = {{ pacman_config.local_file_sig_level | join(' ') }}
+{% if pacman_config.remote_file_sig_level is defined and
+      pacman_config.remote_file_sig_level | count > 0 %}
+RemoteFileSigLevel    = {{ pacman_config.remote_file_sig_level | join(' ') }}
+{% endif %}
+
+{% if pacman_repositories is defined %}
+  {% for repo, values in pacman_repositories.items() %}
+    {% if not values.enabled | default('true') %}
+# [{{ repo }}]
+      {% for k, v in values.items() %}
+        {% if k == "sig_level" %}
+# SigLevel      = {{ v | join(' ') }}
+        {% endif %}
+        {% if k == "server" %}
+# Server        = {{ v }}
+        {% endif %}
+        {% if k == "include" %}
+# Include       = {{ v }}
+        {% endif %}
+        {% if k == "usage" %}
+# Usage         = {{ v | join(' ') }}
+        {% endif %}
+      {% endfor %}
+
+    {% else %}
+[{{ repo }}]
+      {% for k, v in values.items() %}
+        {% if k == "sig_level" %}
+SigLevel      = {{ v | join(' ') }}
+        {% endif %}
+        {% if k == "server" %}
+Server        = {{ v }}
+        {% endif %}
+        {% if k == "include" %}
+Include       = {{ v }}
+        {% endif %}
+        {% if k == "usage" %}
+Usage         = {{ v | join(' ') }}
+        {% endif %}
+      {% endfor %}
+
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% if pacman_options is defined %}
+[options]
+  {% for option, values in pacman_options.items() %}
+    {% if option == "no_extract" %}
+      {% for v in values %}
+NoExtract  = {{ v }}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+{% endif %}

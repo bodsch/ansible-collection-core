@@ -1,0 +1,22 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+#
+## repository mirrorlist
+
+{% if item | default([]) | count > 0 %}
+  {% set _ = item.pop('file') %}
+  {% set pacman_mirrors = item %}
+{% endif %}
+
+{% if pacman_mirrors is defined %}
+  {% for location, values in pacman_mirrors.items() %}
+## {{ location }}
+    {% set _enabled = values.enabled | default('true') | bool %}
+    {% for m in values.servers | default([]) %}
+      {% if not _enabled | default('true') %}
+# {% endif %}
+Server = {{ m }}
+    {% endfor %}
+
+  {% endfor %}
+{% endif %}
