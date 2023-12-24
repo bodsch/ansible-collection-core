@@ -1,0 +1,73 @@
+---
+
+- name: check, the certificate domain is specified
+  delegate_to: localhost
+  ansible.builtin.assert:
+    that:
+      - snakeoil_domain is defined and snakeoil_domain | length != 0
+
+- name: check, if dhparam is less than or equal to 1024
+  delegate_to: localhost
+  ansible.builtin.assert:
+    that:
+      - snakeoil_dhparam is defined
+      - not snakeoil_dhparam | int == 1024 or not snakeoil_dhparam | int < 1024
+    quiet: true
+    fail_msg: "please update your dhparam size greater than 1024"
+
+- name: define current_date
+  delegate_to: localhost
+  run_once: true
+  ansible.builtin.set_fact:
+    current_date: "{{ ansible_date_time.iso8601[0:10] }}"
+
+- name: check for snakeoil certificate on ansible controller
+  delegate_to: localhost
+  become: false
+  run_once: true
+  block:
+    - name: check for created snakeoil directory {{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}
+      ansible.builtin.stat:
+        path: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}"
+      register: _snakeoil_local_tmp_directory_created
+
+    - name: check for created pem {{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}/{{ snakeoil_domain }}.pem
+      ansible.builtin.stat:
+        path: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}/{{ snakeoil_domain }}.pem"
+      register: _certificate_created
+      when:
+        - _snakeoil_local_tmp_directory_created is defined
+        - _snakeoil_local_tmp_directory_created.stat is defined
+        - _snakeoil_local_tmp_directory_created.stat.exists
+
+- name: remove old temporary path '{{ snakeoil_local_tmp_directory }}'
+  delegate_to: localhost
+  become: false
+  ansible.builtin.file:
+    path: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}"
+    state: absent
+  when:
+    - snakeoil_force
+
+- name: check for archive {{ snakeoil_domain }}_{{ current_date }}.tgz on destination
+  ansible.builtin.stat:
+    path: "{{ snakeoil_remote_tmp_directory }}/{{ snakeoil_domain }}_{{ current_date }}.tgz"
+  register: _certificate_archive_remote
+
+- name: define checksum for {{ snakeoil_domain }} on destination
+  ansible.builtin.stat:
+    path: "{{ snakeoil_remote_tmp_directory }}/{{ snakeoil_domain }}_{{ current_date }}.tgz"
+    get_checksum: false
+    get_mime: false
+    get_attributes: false
+  register: _certificate_archive_checksum_remote
+  when:
+    - _certificate_archive_remote is defined
+    - _certificate_archive_remote.stat is defined
+    - _certificate_archive_remote.stat.exists | default('true')
+
+- name: set facts
+  ansible.builtin.set_fact:
+    snakeoil_certificate_archive_checksum_remote: "{{ _certificate_archive_checksum_remote.stat.checksum | default('-') }}"
+
+...

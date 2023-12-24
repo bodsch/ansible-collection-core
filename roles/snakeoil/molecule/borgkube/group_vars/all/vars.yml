@@ -1,0 +1,25 @@
+---
+
+snakeoil_extract_to: '/etc/ssl'
+snakeoil_domain: registry.lan
+
+snakeoil_email: "cert@{{ snakeoil_domain }}"
+snakeoil_life_time: 720
+
+snakeoil_alt_names:
+  - dns:
+      - registry.lan
+      - mee.registry.lan
+  - ip:
+      - 10.0.0.10
+
+snakeoil_dn:
+  country: DE
+  state: Berlin
+  location: Berlin
+  organisation: borgkube Inc.
+
+snakeoil_extract_owner: root
+snakeoil_extract_group: root
+
+...
