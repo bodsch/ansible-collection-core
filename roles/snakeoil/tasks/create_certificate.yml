@@ -1,0 +1,100 @@
+---
+
+- name: verify expire date
+  run_once: true
+  delegate_to: localhost
+  become: false
+  when:
+    - _certificate_created.stat is defined
+    - _certificate_created.stat.exists
+  block:
+    - name: get expire date from certificate
+      delegate_to: localhost
+      become: false
+      bodsch.core.snakeoil_date:
+        snakeoil_directory: "{{ snakeoil_local_tmp_directory }}"
+        snakeoil_domain: "{{ snakeoil_domain }}"
+        pattern: "%Y-%m-%d"
+      environment:
+        LANG: ""
+      register: _certificate_expire_after
+
+    - name: get size of existing dh.pem
+      delegate_to: localhost
+      become: false
+      bodsch.core.snakeoil_openssl:
+        state: dhparam_size
+        directory: "{{ snakeoil_local_tmp_directory }}"
+        domain: "{{ snakeoil_domain }}"
+        dhparam: "{{ snakeoil_dhparam | int }}"
+      register: _certificate_dhparam_size
+
+    - name: set facts
+      ansible.builtin.set_fact:
+        snakeoil_expire_date: "{{ _certificate_expire_after.expire_date }}"
+        snakeoil_expire_diff_days: "{{ _certificate_expire_after.diff_days }}"
+        snakeoil_dhparam_size: "{{ _certificate_dhparam_size.size | int | default('0') }}"
+
+    - name: "certificat expires ..."
+      ansible.builtin.debug:
+        msg: "certificate expires: {{ snakeoil_expire_date }} (in {{ snakeoil_expire_diff_days }} days)"
+      when:
+        - snakeoil_expire_diff_days | int != 0
+
+- name: remove '{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}' when expires days lower as 10 days or dhparam size not {{ snakeoil_dhparam }}
+  delegate_to: localhost
+  become: false
+  run_once: true
+  ansible.builtin.file:
+    path: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}"
+    state: absent
+  when:
+    - _snakeoil_local_tmp_directory_created is defined
+    - _snakeoil_local_tmp_directory_created.stat is defined
+    - _snakeoil_local_tmp_directory_created.stat.exists
+    - snakeoil_expire_diff_days | int <= 10 or snakeoil_dhparam_size | int < snakeoil_dhparam | int
+
+- name: create certificate
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - (snakeoil_expire_diff_days | int <= 10 or
+       snakeoil_dhparam_size | int < snakeoil_dhparam | int) or
+      (_certificate_archive_local.stat is defined and not _certificate_archive_local.stat.exists)
+  block:
+    - name: create temporary path
+      ansible.builtin.file:
+        path: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}"
+        state: directory
+        mode: 0750
+
+    - name: create openssl config
+      ansible.builtin.template:
+        src: csr.j2
+        dest: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}/{{ snakeoil_domain }}.conf"
+        mode: 0660
+
+    - name: create {{ snakeoil_domain }}.csr
+      bodsch.core.snakeoil_openssl:
+        state: csr
+        directory: "{{ snakeoil_local_tmp_directory }}"
+        domain: "{{ snakeoil_domain }}"
+        openssl_config: "{{ snakeoil_domain }}.conf"
+
+    - name: create {{ snakeoil_domain }}.crt
+      bodsch.core.snakeoil_openssl:
+        state: crt
+        directory: "{{ snakeoil_local_tmp_directory }}"
+        domain: "{{ snakeoil_domain }}"
+        openssl_config: "{{ snakeoil_domain }}.conf"
+        cert_life_time: "{{ snakeoil_life_time | int }}"
+
+    - name: create dh.pem
+      bodsch.core.snakeoil_openssl:
+        state: dhparam
+        directory: "{{ snakeoil_local_tmp_directory }}"
+        domain: "{{ snakeoil_domain }}"
+        dhparam: "{{ snakeoil_dhparam | int }}"
+
+...
