@@ -1,0 +1,17 @@
+---
+
+syslog_logs:
+  ansible:
+    file_name: ansible.log
+    filter:
+      filter: program(ansible)
+
+  loghost:
+    destination:
+      udp:
+        ip: "10.19.0.10"
+        port: 514
+        spoof_source: true
+        log_fifo_size: 1000
+    flags:
+      - catchall

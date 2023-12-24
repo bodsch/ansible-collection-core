@@ -1,0 +1,40 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+# SOURCES
+
+{% for id in syslog_sources.keys() %}
+source {{ id }} {
+  {% for dic in syslog_sources.get(id, []) %}
+    {% if dic.comment is defined %}
+  # {{ dic.comment }}
+      {% set _ = dic.pop('comment') %}
+    {% endif %}
+    {% for k, v in dic.items() %}
+      {% if k == "file" %}
+  {{ k | replace('_', '-') }}({{ '"%s"' | format(v) if v else '' }});
+      {% elif k in ["udp", "tcp", "network", "syslog"] %}
+        {% set _net = v %}
+        {% set _net_type = k %}
+  {{ _net_type }}(
+          {% set network_definition = v | bodsch.core.syslog_network_definition("source") %}
+          {% for k, v in network_definition.items() %}
+            {% if v | bodsch.core.type != "dict" %}
+    {{ k }}{{ v }}
+            {% else %}
+    {{ k }}(
+              {% for kk, vv in v.items() %}
+      {{ kk }}{{ vv }}
+              {% endfor %}
+    )
+            {% endif %}
+          {% endfor %}
+  );
+      {% else %}
+  {{ k | replace('_', '-') }}({{ '%s' | format(v) if v else '' }});
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+};
+
+{% endfor %}

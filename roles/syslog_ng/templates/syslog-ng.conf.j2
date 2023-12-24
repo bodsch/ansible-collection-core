@@ -1,0 +1,36 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+@version: {{ syslog_config_version }}
+# {{ ansible_managed }}
+
+{% if syslog_scl is defined %}
+@include "{{ syslog_scl }}"
+{% endif %}
+
+options {
+{% for k, v in syslog_options.items() %}
+  {% if v | bodsch.core.type == "bool" %}
+  {{ k }}({{ v | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }});
+  {% else %}
+  {{ k }}({{ v }});
+  {% endif %}
+{% endfor %}
+};
+
+# The custom template for file destinations.
+{% if syslog_message_templates is defined and
+      syslog_message_templates | default({}) | count > 0 %}
+  {% for k, v in syslog_message_templates.items() %}
+template {{ k }} {
+  template("{{ v }}");
+};
+
+  {% endfor %}
+{% endif %}
+
+@include "conf.d/sources.conf"
+@include "conf.d/destinations.conf"
+@include "conf.d/filters.conf"
+@include "conf.d/logs.conf"
+{% for syslog_include in syslog_includes %}
+@include "{{ syslog_include }}"
+{% endfor %}

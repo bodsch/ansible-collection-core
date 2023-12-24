@@ -1,0 +1,29 @@
+---
+
+- name: deactivate journald
+  when:
+    - ansible_service_mgr == 'systemd'
+    - (syslog_journald.config is defined and
+       syslog_journald.config.items() | count != 0) or
+      (syslog_journald.wipe_persistent is defined and
+       syslog_journald.wipe_persistent | bool)
+  block:
+    - name: create journald configuration
+      ansible.builtin.template:
+        src: journald.conf.j2
+        dest: /etc/systemd/journald.conf
+        mode: 0644
+        owner: root
+        group: root
+      when:
+        - syslog_journald.config is defined
+        - syslog_journald.config.items() | count != 0
+      notify: restart systemd-journald
+
+    - name: wipe persistent journal directory
+      ansible.builtin.file:
+        path: /var/log/journal
+        state: absent
+      when:
+        - syslog_journald.wipe_persistent is defined
+        - syslog_journald.wipe_persistent | bool

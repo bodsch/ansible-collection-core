@@ -1,0 +1,46 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% for k, v in syslog_logs.items() %}
+  {% set _filter = {} %}
+  {% set _filter_name = k %}
+  {% if v.filter is defined and
+        v.filter | count != 0 and
+        v.filter.filter | default('') | string | length > 0 %}
+    {% set _filter = v.filter %}
+    {% if _filter.filter is defined %}
+      {% if _filter.filter is iterable and
+          (
+            _filter.filter is not string and
+            _filter.filter is not mapping
+          ) %}
+        {% set filter = _filter.filter | join(' and\n') | indent(2, first=False) %}
+      {% elif _filter.filter is string %}
+        {% set filter = _filter.filter %}
+      {% endif %}
+    {% else %}
+      {% set filter = 'program(' + k + ')' %}
+    {% endif %}
+  {% else %}
+    {% set filter = "" %}
+  {% endif %}
+  {% if loop.first %}
+# HOST SPECIFIC FILTERS
+  {% endif %}
+
+  {% if filter | string | length > 0 %}
+filter f_{{ _filter_name }}  {
+  {{ filter }};
+};
+  {% endif %}
+{% endfor %}
+
+# COMMON FILTERS
+{% if syslog_hardened %}
+filter f_grsec {
+  message("^(\\[.*\..*\] |)grsec:.*");
+};
+filter f_pax {
+  message("^(\\[.*\..*\] |)PAX:.*");
+};
+{% endif %}

@@ -1,0 +1,47 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% for k, v in syslog_logs.items() %}
+  {% set _filter_name = k %}
+  {% if loop.first %}
+# HOST SPECIFIC LOGS
+  {% endif %}
+
+log {
+  source({{ v.source | default('src', true) }});
+  {% if v.filter is defined and
+        v.filter | count != 0 and
+        v.filter.filter | default('') | string | length > 0 %}
+  filter(f_{{ _filter_name }});
+  {% endif %}
+  destination(d_{{ k }});
+  {% if v.final is defined or v.flags is defined %}
+    {% if v.flags is defined %}
+      {% if v.flags | bodsch.core.type == "str" %}
+  flags({{ v.flags }});
+      {% elif v.flags | bodsch.core.type == "list" %}
+  flags({{ v.flags | join(', ') }});
+       {% endif %}
+    {% else %}
+  flags(final);
+    {% endif %}
+  {% endif %}};
+{% endfor %}
+
+# COMMON LOGS
+{% if syslog_hardened %}
+log {
+  source(kernsrc);
+  filter(f_pax);
+  destination(d_pax);
+};
+log {
+  source(kernsrc);
+  filter(f_grsec);
+  destination(d_grsec);
+};
+{% endif %}
+log {
+  source(src);
+  destination(d_console_all);
+};

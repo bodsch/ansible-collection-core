@@ -1,0 +1,9 @@
+---
+
+syslog_dependencies:
+  - iproute2
+
+syslog_packages:
+  - syslog-ng-core
+
+...

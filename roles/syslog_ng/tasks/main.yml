@@ -1,0 +1,24 @@
+---
+
+- name: prepare
+  ansible.builtin.include_tasks: prepare.yml
+
+- name: install
+  ansible.builtin.include_tasks: install.yml
+
+- name: configure
+  ansible.builtin.include_tasks: configure.yml
+
+- name: configure journald
+  ansible.builtin.include_tasks: configure_journald.yml
+  when:
+    - ansible_service_mgr is defined
+    - ansible_service_mgr | lower == "systemd"
+
+- name: service
+  ansible.builtin.include_tasks: service.yml
+
+- name: facts
+  ansible.builtin.include_tasks: facts.yml
+
+...

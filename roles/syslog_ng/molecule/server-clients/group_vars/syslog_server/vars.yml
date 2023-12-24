@@ -1,0 +1,64 @@
+---
+
+syslog_logs:
+  ansible:
+    file_name: ansible.log
+    filter:
+      filter: program(ansible)
+  remote:
+    source: net
+    file_name: "remote/${HOST}/message"
+    filter:
+      filter:
+        - not host("localhost")
+  remote_udp:
+    source: s_remote_udp
+    template: nginx
+    file_name: "remote/nginx-udp/${HOST}/${YEAR}.${MONTH}.${DAY}/messages.log"
+  remote_tcp:
+    source: s_remote_tcp
+    template: nginx
+    file_name: "remote/nginx-tcp/${HOST}/${YEAR}.${MONTH}.${DAY}/messages.log"
+  # remote_tls:
+  #   source: source_6514_tls
+  #   file_name: "remote/$HOST/$YEAR-$MONTH-$DAY/messages.log"
+  #   flags:
+  #     - fallback
+
+syslog_sources:
+  net:
+    - comment: default network source on port 514
+      udp:
+        ip: 0.0.0.0
+        port: 514
+
+  s_remote_tcp:
+    - comment: remote sources on port 5140 TCP
+      tcp:
+        ip: 10.19.0.10
+        port: 5140
+
+  s_remote_udp:
+    - comment: remote sources on port 5140 UDP
+      udp:
+        ip: 10.19.0.10
+        port: 5140
+
+  source_6514_tls:
+    - comment: "see https://github.com/bodsch/ansible-syslog-ng/pull/13#issuecomment-1584094073"
+      network:
+        # ip: 10.19.0.10
+        port: 6514
+        transport: tls
+        max_connections: 300
+        keep_alive: true
+        tcp_keep_alive: true
+        tls:
+          key_file: /etc/ssl/molecule.local/molecule.local.key
+          cert_file: /etc/ssl/molecule.local/molecule.local.pem
+          # ca_dir: /etc/ssl/molecule.local
+          peer_verify: required-trusted
+          ssl-options:
+            - no-sslv2
+            - no-sslv3
+            - no-tlsv1
