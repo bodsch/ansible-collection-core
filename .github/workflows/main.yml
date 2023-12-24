@@ -54,6 +54,7 @@ jobs:
         collection_role:
           - pacman
           - fail2ban
+          - snakeoil
 
     steps:
       - name: check out the codebase.
@@ -109,6 +110,7 @@ jobs:
         collection_role:
           - pacman
           - fail2ban
+          - snakeoil
 
     steps:
       - name: check out the codebase.
