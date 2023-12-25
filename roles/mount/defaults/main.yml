@@ -1,0 +1,9 @@
+---
+
+mount_fstab: /etc/fstab
+
+mount_devices: []
+
+mount_smb_share: []
+
+...
