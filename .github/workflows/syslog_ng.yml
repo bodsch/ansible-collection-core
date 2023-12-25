@@ -1,5 +1,6 @@
 ---
-name: CI
+
+name: syslog_ng
 
 on:
   workflow_dispatch:
@@ -19,30 +20,41 @@ on:
       - 'feature/**'
       - 'fix/**'
       - '!doc/**'
+    paths:
+      - "!Makefile"
+      - "!README.md"
+      - 'roles/syslog_ng/**'
+      - '.github/workflows/syslog_ng.yml'
+      - '.config/ansible-lint.yml'
+      - '.yamllint'
   pull_request:
     branches:
       - 'main'
       - 'feature/**'
       - 'fix/**'
       - '!doc/**'
+    paths:
+      - "!Makefile"
+      - "!README.md"
+      - 'roles/syslog_ng/**'
+      - '.github/workflows/syslog_ng.yml'
+      - '.config/ansible-lint.yml'
+      - '.yamllint'
 
 env:
   COLLECTION_NAMESPACE: bodsch
   COLLECTION_NAME: core
 
-defaults:
-  run:
-    working-directory: 'ansible-collection-core'
-
 jobs:
   arch:
-    name: "${{ matrix.image }}: ${{ matrix.collection_role }} (ansible ${{ matrix.ansible-version }}, python ${{ matrix.python_version }})"
+    name: "${{ matrix.image }} / ${{ matrix.scenario }} / ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
         image:
           - archlinux:latest
+          - artixlinux:latest
         ansible-version:
           - '6.7'
         python_version:
@@ -51,16 +63,13 @@ jobs:
         scenario:
           - default
         collection_role:
-          - pacman
-          - fail2ban
-          - snakeoil
           - syslog_ng
 
     steps:
       - name: check out the codebase.
         uses: actions/checkout@v3
         with:
-          path: 'ansible-collection-core'
+          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: 🐍 set up python
         uses: actions/setup-python@v4
@@ -77,7 +86,7 @@ jobs:
           make \
             install
 
-      - name: test with tox
+      - name: test ${{ matrix.collection_role }} - ${{ matrix.scenario }}
         run: |
           make \
             test \
@@ -90,15 +99,16 @@ jobs:
           ANSIBLE_FORCE_COLOR: '1'
           DISTRIBUTION: ${{ matrix.image }}
 
-  deb:
-    name: "${{ matrix.image }}: ${{ matrix.collection_role }} (ansible ${{ matrix.ansible-version }}, python ${{ matrix.python_version }})"
+  debian:
+    name: "${{ matrix.image }} / ${{ matrix.scenario }} / ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
         image:
-          - debian:11
           - debian:12
+          - ubuntu:20.04
+          - ubuntu:22.04
         ansible-version:
           - '6.7'
         python_version:
@@ -107,15 +117,13 @@ jobs:
         scenario:
           - default
         collection_role:
-          - pacman
-          - fail2ban
-          - snakeoil
+          - syslog_ng
 
     steps:
       - name: check out the codebase.
         uses: actions/checkout@v3
         with:
-          path: 'ansible-collection-core'
+          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: 🐍 set up python
         uses: actions/setup-python@v4
@@ -132,7 +140,7 @@ jobs:
           make \
             install
 
-      - name: test with tox
+      - name: test ${{ matrix.collection_role }} - ${{ matrix.scenario }}
         run: |
           make \
             test \
