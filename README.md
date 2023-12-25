@@ -23,11 +23,13 @@ pip install dirsync
 
 | Role                                                                       | | Description |
 |:---------------------------------------------------------------------------| :---- | :---- |
-| [bodsch.core.pacman](./roles/pacman/README.md)                             |       |       |
-| [bodsch.core.fail2ban](./roles/fail2ban/README.md)                         |       |       |
-| [bodsch.core.snakeoil](./roles/snakeoil/README.md)                         |       |       |
-| [bodsch.core.syslog_ng](./roles/syslog_ng/README.md)                         |       |       |
-| [bodsch.core.logrotate](./roles/logrotate/README.md)                         |       |       |
+| [bodsch.core.pacman](./roles/pacman/README.md)                             |       | Ansible role to configure pacman. |
+| [bodsch.core.fail2ban](./roles/fail2ban/README.md)                         |       | Installs and configure fail2ban |
+| [bodsch.core.snakeoil](./roles/snakeoil/README.md)                         |       | build a simple snakeoil certificate for a test environment. |
+| [bodsch.core.syslog_ng](./roles/syslog_ng/README.md)                       |       | Installs and configures a classic syslog-ng service for processing log files away from journald. |
+| [bodsch.core.logrotate](./roles/logrotate/README.md)                       |       | Installs logrotate and provides an easy way to setup additional logrotate scripts |
+| [bodsch.core.mount](./roles/mount/README.md)                               |       | Manage generic mountpoints |
+| [bodsch.core.openvpn](./roles/openvpn/README.md)                           |       | Ansible role to install and configure openvpn server. |
 
 ### Modules
 
@@ -46,13 +48,13 @@ pip install dirsync
 
 You can install the memsource collection with the Ansible Galaxy CLI:
 
-```sh
+```bash
 #> ansible-galaxy collection install bodsch.core
 ```
 
 To install directly from GitHub:
 
-```sh
+```bash
 #> ansible-galaxy collection install git@github.com:bodsch/ansible-collection-core.git
 ```
 
@@ -68,8 +70,8 @@ collections:
 The python module dependencies are not installed by `ansible-galaxy`.  They can
 be manually installed using pip:
 
-```sh
-#> pip install -r requirements.txt
+```bash
+pip install -r requirements.txt
 ```
 
 ## Using this collection

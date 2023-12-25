@@ -1,8 +1,7 @@
 
 # Ansible Role:  `fail2ban`
 
-An Ansible Role that installs and configure fail2ban 2.x on Debian/Ubuntu, RHEL/CentOS, 
-ArchLinux and ArtixLinux (mabybe also on other `openrc` based Systemes).
+An Ansible Role that installs and configure fail2ban 2.x on Debian/Ubuntu, ArchLinux and ArtixLinux (mabybe also on other `openrc` based Systemes).
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-fail2ban/main.yml?branch=main)][ci]
 [![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-fail2ban)][issues]
