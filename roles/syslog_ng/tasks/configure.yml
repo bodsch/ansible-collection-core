@@ -1,0 +1,65 @@
+---
+
+- name: detect config version
+  syslog_cmd:
+    parameters:
+      - --version
+  register: _syslog_config_version
+
+- name: set syslog config version
+  ansible.builtin.set_fact:
+    syslog_config_version: '{{ _syslog_config_version.version }}'
+  when:
+    - _syslog_config_version is defined
+    - _syslog_config_version.version is defined
+    - _syslog_config_version.version | int != 0
+
+- name: assert syslog_config_version
+  ansible.builtin.assert:
+    that: syslog_config_version | length != 0
+    msg: "I can't found an valid syslog-ng version :("
+
+- name: create /etc/syslog-ng/conf.d
+  ansible.builtin.file:
+    state: directory
+    name: /etc/syslog-ng/conf.d
+    mode: 0750
+
+- name: create directory for syslog clients
+  ansible.builtin.file:
+    state: directory
+    name: "{{ item }}"
+    mode: 0775
+  loop: "{{ syslog_server_log_destinations }}"
+  when:
+    - syslog_server_log_destinations is defined
+    - syslog_server_log_destinations | default([]) | count > 0
+
+- name: write splittet configuration files
+  ansible.builtin.template:
+    src: "conf.d/{{ item }}.j2"
+    dest: "/etc/syslog-ng/conf.d/{{ item }}"
+    mode: 0644
+  notify:
+    - restart syslog-ng
+  loop:
+    - sources.conf
+    - destinations.conf
+    - filters.conf
+    - logs.conf
+  tags:
+    - syslog-ng
+    - configuration
+
+- name: configure syslog-ng.conf
+  ansible.builtin.template:
+    src: syslog-ng.conf.j2
+    dest: /etc/syslog-ng/syslog-ng.conf
+    mode: 0644
+    backup: true
+  notify:
+    - validate syslog-ng config
+    - restart syslog-ng
+  tags:
+    - syslog-ng
+    - configuration

@@ -1,0 +1,94 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% for k, v in syslog_logs.items() %}
+  {% if loop.first %}
+# HOST SPECIFIC DESTINATIONS
+  {% endif %}
+
+destination d_{{ k }}  {
+  {% if v.destination is defined and v.destination | bodsch.core.type == "dict" and v.destination | count > 0 %}
+    {% set _net_type = None %}
+    {% if v.destination.file is defined and v.destination.file | string | length > 0 %}
+  file(
+    "/var/log/{{ v.destination.file | default(k + '.log', true) }}"
+      {% if v.use_template | default('true') and
+            v.template | default('tmpl') | string | length > 0 %}
+    template({{ v.template | default('tmpl') }})
+      {% endif %}
+  );
+    {% endif %}
+    {% if v.destination.udp is defined and v.destination.udp | bodsch.core.type == "dict" and v.destination.udp | count > 0 %}
+      {% set _net = v.destination.udp %}
+      {% set _net_type = "udp" %}
+    {% endif %}
+    {% if v.destination.tcp is defined and v.destination.tcp | bodsch.core.type == "dict" and v.destination.tcp | count > 0 %}
+      {% set _net = v.destination.tcp %}
+      {% set _net_type = "tcp" %}
+    {% endif %}
+    {% if v.destination.network is defined and v.destination.network | bodsch.core.type == "dict" and v.destination.network | count > 0 %}
+      {% set _net = v.destination.network %}
+      {% set _net_type = "network" %}
+    {% endif %}
+    {% if v.destination.syslog is defined and v.destination.syslog | bodsch.core.type == "dict" and v.destination.syslog | count > 0 %}
+      {% set _net = v.destination.syslog %}
+      {% set _net_type = "syslog" %}
+    {% endif %}
+  {% if _net_type in ["udp", "tcp", "network", "syslog"] %}
+  {{ _net_type }}(
+    {% set network_definition = _net | bodsch.core.syslog_network_definition("destination") %}
+    {% for k, v in network_definition.items() %}
+      {% if k == "ip" %}
+    {{ v }}
+      {% else %}
+        {% if v | bodsch.core.type != "dict" %}
+    {{ k }}{{ v }}
+        {% else %}
+    {{ k }}(
+          {% for kk, vv in v.items() %}
+      {{ kk }}{{ vv }}
+          {% endfor %}
+    )
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  );
+    {% endif %}
+  {% endif %}
+  {% if v.file_name is defined and v.file_name | string | length > 0 %}
+  file(
+    "/var/log/{{ v.file_name | default(k + '.log', true) }}"
+    {% if v.use_template | default('true') and
+          v.template | default('tmpl') | string | length > 0 %}
+    template({{ v.template | default('tmpl') }})
+    {% endif %}
+  );
+  {% endif %}
+};
+
+{% endfor %}
+
+# COMMON DESTINATIONS
+{% if syslog_hardened %}
+destination d_grsec {
+  file(
+    "/var/log/grsec.log"
+    template(tmpl)
+  );
+};
+destination d_pax {
+  file(
+    "/var/log/pax.log"
+    template(tmpl)
+  );
+};
+{% endif %}
+destination d_console {
+  usertty("root");
+};
+destination d_console_all {
+  file(
+    "/dev/tty12"
+    template(tmpl)
+  );
+};

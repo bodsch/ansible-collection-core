@@ -1,0 +1,33 @@
+---
+
+syslog_message_templates:
+  nginx: '${MSG}\n'
+
+syslog_options:
+  # If the log message is forwarded to the logserver via a relay, and the
+  # chain_hostnames() option is 'yes', the relay adds its own hostname to
+  # the hostname of the client, separated with a / character.
+  chain_hostnames: false
+  # Check client hostnames for valid DNS characters
+  check_hostname: true
+  # Specify whether to trust hostname in the log message.
+  # If "yes", then it is left unchanged, if "no" the server replaces
+  # it with client's DNS lookup value.
+  keep_hostname: false
+  # Use DNS fully qualified domain names (FQDN)
+  # for the names of log file folders
+  use_fqdn: false
+  use_dns: false
+  # Set permissions on newly created 'messages' files
+  owner: root
+  group: root
+  perm: 0755
+  # Set permissions on newly created directories
+  dir_owner: root
+  dir_group: root
+  dir_perm: 0755
+  create_dirs: true
+  # Maximum length of a message in bytes.
+  log_msg_size: 18192
+  # make ISO-8601 timestamps
+  ts_format: iso

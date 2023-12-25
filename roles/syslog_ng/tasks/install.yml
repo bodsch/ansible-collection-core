@@ -1,0 +1,6 @@
+---
+
+- name: install syslog-ng
+  ansible.builtin.package:
+    name: "{{ syslog_packages }}"
+    state: present

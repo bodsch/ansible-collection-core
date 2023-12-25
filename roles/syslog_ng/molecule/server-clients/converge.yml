@@ -1,0 +1,15 @@
+---
+
+- name: converge syslog-ng server
+  hosts: syslog_server
+  any_errors_fatal: false
+
+  roles:
+    - role: bodsch.core.syslog_ng
+
+- name: converge syslog-ng clients
+  hosts: syslog_client
+  any_errors_fatal: false
+
+  roles:
+    - role: bodsch.core.syslog_ng
