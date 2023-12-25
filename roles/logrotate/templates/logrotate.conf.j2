@@ -1,0 +1,67 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+{% set rotate_log_attr = ['daily', 'weekly', 'monthly', 'yearly'] %}
+
+# see "man logrotate" for details
+# rotate log files weekly
+{% if logrotate_global.rotate_log is defined and
+      logrotate_global.rotate_log in rotate_log_attr %}
+{{ logrotate_global.rotate_log }}
+{% else %}
+weekly
+{% endif %}
+
+{% if logrotate_global.su_user is defined and
+      logrotate_global.su_user | string | length != 0 and
+      logrotate_global.su_group is defined and
+      logrotate_global.su_group | string | length != 0 %}
+# use the syslog group by default, since this is the owning group
+# of /var/log/syslog.
+su {{ logrotate_global.su_user }} {{ logrotate_global.su_group }}
+{% endif %}
+
+# keep 4 weeks worth of backlogs
+rotate {{ logrotate_global.rotate | default('2') }}
+
+{% if logrotate_global.rotate_size is defined and
+      logrotate_global.rotate_size | string | length != 0 %}
+# restrict maximum size of log files
+size {{ logrotate_global.rotate_size | default('20M') }}
+{% endif %}
+
+{% if logrotate_global.archive_directory is defined and
+      logrotate_global.archive_directory | string | length > 0 %}
+# Logs are moved into directory for rotation
+olddir {{ logrotate_global.archive_directory }}
+{% endif %}
+
+{% if logrotate_global.create is defined and
+      logrotate_global.create | string | length > 0 and
+      logrotate_global.create | bool == true -%}
+# create new (empty) log files after rotating old ones
+create
+{% endif %}
+
+{% if logrotate_global.dateext is defined and
+      logrotate_global.dateext | string | length > 0 and
+      logrotate_global.dateext | bool == true -%}
+# use date as a suffix of the rotated file
+dateext
+{% endif %}
+
+{% if logrotate_global.compress is defined and
+      logrotate_global.compress | string | length > 0 and
+      logrotate_global.compress | bool == true -%}
+# uncomment this if you want your log files compressed
+compress
+{% endif %}
+
+{% if logrotate_global.tabooext is defined and
+      logrotate_global.tabooext | bodsch.core.type == 'list' and
+      logrotate_global.tabooext | count >= 1 %}
+tabooext + {{ logrotate_global.tabooext | join(' ') }}
+{# .pacorig .pacnew .pacsave #}
+{% endif %}
+
+# packages drop log rotation information into this directory
+include /etc/logrotate.d

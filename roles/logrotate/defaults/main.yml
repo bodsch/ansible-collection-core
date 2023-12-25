@@ -1,0 +1,85 @@
+---
+
+logrotate_global:
+  # frequency
+  #  - hourly
+  #    Log files are rotated every hour.
+  #    Note that usually logrotate is configured to be run by cron daily.
+  #    You have to change this configuration and run logrotate hourly to be able
+  #    to really rotate logs hourly.
+  #  - daily
+  #    Log files are rotated every day.
+  #  - weekly
+  #    Log  files are rotated once each weekday,
+  #    or if the date is advanced by at least 7 days since the last rotation (while ignoring the exact time).
+  #    The weekday interpretation is following:
+  #      0 means Sunday,
+  #      1 means Monday,
+  #      ...,
+  #      6 means Saturday;
+  #    the special value 7 means each 7 days, irrespectively of weekday.
+  #    Defaults to 0 if the weekday argument is omitted.
+  #  - monthly
+  #    Log files are rotated the first time logrotate is run in a month (this is normally on the first day of the month).
+  #  - yearly
+  #    Log files are rotated if the current year is not the same as the last rotation.
+  #
+  rotate_log: weekly
+  # restrict maximum size of log files
+  # Log files are rotated only if they grow bigger than size bytes.
+  # If size is followed by k, the size is assumed to be in kilobytes.
+  # If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes.
+  # So size 100, size 100k, size 100M and size 100G are all valid.
+  # This option is mutually exclusive with the time interval options,
+  # and it causes log files to be rotated without regard for the last rotation time,
+  # if specified after the time criteria (the last specified option takes the precedence).
+  rotate_size: '' # 20M
+  # Rotate log files set under this user and group instead of using default user/group (usually root)
+  # su_user specifies the user used for rotation and
+  # su_group specifies the group used for rotation
+  su_user: ''
+  su_group: ''
+  # Log files are rotated count times before being removed or mailed to the address specified in a mail directive.
+  # If count is 0, old versions are removed rather than rotated.
+  # If count is -1, old logs are not removed at all, except they are affected by maxage
+  # (use with caution, may waste performance and disk space).
+  rotate: 2
+  # create new (empty) log files after rotating old ones
+  create: true
+  # use date as a suffix of the rotated file
+  dateext: true
+  # if you want your log files compressed
+  compress: true
+  # taboo extension list
+  # At startup, the taboo extension list ,
+  # v, .cfsaved, .disabled, .dpkg-bak, .dpkg-del, .dpkg-dist,
+  # .dpkg-new, .dpkg-old, .rhn-cfg-tmp-*, .rpmnew, .rpmorig,
+  # .rpmsave, .swp, .ucf-dist, .ucf-new, .ucf-old, ~
+  # for arch based distribution, you can add her:
+  # .pacorig, .pacnew, .pacsave
+  tabooext: []
+  # Logs are moved into directory for rotation
+  # e.g. /var/log/archive
+  archive_directory: ''
+
+logrotate_conf_dir: "/etc/logrotate.d"
+
+logrotate_scripts: {}
+#   audit:
+#     path: /var/log/audit/audit.log
+#     description: |
+#       rotate all audit logs
+#     options:
+#       - weekly
+#       - rotate 4
+#       - missingok
+#       - notifempty
+#       - delaycompress
+#     scripts:
+#       prerotate: systemctl stop auditd.service > /dev/null
+#       postrotate: systemctl start auditd.service > /dev/null
+#       foo: failed
+
+logroate_disable_systemd: true
+
+...

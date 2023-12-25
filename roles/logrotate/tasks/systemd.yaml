@@ -1,0 +1,22 @@
+---
+
+- name: systemd service handling
+  when:
+    - ansible_service_mgr | lower == "systemd"
+    - logroate_disable_systemd
+  block:
+    - name: set systemd states
+      ansible.builtin.set_fact:
+        systemd_state: "{{ 'stopped' if logroate_disable_systemd else 'omit' }}"
+        systemd_enabled: "{{ 'false' if logroate_disable_systemd else 'true' }}"
+
+    - name: handle systemd timer unit is stopped and disabled
+      ansible.builtin.systemd:
+        name: logrotate.timer
+        state: "{{ systemd_state }}"
+        enabled: "{{ systemd_enabled }}"
+      failed_when: false
+      when:
+        - not ansible_distribution_major_version | int == 7
+
+...

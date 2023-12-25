@@ -1,0 +1,59 @@
+---
+
+logrotate_global:
+  dateext: false
+  rotate_size: 20M
+
+logrotate_scripts:
+  audit:
+    path: /var/log/audit/audit.log
+    description: |
+      rotate all audit logs
+    options:
+      - weekly
+      - rotate 4
+      - missingok
+      - notifempty
+      - delaycompress
+    scripts:
+      prerotate: systemctl stop auditd.service > /dev/null
+      postrotate: systemctl start auditd.service > /dev/null
+      foo: failed
+
+  system:
+    paths:
+      - /var/log/wtmp
+      - /var/log/btmp
+    options:
+      - monthly
+      - create 0664 root utmp
+      - minsize 1M
+      - rotate 1
+
+  icinga2:
+    paths:
+      - /var/log/icinga2/icinga2.log
+      - /var/log/icinga2/debug.log
+    options:
+      - weekly
+      - rotate 2
+      - missingok
+      - notifempty
+      - compress
+      - delaycompress
+      - create 644 icinga icinga
+    scripts:
+      postrotate: /bin/kill -USR1 $(cat /run/icinga2/icinga2.pid 2> /dev/null) 2> /dev/null || true
+
+  nofunc:
+    options:
+      - daily
+
+  noexists:
+    description: |
+      this logrotate schould be absent
+    state: absent
+    options:
+      - daily
+
+...

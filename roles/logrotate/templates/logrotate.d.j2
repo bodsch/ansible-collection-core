@@ -1,0 +1,35 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+{% set scripts_attr = ['postrotate', 'prerotate'] %}
+
+{% if item.value.description is defined %}
+# {{ item.value.description }}
+{% endif %}
+
+{% if item.value.path is defined or item.value.paths is defined %}
+  {% if item.value.path is defined %}
+{{ item.value.path }}
+  {% elif item.value.paths %}
+    {% for path in item.value.paths -%}
+{{ path }}
+    {% endfor %}
+  {% endif %}
+{
+  {% if item.value.options is defined %}
+{# all logrotate options #}
+    {% for option in item.value.options %}
+  {{ option }}
+    {% endfor %}
+  {% endif %}
+  {% if item.value.scripts is defined %}
+    {# pre- or postrotate scripts #}
+    {% for name, script in item.value.scripts.items() %}
+      {% if name in scripts_attr %}
+  {{ name }}
+    {{ script }}
+  endscript
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+}
+{% endif %}
