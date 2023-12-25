@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -e
+#
+# create-vpn-user.sh <user> [ <dest_dir> ]
+#
+# creates certfikate/key for OpenVPN (request + sign) and openvpn client config
+# for the specified <user>
+#
+# openvpn client config will be created in /root/vpn-configs
+# or in <dest_dir> (if specified) as second argument)
+#
+# <dest_dir> will be created, if it does not exist.
+#
+# certificate name will be <user>
+#
+# no questions will be asked (no confirmation etc.)
+#
+
+if [[ -z "$1" ]]; then
+    echo "No user name given. Please specify one as firstname_lastname!" >&2
+    exit 1
+fi
+user="$1"
+
+dest_dir="/root/vpn-configs"
+if [[ -n "$2" ]]
+then
+    dest_dir="$2"
+fi
+if [[ ! -d "$dest_dir" ]]
+then
+    install -d -m 0700 "$dest_dir"
+fi
+
+name="${user}"
+
+pushd {{ openvpn_easyrsa.directory }}
+
+#{{ openvpn_easyrsa.directory }}/easyrsa --batch --req-cn="${name}" gen-req "${name}" nopass
+#{{ openvpn_easyrsa.directory }}/easyrsa --batch sign-req client "${name}"
+easyrsa --batch build-client-full "${name}" nopass
+
+# openvpn client configuration from template
+umask 077
+KEY="$( cat {{ openvpn_easyrsa.directory }}/pki/private/"${name}.key" )"
+CERT="$( cat {{ openvpn_easyrsa.directory }}/pki/issued/"${name}.crt" | perl -n -e 'print  if /^-----BEGIN CERTIFICATE-----/ .. eof' )"
+export CERT KEY
+envsubst '$CERT $KEY' < /etc/openvpn/client.ovpn.template > "${dest_dir}/${name}.ovpn"
+
+popd

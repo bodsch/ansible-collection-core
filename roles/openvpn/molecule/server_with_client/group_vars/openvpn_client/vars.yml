@@ -1,0 +1,37 @@
+---
+
+openvpn_type: client
+
+openvpn_systemd:
+  requires_services:
+    - sshd.service
+
+openvpn_client:
+  user: "{{ openvpn_owner }}"
+  group: "{{ openvpn_group }}"
+
+openvpn_logging:
+  directory: /var/log/openvpn
+  file: molecule.log
+  status: status.log
+  verbosity: 4
+  mute: 10
+  append: true
+
+openvpn_mobile_clients:
+  - name: molecule
+    state: present
+    roadrunner: false
+    static_ip: 10.8.3.100
+    remote: server
+    port: 1194
+    proto: udp
+    device: tun
+    ping: 20
+    ping_restart: 45
+    cert: molecule.crt
+    key: molecule.key
+    tls_auth:
+      enabled: true
+
+...

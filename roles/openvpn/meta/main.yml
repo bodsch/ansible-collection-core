@@ -1,0 +1,34 @@
+---
+
+galaxy_info:
+  role_name: openvpn
+
+  author: Bodo Schulz
+  description: OpenVPN server role
+
+  license: Apache
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: ArchLinux
+    - name: Debian
+      versions:
+        # 11
+        - bullseye
+        # 12
+        - bookworm
+    - name: Ubuntu
+      versions:
+        # 20.04 LTS (Focal Fossa)
+        - focal
+        # 22.04 LTS (Jammy Jellyfish)
+        - jammy
+
+  galaxy_tags:
+    - development
+    - system
+    - openvpn
+
+dependencies: []
+
+...

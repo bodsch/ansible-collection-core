@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -e
+#
+# ./copy-vpn-config-to-sudo-user-home.sh ( <config_name> | <path_to_file> ) [ <dest_dir> ]
+#
+# copies openvpn config file to sudo user home directory
+# and change owner and group
+# so that the sudo user can easily scp the file.
+# destination file is set to 0600.
+#
+
+if [[ -z "$SUDO_USER" ]]
+then
+  echo "environment variable SUDO_USER not set - only sudo'ed shells supported" >&2
+  exit 2
+fi
+
+if [[ -z "$1" ]]
+then
+  echo "No config name given - please specify one as firstname_lastname or complete file name!" >&2
+  exit 1
+fi
+name="$1"
+
+vpn_config_dir="/root/vpn-configs"
+
+alt_src="${vpn_config_dir}/${name}@${label}.ovpn"
+if [[ -n "${name##*/*}" && -f "$alt_src" ]]
+then
+  echo "openvpn config file found in $vpn_config_dir: $alt_src"
+  src="$alt_src"
+else
+  src="$name"
+  if [[ ! -f "$src" ]]; then
+    echo "file $src not found" >&2
+    exit 3
+  fi
+fi
+
+if [[ -n "$2" ]]
+then
+  dest_dir="$2"
+else
+  dest_dir="$( getent passwd "$SUDO_USER" | cut -d: -f6 )"
+fi
+
+group="$( id -gn "$SUDO_USER" )"
+
+echo "copy to $dest_dir"
+install -m 0600 -o "$SUDO_USER" -g "$group" "$src" "$dest_dir/."
+

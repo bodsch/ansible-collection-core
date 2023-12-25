@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -e
+
+if [[ -z "$1" ]]
+then
+  echo "No user name given. Please specify one as firstname_lastname!" >&2
+  echo >&2
+  echo "To force immediate usage of new CRL and reset exiting connection, restart openvpn-server." >&2
+  echo "Otherwsie CRL is re-read any time a new client connects or an existing client renegotiates the SSL/TLS connection." >&2
+  echo >&2
+  exit 1
+fi
+user="$1"
+
+name="${user}"
+
+pushd {{ openvpn_easyrsa.directory }}
+
+easyrsa --batch revoke "${name}"
+
+# recreate CRL
+easyrsa gen-crl
+
+chmod a+rX {{ openvpn_easyrsa.directory }}/pki {{ openvpn_easyrsa.directory }}/pki/crl.pem
+
+echo "don't forget to restart your openvpn server!"
+
+# restart openvpn server to immediately re-read new CRL
+#systemctl restart openvpn-server@server
+
+popd
+
