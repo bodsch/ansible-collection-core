@@ -1,0 +1,289 @@
+---
+
+- name: create openvpn server directory
+  ansible.builtin.file:
+    state: directory
+    path: '{{ openvpn_directory }}/server'
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    mode: 0755
+  tags:
+    - openvpn
+    - openvpn_setup
+
+- name: create server key directory
+  ansible.builtin.file:
+    state: directory
+    path: '{{ openvpn_directory }}/keys/server'
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    mode: 0755
+  tags:
+    - openvpn
+    - openvpn_setup
+
+# ------------------------------------------------------------------------------------------------
+
+- name: create easy-rsa configuration file
+  ansible.builtin.template:
+    src: easy-rsa/vars.j2
+    dest: '{{ openvpn_easyrsa.directory }}/vars'
+    mode: 0644
+    owner: root
+    group: root
+    backup: true
+
+- name: create openssl-easyrsa.cnf
+  ansible.builtin.file:
+    state: link
+    src: "{{ openvpn_easyrsa.directory }}/{{ openvpn_easyrsa.openssl_config }}"
+    dest: "{{ openvpn_easyrsa.directory }}/pki/{{ openvpn_easyrsa.openssl_config }}"
+    mode: 0644
+    owner: root
+    group: root
+  when:
+    - ansible_distribution | lower == "ubuntu"
+
+- name: initialize easy-rsa PKI
+  bodsch.core.easyrsa:
+    state: init-pki
+    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
+  register: _init_result
+  args:
+    chdir: '{{ openvpn_easyrsa.directory }}'
+    creates: '{{ openvpn_easyrsa.directory }}/pki'
+
+- name: build CA certifikate & key
+  bodsch.core.easyrsa:
+    state: build-ca
+    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
+    req_cn_ca: "{{ openvpn_certificate.req_cn_ca }}"
+    keysize: 4096
+  args:
+    chdir: '{{ openvpn_easyrsa.directory }}'
+    creates: '{{ openvpn_easyrsa.directory }}/pki/ca.crt'
+  register: openvpn_ca_created
+
+- name: create initial CRL
+  bodsch.core.easyrsa:
+    state: gen-crl
+    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
+  args:
+    chdir: '{{ openvpn_easyrsa.directory }}'
+    creates: '{{ openvpn_easyrsa.directory }}/pki/crl.pem'
+
+- name: create DH parameters (this is going to take a long time)
+  bodsch.core.easyrsa:
+    state: gen-dh
+    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
+    keysize: "{{ openvpn_diffie_hellman_keysize }}"
+  args:
+    chdir: '{{ openvpn_easyrsa.directory }}'
+    creates: '{{ openvpn_easyrsa.directory }}/pki/dh.pem'
+
+- name: request openvpn server certificate
+  bodsch.core.easyrsa:
+    state: gen-req
+    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
+    req_cn_server: '{{ openvpn_certificate.req_cn_server }}'
+  args:
+    chdir: '{{ openvpn_easyrsa.directory }}'
+    creates: '{{ openvpn_easyrsa.directory }}/pki/reqs/{{ openvpn_certificate.req_cn_server }}.req'
+  register: server_cert_request
+
+- name: sign openvpn server certificate
+  bodsch.core.easyrsa:
+    state: sign-req
+    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
+    req_cn_server: '{{ openvpn_certificate.req_cn_server }}'
+  args:
+    chdir: '{{ openvpn_easyrsa.directory }}'
+    creates: '{{ openvpn_easyrsa.directory }}/pki/issued/{{ openvpn_certificate.req_cn_server }}.crt'
+  when: server_cert_request is succeeded
+
+- name: validate crl
+  bodsch.core.openvpn_crl:
+    warn_for_expire: "{{ openvpn_easyrsa.crl_warn.expired }}"
+    expire_in_days: "{{ openvpn_easyrsa.crl_warn.expire_in_days }}"
+  register: openvpn_crl
+
+- name: renew crl
+  when:
+    - openvpn_crl.expired | default('false') | bool
+  block:
+    - name: crl is expired
+      ansible.builtin.debug:
+        msg: "{{ openvpn_crl }}"
+
+    - name: renew CRL
+      bodsch.core.easyrsa:
+        state: gen-crl
+        force: true
+        pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
+      args:
+        chdir: '{{ openvpn_easyrsa.directory }}'
+        creates: '{{ openvpn_easyrsa.directory }}/pki/crl.pem'
+
+# ------------------------------------------------------------------------------------------------
+
+- name: copy CA certificate to openvpn server directory
+  ansible.builtin.copy:
+    src: '{{ openvpn_easyrsa.directory }}/pki/ca.crt'
+    dest: '{{ openvpn_directory }}/keys/server/'
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    remote_src: true
+    mode: '0644'
+
+- name: copy server certificate to openvpn server directory
+  ansible.builtin.copy:
+    src: '{{ openvpn_easyrsa.directory }}/pki/issued/{{ openvpn_certificate.req_cn_server }}.crt'
+    dest: '{{ openvpn_directory }}/keys/server/'
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    remote_src: true
+    mode: '0644'
+
+- name: copy server key to openvpn server directory
+  ansible.builtin.copy:
+    src: '{{ openvpn_easyrsa.directory }}/pki/private/{{ openvpn_certificate.req_cn_server }}.key'
+    dest: '{{ openvpn_directory }}/keys/server/'
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    remote_src: true
+    mode: 0600
+
+- name: copy DH parameter file to openvpn server directory
+  ansible.builtin.copy:
+    src: '{{ openvpn_easyrsa.directory }}/pki/dh.pem'
+    dest: '{{ openvpn_directory }}/keys/server/dh{{ openvpn_diffie_hellman_keysize }}.pem'
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    remote_src: true
+    mode: '0644'
+
+- name: generate a tls-auth key
+  bodsch.core.openvpn:
+    state: genkey
+    secret: "{{ openvpn_directory }}/keys/server/ta.key"
+  args:
+    creates: '{{ openvpn_directory }}/keys/server/ta.key'
+
+- name: change rights for pki
+  ansible.builtin.file:
+    state: directory
+    path: "{{ openvpn_easyrsa.directory }}/pki"
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    mode: 0770
+    # recurse: true
+
+- name: change rights for crl.pem
+  ansible.builtin.file:
+    # state: file
+    path: "{{ openvpn_easyrsa.directory }}/pki/crl.pem"
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    mode: 0640
+
+- name: fetch CA certificate to ansible controller
+  ansible.builtin.fetch:
+    src: "{{ openvpn_easyrsa.directory }}/pki/ca.crt"
+    dest: "{{ openvpn_local_tmp_directory }}/"
+    mode: 0600
+    flat: true
+  no_log: true
+
+- name: fetch TA key to ansible controller
+  ansible.builtin.fetch:
+    src: "{{ openvpn_directory }}/keys/server/ta.key"
+    dest: "{{ openvpn_local_tmp_directory }}/"
+    mode: 0600
+    flat: true
+  no_log: true
+
+# ------------------------------------------------------------------------------------------------
+
+- name: iptables integration
+  when:
+    - openvpn_iptables is defined
+    - openvpn_iptables.enabled is defined
+    - openvpn_iptables.enabled
+  block:
+    - name: add iptables rule for OpenVPN (masquerading)"
+      ansible.builtin.iptables:
+        table: nat
+        chain: POSTROUTING
+        source: '{{ openvpn_subnet.ip }}/{{ openvpn_subnet.netmask }}'
+        out_interface: '{{ openvpn_server.interface }}'
+        jump: MASQUERADE
+      register: add_rule
+      tags:
+        - setup
+        - networking
+        - openvpn
+      when:
+        - openvpn_subnet.ip is defined
+        - openvpn_subnet.netmask is defined
+        - openvpn_server.interface is defined
+
+    # - name: save iptables rules
+    #   shell: iptables-save > /etc/sysconfig/iptables
+    #   when: add_rule is changed
+    #   tags:
+    #     - setup
+    #     - networking
+    #     - openvpn
+
+    - name: enable ip forwarding (sysctl)
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        state: present
+        sysctl_file: /etc/sysctl.conf
+      tags:
+        - setup
+        - networking
+        - openvpn
+
+# ------------------------------------------------------------------------------------------------
+
+- name: create openvpn configuration file (server.conf)
+  ansible.builtin.template:
+    src: openvpn/server/server.conf.j2
+    dest: "{{ openvpn_directory }}/server/server.conf"
+    mode: '0644'
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    backup: true
+  notify:
+    - restart openvpn-server
+
+- name: define static client IPs
+  ansible.builtin.template:
+    src: openvpn/server/ipp.txt.j2
+    dest: /etc/openvpn/ipp.txt
+    mode: 0644
+  when:
+    - openvpn_persistent_pool is defined
+    - openvpn_persistent_pool | count > 0
+
+- name: create link for openrc init
+  ansible.builtin.file:
+    src: "{{ openvpn_directory }}/server/server.conf"
+    dest: "{{ openvpn_directory }}/openvpn.conf"
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    state: link
+    force: true
+  when:
+    - ansible_service_mgr | lower == "openrc"
+    - ansible_distribution | lower == "archlinux" or
+      ansible_os_family | lower | replace(' ', '') | lower == "artixlinux"
+  notify:
+    - restart openvpn-server
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+...

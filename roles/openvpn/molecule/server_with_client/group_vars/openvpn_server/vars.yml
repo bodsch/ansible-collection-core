@@ -1,0 +1,92 @@
+---
+
+openvpn_type: server
+
+openvpn_easyrsa:
+  directory: /etc/easy-rsa
+  openssl_config: "openssl-easyrsa.cnf"
+  key_size: 4096
+  ca_expire: 120
+  cert_expire: 120
+  crl_days: 15
+  crl_warn:
+    expired: true
+    expire_in_days: 10
+  x509_dn_mode: cn_only
+  # Choices for crypto alg are: (each in lower-case)
+  #  * rsa
+  #  * ec
+  #  * ed
+  crypto_mode: rsa
+  rsa_curve: secp384r1
+  digest: sha512
+
+openvpn_server:
+  user: "{{ openvpn_owner }}"
+  group: "{{ openvpn_group }}"
+
+openvpn_subnet:
+  ip: 10.8.3.0
+  netmask: 255.255.255.0
+
+openvpn_push:
+  routes:
+    - net: 10.8.3.0
+      netmask: 255.255.255.0
+      gateway: 10.8.3.1
+  dhcp_options:
+    domains:
+      - matrix.lan
+      - vpn.lan
+    dns:
+      - 127.0.0.5
+  sndbuf: 393216
+  rcvbuf: 393216
+
+openvpn_iptables:
+  enabled: true
+
+openvpn_persistent_pool:
+  - name: roadrunner_one
+    state: present
+    static_ip: 10.8.3.10
+  - name: roadrunner_two
+    state: present
+    static_ip: 10.8.3.11
+  - name: molecule
+    state: present
+    static_ip: 10.8.3.100
+
+openvpn_mobile_clients:
+  - name: roadrunner_one
+    state: present
+    roadrunner: true
+    static_ip: 10.8.3.10
+    remote: server
+    port: 1194
+    proto: udp
+    device: tun
+    ping: 20
+    ping_restart: 45
+    cert: roadrunner_one.crt
+    key: roadrunner_one.key
+    tls_auth:
+      enabled: true
+  - name: roadrunner_two
+    state: present
+    remote: server
+    roadrunner: true
+    static_ip: 10.8.3.11
+    port: 1194
+    proto: udp
+    device: tun
+    ping: 20
+    ping_restart: 45
+    cert: roadrunner_two.crt
+    key: roadrunner_two.key
+    tls_auth:
+      enabled: true
+
+openvpn_config_save_dir: "~/openvpn-configs"
+
+...

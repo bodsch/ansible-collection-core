@@ -1,0 +1,44 @@
+---
+
+- name: create openvpn log directory
+  ansible.builtin.file:
+    state: directory
+    path: '{{ openvpn_logging.directory }}'
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    mode: 0775
+  tags:
+    - setup
+    - openvpn
+
+- name: create client key directory
+  ansible.builtin.file:
+    state: directory
+    path: '{{ openvpn_directory }}/keys'
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    mode: 0755
+  tags:
+    - setup
+    - openvpn
+
+- name: configure openvpn server
+  ansible.builtin.include_tasks: configure/server.yml
+  when:
+    - openvpn_type == "server"
+
+- name: configure openvpn client
+  ansible.builtin.include_tasks: configure/client.yml
+  when:
+    - openvpn_mobile_clients is defined
+    - openvpn_mobile_clients | count > 0
+
+- name: change rights for created files
+  ansible.builtin.file:
+    state: directory
+    path: "{{ openvpn_directory }}/keys"
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    recurse: true
+
+...

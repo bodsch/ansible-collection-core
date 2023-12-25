@@ -1,0 +1,137 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+# Which local IP address should OpenVPN
+# listen on? (optional)
+{% if openvpn_server.listen_ip is defined and
+      openvpn_server.listen_ip | string | length > 0 %}
+local           {{ openvpn_server.listen_ip }}
+{% endif %}
+
+port            {{ openvpn_server.port }}
+{% set _valid_attr = ['udp','tcp'] %}
+{% if not openvpn_server.proto in _valid_attr %}
+  {% set openvpn_server.proto = 'udp' %}
+{% endif %}
+proto           {{ openvpn_server.proto }}
+{% set _valid_attr = ['tun','tap'] %}
+{% if not openvpn_server.device in _valid_attr %}
+  {% set openvpn_server.device = 'tun' %}
+{% endif %}
+dev             {{ openvpn_server.device }}
+
+ca              {{ openvpn_directory }}/keys/server/ca.crt
+cert            {{ openvpn_directory }}/keys/server/{{ openvpn_certificate.req_cn_server }}.crt
+key             {{ openvpn_directory }}/keys/server/{{ openvpn_certificate.req_cn_server }}.key
+dh              {{ openvpn_directory }}/keys/server/dh{{ openvpn_diffie_hellman_keysize }}.pem
+{% if openvpn_server.tls_auth.enabled is defined and
+      openvpn_server.tls_auth.enabled %}
+tls-server
+tls-auth        {{ openvpn_directory }}/keys/server/ta.key 0 # This file is secret
+{% endif %}
+
+topology        subnet
+
+{% if openvpn_subnet is defined and
+      openvpn_subnet.ip is defined and
+      openvpn_subnet.ip | string | length > 0 and
+      openvpn_subnet.netmask is defined and
+      openvpn_subnet.netmask | string | length > 0 %}
+server          {{ openvpn_subnet.ip }} {{ openvpn_subnet.netmask }}
+
+ifconfig-pool-persist ipp.txt
+{% else %}
+# NO SERVER NETWORK HAS BEEN DEFINED!
+{% endif %}
+{% if openvpn_push is defined and
+      openvpn_push | bodsch.core.type == "dict" and
+      openvpn_push | count > 0 %}
+  {% set _push_route_gateway = openvpn_push.route_gateway | default('') %}
+  {% set _push_routes = openvpn_push.routes | default([]) %}
+  {% set _push_dns = openvpn_push.dhcp_options.dns | default([]) %}
+  {% set _push_domains = openvpn_push.dhcp_options.domains | default([]) %}
+  {% set _push_sndbuf = openvpn_push.sndbuf | default('') %}
+  {% set _push_rcvbuf = openvpn_push.rcvbuf | default('') %}
+
+  {% if _push_routes | count > 0 %}
+    {% for e in _push_routes %}
+push            "route {{ e.net }} {{ e.netmask }} {{ e.gateway | default('') }}"
+    {% endfor %}
+  {% endif %}
+  {% if _push_route_gateway | string | length > 0 %}
+push            "redirect-gateway {{ _push_route_gateway }}"
+  {% endif %}
+  {% if _push_dns | count > 0 %}
+    {% for e in _push_dns %}
+push            "dhcp-option DNS {{ e }}"
+    {% endfor %}
+  {% endif %}
+  {% if _push_domains | count > 0 %}
+    {% for e in _push_domains %}
+push            "dhcp-option DOMAIN {{ e }}"
+    {% endfor %}
+  {% endif %}
+  {% if _push_sndbuf | string | length > 0 %}
+push            "sndbuf {{ _push_sndbuf }}"
+  {% endif %}
+  {% if _push_rcvbuf | string | length > 0 %}
+push            "rcvbuf {{ _push_rcvbuf }}"
+  {% endif %}
+{% endif %}
+
+sndbuf          393216
+rcvbuf          393216
+
+{% if openvpn_mtu is defined and
+      openvpn_mtu | string | length > 0 %}
+tun-mtu         {{ openvpn_mtu }}
+{% endif %}
+{% if openvpn_mssfix is defined and
+      openvpn_mssfix | string | length > 0 %}
+mssfix          {{ openvpn_mssfix }}
+{%endif%}
+persist-key
+persist-tun
+
+{% if openvpn_keepalive is defined and
+      openvpn_keepalive.interval is defined and
+      openvpn_keepalive.interval | string | length > 0 and
+      openvpn_keepalive.timeout is defined and
+      openvpn_keepalive.timeout | string | length > 0 %}
+keepalive       {{ openvpn_keepalive.interval }} {{ openvpn_keepalive.timeout }}
+{% endif %}
+cipher          {{ openvpn_server.cipher }}
+
+{#
+# Enable compression on the VPN link and push the
+# option to the client (v2.4+ only, for earlier
+# versions see below)
+compress lz4-v2
+push "compress lz4-v2"
+allow-compression yes
+#}
+max-clients     {{ openvpn_server.max_clients }}
+
+{% if openvpn_server.user is defined and
+      openvpn_server.user | string | length > 0 and
+      openvpn_server.group is defined and
+      openvpn_server.group | string | length > 0 and
+      openvpn_version.version is version('2.6.0', '<') %}
+user            {{ openvpn_server.user | default('nobody') }}
+group           {{ openvpn_server.group | default('nobody') }}
+
+{% endif %}
+{% if openvpn_logging.append | default('false') | bool %}
+log-append      {{ openvpn_logging.directory }}/{{ openvpn_logging.file }}
+{% else %}
+log             {{ openvpn_logging.directory }}/{{ openvpn_logging.file }}
+{% endif %}
+{% if openvpn_logging.status is defined and
+      openvpn_logging.status | string | length > 0 %}
+status          {{ openvpn_logging.directory }}/{{ openvpn_logging.status }}
+{% endif %}
+
+verb            {{ openvpn_logging.verbosity }}
+mute            {{ openvpn_logging.mute }}
+
+explicit-exit-notify 1
+crl-verify      {{ openvpn_easyrsa.directory }}/pki/crl.pem
