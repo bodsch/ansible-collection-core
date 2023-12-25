@@ -1,0 +1,15 @@
+---
+
+logrotate_defaults_global:
+  rotate_log: weekly
+  rotate_size: ''
+  su_user: ''
+  su_group: ''
+  rotate: 0
+  create: true
+  dateext: true
+  compress: true
+  tabooext: []
+  archive_directory: ''
+
+...

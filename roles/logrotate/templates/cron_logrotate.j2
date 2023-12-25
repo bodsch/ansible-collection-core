@@ -1,0 +1,30 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+
+{% if not logroate_disable_systemd %}
+# skip in favour of systemd timer
+if [ -d /run/systemd/system ]; then
+    exit 0
+fi
+{% endif %}
+
+LOGROTATE=$(command -v logrotate)
+
+if [ -z "${LOGROTATE}" ]; then
+    exit 1
+fi
+
+# this cronjob persists removals (but not purges)
+if [ ! -x ${LOGROTATE} ]; then
+    exit 0
+fi
+
+${LOGROTATE} /etc/logrotate.conf
+EXITVALUE=$?
+if [ $EXITVALUE != 0 ]
+then
+    /usr/bin/logger -t logrotate "ALERT exited abnormally with [$EXITVALUE]"
+fi
+
+exit $EXITVALUE

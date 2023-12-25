@@ -1,0 +1,34 @@
+# Standards: 1.2
+---
+
+galaxy_info:
+  role_name: logrotate
+
+  author: Bodo Schulz
+  description: Role to configure logrotate scripts
+
+  license: Apache
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: ArchLinux
+    - name: Debian
+      versions:
+        # 10
+        - buster
+        # 11
+        - bullseye
+        - bookworm
+    - name: Ubuntu
+      versions:
+        # 20.04
+        - focal
+
+  galaxy_tags:
+    - system
+    - logfile
+    - rotate
+
+dependencies: []
+
+...

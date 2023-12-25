@@ -25,7 +25,9 @@ pip install dirsync
 |:---------------------------------------------------------------------------| :---- | :---- |
 | [bodsch.core.pacman](./roles/pacman/README.md)                             |       |       |
 | [bodsch.core.fail2ban](./roles/fail2ban/README.md)                         |       |       |
-
+| [bodsch.core.snakeoil](./roles/snakeoil/README.md)                         |       |       |
+| [bodsch.core.syslog_ng](./roles/syslog_ng/README.md)                         |       |       |
+| [bodsch.core.logrotate](./roles/logrotate/README.md)                         |       |       |
 
 ### Modules
 
