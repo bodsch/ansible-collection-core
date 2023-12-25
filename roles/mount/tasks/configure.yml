@@ -1,0 +1,38 @@
+---
+
+- name: create smb credentials file
+  ansible.builtin.template:
+    src: credentials.j2
+    dest: "{{ item.passwordfile }}"
+    owner: root
+    group: root
+    mode: 0640
+    backup: true
+  no_log: true
+  loop:
+    "{{ mount_smb_share | default([]) }}"
+  loop_control:
+    label: "{{ item.passwordfile }}"
+
+# Do not create mountpoint using file, the mount module will create it
+# automatically. This avoids problems where the module tries to change
+# permissions on an existing directory
+
+- name: mount devices if available
+  ansible.posix.mount:
+    src: '{{ item.source }}'
+    name: '{{ item.mountpoint }}'
+    fstype: '{{ item.fstype }}'
+    opts: '{{ item.opts | default("defaults") }}'
+    state: '{{ item.state | default("present") }}'
+    dump: '{{ item.dump | default("0") }}'
+    passno: '{{ item.passno | default("0") }}'
+    fstab: '{{ item.fstab | default(mount_fstab | default("/etc/fstab")) }}'
+  with_items: '{{ mount_devices }}'
+  loop_control:
+    label: 'mountpoint: {{ item.mountpoint }} - from: {{ item.source }}'
+  register: _mount_result
+  changed_when: true
+  failed_when: false
+
+...

@@ -1,0 +1,10 @@
+---
+
+nfs_packages:
+  - nfs-utils
+
+smb_packages:
+  - smbclient
+  - cifs-utils
+
+...

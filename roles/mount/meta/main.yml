@@ -1,0 +1,36 @@
+---
+
+galaxy_info:
+  role_name: mount
+
+  author: Bodo Schulz
+  description: manage generic mountpoints
+
+  license: Apache
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: ArchLinux
+    - name: Debian
+      versions:
+        # 10
+        - buster
+        # 11
+        - bullseye
+        - bookworm
+    - name: Ubuntu
+      versions:
+        # 20.04
+        - focal
+
+  galaxy_tags:
+    - system
+    - mount
+    - share
+    - nfs
+    - cifs
+    - smb
+
+dependencies: []
+
+...
