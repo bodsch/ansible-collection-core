@@ -29,7 +29,6 @@ jobs:
           - "3.11.3"
         scenario:
           - configured
-          - client
           - server
           - server_with_client
         collection_role:
