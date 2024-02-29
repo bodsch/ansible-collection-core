@@ -1,3 +1,11 @@
 ---
 
+pacman_options:
+  no_extract:
+    - "usr/share/help/* !usr/share/help/en*"
+    - "usr/share/gtk-doc/html/*"
+    - "usr/share/doc/*"
+    - "usr/share/man/*"
+    - "usr/share/info/*"
+    - "usr/share/vim/vim*/lang/*"
 ...

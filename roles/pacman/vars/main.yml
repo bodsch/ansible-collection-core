@@ -41,15 +41,15 @@ pacman_defaults_config:
   #  - Required
 
 pacman_defaults_options:
-  no_extract:
-    - "usr/share/help/* !usr/share/help/en*"
-    - "usr/share/gtk-doc/html/* usr/share/doc/*"
-    - "usr/share/locale/* usr/share/X11/locale/* usr/share/i18n/*"
-    - "!*locale*/en*/* !usr/share/i18n/charmaps/UTF-8.gz !usr/share/*locale*/locale.*"
-    - "!usr/share/*locales/en_?? !usr/share/*locales/i18n* !usr/share/*locales/iso*"
-    - "!usr/share/*locales/trans*"
-    - "usr/share/man/* usr/share/info/*"
-    - "usr/share/vim/vim*/lang/*"
+  no_extract: []
+    # - "usr/share/help/* !usr/share/help/en*"
+    # - "usr/share/gtk-doc/html/* usr/share/doc/*"
+    # - "usr/share/locale/* usr/share/X11/locale/* usr/share/i18n/*"
+    # - "!*locale*/en*/* !usr/share/i18n/charmaps/UTF-8.gz !usr/share/*locale*/locale.*"
+    # - "!usr/share/*locales/en_?? !usr/share/*locales/i18n* !usr/share/*locales/iso*"
+    # - "!usr/share/*locales/trans*"
+    # - "usr/share/man/* usr/share/info/*"
+    # - "usr/share/vim/vim*/lang/*"
 
 pacman_defaults_repositories: {}
 

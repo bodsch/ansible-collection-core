@@ -179,4 +179,4 @@ pacman_custom_mirrors:
 
 [Apache](LICENSE)
 
-`FREE SOFTWARE, HELL YEAH!`
+**FREE SOFTWARE, HELL YEAH!**
