@@ -47,7 +47,7 @@
 - name: create or revoke client certificate
   delegate_to: "{{ client.remote }}"
   bodsch.core.openvpn_client_certificate:
-    state: "{{ client.state | default('present') }}"
+    state: "{{ client.state }}"
     username: "{{ client.name }}"
   args:
     chdir: '{{ openvpn_easyrsa.directory }}'
@@ -56,7 +56,7 @@
   loop_control:
     index_var: index
     loop_var: client
-    label: "{{ client.name }}, state: {{ client.state | default('present') }}"
+    label: "{{ client.name }}, state: {{ client.state }}"
 
 - name: create openvpn client configs
   ansible.builtin.include_tasks: configure/static_client_instances.yml

@@ -5,6 +5,7 @@ openvpn_dependencies:
   - procps-ng
   - rsync
   - sshpass
+  - python-jinja
 
 openvpn_packages:
   - openvpn

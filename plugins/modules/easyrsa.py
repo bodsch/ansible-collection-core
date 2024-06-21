@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 # (c) 2022, Bodo Schulz <bodo@boone-schulz.de>
@@ -116,7 +116,8 @@ class EasyRsa(object):
             """
             args.append("--batch")
             # args.append(f"--pki-dir={self._pki_dir}")
-            args.append(f"--req-cn={self._req_cn_ca}")
+            if self._req_cn_ca:
+                args.append(f"--req-cn={self._req_cn_ca}")
             args.append(self.state)
             args.append(self._req_cn_server)
             args.append("nopass")

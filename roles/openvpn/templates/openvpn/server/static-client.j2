@@ -1,0 +1,1 @@
+ifconfig-push {{ item.static_ip }} {{ item.netmask | default('255.255.255.0') }}

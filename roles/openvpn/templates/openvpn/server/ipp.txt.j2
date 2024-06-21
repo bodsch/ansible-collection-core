@@ -6,6 +6,6 @@
         opp.static_ip | string | length > 0 or
         (opp.static_ip | ansible.utils.ipv4 or
          opp.static_ip | ansible.utils.ipv6) %}
-{{ opp.name }},{{ opp.static_ip }},
+{{ opp.name }},{{ opp.static_ip }}
   {% endif %}
 {% endfor %}
