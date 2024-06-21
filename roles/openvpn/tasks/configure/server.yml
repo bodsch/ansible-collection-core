@@ -268,6 +268,33 @@
     - openvpn_persistent_pool is defined
     - openvpn_persistent_pool | count > 0
 
+- name: remove old static client IPs
+  ansible.builtin.file:
+    state: absent
+    path: "/etc/openvpn/client/{{ item.name }}"
+  loop:
+    "{{ openvpn_persistent_pool }}"
+  loop_control:
+    label: "{{ item.name | default('') }}"
+  when:
+    - openvpn_persistent_pool is defined
+    - openvpn_persistent_pool | count > 0
+    - item.state | default('present') == 'absent'
+
+- name: define static client IPs
+  ansible.builtin.template:
+    src: openvpn/server/static-client.j2
+    dest: "/etc/openvpn/client/{{ item.name }}"
+    mode: 0644
+  loop:
+    "{{ openvpn_persistent_pool }}"
+  loop_control:
+    label: "{{ item.name | default('') }}"
+  when:
+    - openvpn_persistent_pool is defined
+    - openvpn_persistent_pool | count > 0
+    - item.state | default('present') == 'present'
+
 - name: create link for openrc init
   ansible.builtin.file:
     src: "{{ openvpn_directory }}/server/server.conf"

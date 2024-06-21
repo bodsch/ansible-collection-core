@@ -50,12 +50,17 @@ openvpn_persistent_pool:
   - name: roadrunner_one
     state: present
     static_ip: 10.8.3.10
+    netmask: 255.255.0.0
   - name: roadrunner_two
     state: present
     static_ip: 10.8.3.11
   - name: molecule
     state: present
     static_ip: 10.8.3.100
+  - name: obsolate
+    state: absent
+    static_ip: 10.8.3.250
+
 
 openvpn_mobile_clients:
   - name: roadrunner_one

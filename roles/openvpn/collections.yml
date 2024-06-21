@@ -2,3 +2,4 @@
 
 collections:
   - name: bodsch.core
+  - name: community.crypto

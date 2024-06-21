@@ -77,6 +77,12 @@
     - name: create export directory
       ansible.builtin.file:
         state: directory
+        path: /root/vpn-configs
+        mode: 0700
+
+    - name: create export directory
+      ansible.builtin.file:
+        state: directory
         path: /tmp/openvpn-export
         mode: 0700
 

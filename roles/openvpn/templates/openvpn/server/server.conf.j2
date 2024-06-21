@@ -38,7 +38,12 @@ topology        subnet
       openvpn_subnet.netmask | string | length > 0 %}
 server          {{ openvpn_subnet.ip }} {{ openvpn_subnet.netmask }}
 
-ifconfig-pool-persist ipp.txt
+{% if openvpn_persistent_pool is defined and
+      openvpn_persistent_pool | count > 0 %}
+# ifconfig-pool-persist {{ openvpn_directory }}/ipp.txt 30
+client-config-dir {{ openvpn_directory }}/client
+{% endif %}
+
 {% else %}
 # NO SERVER NETWORK HAS BEEN DEFINED!
 {% endif %}
@@ -78,8 +83,8 @@ push            "rcvbuf {{ _push_rcvbuf }}"
   {% endif %}
 {% endif %}
 
-sndbuf          393216
-rcvbuf          393216
+## sndbuf          393216
+## rcvbuf          393216
 
 {% if openvpn_mtu is defined and
       openvpn_mtu | string | length > 0 %}
