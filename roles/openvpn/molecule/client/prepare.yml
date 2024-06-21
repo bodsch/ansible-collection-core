@@ -13,6 +13,9 @@
         - name: update pacman system
           ansible.builtin.command: |
             pacman --refresh --sync --sysupgrade --noconfirm
+          register: pacman
+          changed_when: pacman.rc != 0
+          failed_when: pacman.rc != 0
 
         - name: create depends service
           ansible.builtin.copy:
@@ -27,6 +30,12 @@
     - name: update package cache
       ansible.builtin.package:
         update_cache: true
+
+    - name: install dependencies
+      ansible.builtin.package:
+        name:
+          - iproute2
+        state: present
 
     - name: environment
       ansible.builtin.debug:
