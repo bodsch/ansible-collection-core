@@ -21,15 +21,23 @@ pip install dirsync
 
 ## Roles
 
-| Role                                                                       | | Description |
+| Role                                                                       | Build State | Description |
 |:---------------------------------------------------------------------------| :---- | :---- |
-| [bodsch.core.pacman](./roles/pacman/README.md)                             |       | Ansible role to configure pacman. |
-| [bodsch.core.fail2ban](./roles/fail2ban/README.md)                         |       | Installs and configure fail2ban |
-| [bodsch.core.snakeoil](./roles/snakeoil/README.md)                         |       | build a simple snakeoil certificate for a test environment. |
-| [bodsch.core.syslog_ng](./roles/syslog_ng/README.md)                       |       | Installs and configures a classic syslog-ng service for processing log files away from journald. |
-| [bodsch.core.logrotate](./roles/logrotate/README.md)                       |       | Installs logrotate and provides an easy way to setup additional logrotate scripts |
-| [bodsch.core.mount](./roles/mount/README.md)                               |       | Manage generic mountpoints |
-| [bodsch.core.openvpn](./roles/openvpn/README.md)                           |       | Ansible role to install and configure openvpn server. |
+| [bodsch.core.pacman](./roles/pacman/README.md)                             | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/pacman.yml?branch=main)][pacman] | Ansible role to configure pacman. |
+| [bodsch.core.fail2ban](./roles/fail2ban/README.md)                         | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/fail2ban.yml?branch=main)][fail2ban] | Installs and configure fail2ban |
+| [bodsch.core.snakeoil](./roles/snakeoil/README.md)                         | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/snakeoil.yml?branch=main)][snakeoil] | build a simple snakeoil certificate for a test environment. |
+| [bodsch.core.syslog_ng](./roles/syslog_ng/README.md)                       | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/syslog_ng.yml?branch=main)][syslog_ng] | Installs and configures a classic syslog-ng service for processing log files away from journald. |
+| [bodsch.core.logrotate](./roles/logrotate/README.md)                       | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/logrotate.yml?branch=main)][logrotate] | Installs logrotate and provides an easy way to setup additional logrotate scripts |
+| [bodsch.core.mount](./roles/mount/README.md)                               | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/mount.yml?branch=main)][mount] | Manage generic mountpoints |
+| [bodsch.core.openvpn](./roles/openvpn/README.md)                           | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/openvpn.yml?branch=main)][openvpn] | Ansible role to install and configure openvpn server. |
+
+[pacman]: https://github.com/bodsch/ansible-collection-core/actions/workflows/pacman.yml
+[fail2ban]: https://github.com/bodsch/ansible-collection-core/actions/workflows/fail2ban.yml
+[snakeoil]: https://github.com/bodsch/ansible-collection-core/actions/workflows/snakeoil.yml
+[syslog_ng]: https://github.com/bodsch/ansible-collection-core/actions/workflows/syslog_ng.yml
+[logrotate]: https://github.com/bodsch/ansible-collection-core/actions/workflows/logrotate.yml
+[mount]: https://github.com/bodsch/ansible-collection-core/actions/workflows/mount.yml
+[openvpn]: https://github.com/bodsch/ansible-collection-core/actions/workflows/openvpn.yml
 
 ### Modules
 
