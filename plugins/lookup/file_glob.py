@@ -8,7 +8,9 @@
 # "MODIFED WITH https://github.com/philfry/ansible/blob/37c616dc76d9ebc3cbf0285a22e55f0e4db4185e/lib/ansible/plugins/lookup/fileglob.py"
 
 from __future__ import (absolute_import, division, print_function)
+
 from ansible.utils.display import Display
+from ansible.utils.listify import listify_lookup_plugin_terms as listify
 from ansible.plugins.lookup import LookupBase
 import os
 import re
@@ -89,8 +91,13 @@ display = Display()
 
 class LookupModule(LookupBase):
 
-    def run(self, terms, variables=None, **kwargs):
+    def __init__(self, basedir=None, **kwargs):
+        self.basedir = basedir
 
+    def run(self, terms, variables=None, **kwargs):
+        """
+        """
+        display.vv(f"run({terms}, variables, {kwargs})")
         self.set_options(direct=kwargs)
 
         paths = []
@@ -122,6 +129,7 @@ class LookupModule(LookupBase):
                     path = os.path.join(p, sp)
                     display.vv(f" - lookup in directory: {path}")
                     r = self._find_recursive(folder=path, extension=term, search_regex=lookup_search_regex)
+                    # display.vv(f"   found: {r}")
                     if len(r) > 0:
                         found_files.append(r)
 
@@ -132,7 +140,7 @@ class LookupModule(LookupBase):
     def _find_recursive(self, folder, extension, search_regex=None):
         """
         """
-
+        # display.vv(f"_find_recursive({folder}, {extension}, {search_regex})")
         matches = []
 
         for root, dirnames, filenames in os.walk(folder):
