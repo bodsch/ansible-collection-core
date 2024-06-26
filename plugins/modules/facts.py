@@ -88,9 +88,11 @@ class AnsibleFacts(object):
         self.state = module.params.get("state")
         self.name = module.params.get("name")
         self.facts = module.params.get("facts")
+        self.append = module.params.get("append")
 
         self.cache_directory = f"/var/cache/ansible/{self.name}"
-        self.cache_file_name = os.path.join(self.cache_directory, "facts.checksum")
+        self.checksum_file = os.path.join(self.cache_directory, "facts.checksum")
+        self.json_file = os.path.join(self.cache_directory, "facts.json")
         self.facts_directory = "/etc/ansible/facts.d"
         self.facts_file = os.path.join(self.facts_directory, f"{self.name}.fact")
 
@@ -101,6 +103,8 @@ class AnsibleFacts(object):
         create_directory(self.cache_directory)
         create_directory(self.facts_directory, mode="0775")
 
+        old_facts = {}
+
         _failed = False
         _changed = False
         _msg = "There are no changes."
@@ -108,7 +112,7 @@ class AnsibleFacts(object):
         checksum = None
 
         if self.state == "absent":
-            for f in [self.cache_file_name, self.facts_file]:
+            for f in [self.checksum_file, self.json_file, self.facts_file]:
                 if os.path.exists(f):
                     remove_file(f)
                     _changed = True
@@ -121,16 +125,32 @@ class AnsibleFacts(object):
 
         checksum = Checksum(self.module)
 
-        if not os.path.exists(self.facts_file) and os.path.exists(self.cache_file_name):
-            os.remove(self.cache_file_name)
+        if not os.path.exists(self.facts_file):
+            if os.path.exists(self.checksum_file):
+                os.remove(self.checksum_file)
+            if os.path.exists(self.json_file):
+                os.remove(self.json_file)
 
-        # self.module.log(f" facts  : {self.facts}")
+        if os.path.exists(self.json_file):
+            with open(self.json_file) as f:
+                old_facts = json.load(f)
 
-        changed, new_checksum, old_checksum = checksum.validate(self.cache_file_name, self.facts)
+        # self.module.log(f" old_facts  : {old_facts}")
+
+        old_checksum = checksum.checksum(old_facts)
+        new_checksum = checksum.checksum(self.facts)
+
+        changed = not (old_checksum == new_checksum)
 
         # self.module.log(f" changed       : {changed}")
         # self.module.log(f" new_checksum  : {new_checksum}")
         # self.module.log(f" old_checksum  : {old_checksum}")
+
+        if self.append and changed:
+            self.facts.update(old_facts)
+            changed= True
+
+        # self.module.log(f" facts       : {self.facts}")
 
         if not changed:
             return dict(
@@ -147,16 +167,50 @@ class AnsibleFacts(object):
         with open(self.facts_file, "a+") as outfile:
             outfile.write(json_object + "\nEOF\n")
 
+        with open(self.json_file, "w") as outfile:
+            outfile.write(json.dumps(self.facts))
+
         # write_template(self.facts_file, TPL_FACT, self.facts)
         chmod(self.facts_file, "0775")
 
-        checksum.write_checksum(self.cache_file_name, new_checksum)
+        checksum.write_checksum(self.checksum_file, new_checksum)
 
         return dict(
             failed=_failed,
             changed=True,
             msg="The facts have been successfully written."
         )
+
+    def __has_changed(self, data_file, checksum_file, data):
+        """
+        """
+        old_checksum = ""
+
+        if not os.path.exists(data_file) and os.path.exists(checksum_file):
+            """
+            """
+            os.remove(checksum_file)
+
+        if os.path.exists(checksum_file):
+            with open(checksum_file, "r") as f:
+                old_checksum = f.readlines()[0]
+
+        if isinstance(data, str):
+            _data = sorted(data.split())
+            _data = '\n'.join(_data)
+
+        checksum = self.__checksum(_data)
+        changed = not (old_checksum == checksum)
+
+        if self.force:
+            changed = True
+            old_checksum = ""
+
+        # self.module.log(msg=f" - new  checksum '{checksum}'")
+        # self.module.log(msg=f" - curr checksum '{old_checksum}'")
+        # self.module.log(msg=f" - changed       '{changed}'")
+
+        return changed, checksum, old_checksum
 
 
 def main():
@@ -176,6 +230,11 @@ def main():
         facts=dict(
             type="dict",
             required=True,
+        ),
+        append=dict(
+            type="bool",
+            required=False,
+            default=True
         )
     )
 
