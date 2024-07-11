@@ -147,8 +147,8 @@ class AnsibleFacts(object):
         # self.module.log(f" old_checksum  : {old_checksum}")
 
         if self.append and changed:
-            self.facts.update(old_facts)
-            changed= True
+            old_facts.update(self.facts)
+            changed = True
 
         # self.module.log(f" facts       : {self.facts}")
 
