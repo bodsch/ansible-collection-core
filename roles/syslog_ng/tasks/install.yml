@@ -4,3 +4,47 @@
   ansible.builtin.package:
     name: "{{ syslog_packages }}"
     state: present
+
+- name: systemd
+  when:
+    - ansible_service_mgr == "systemd"
+  block:
+    - name: populate service facts
+      ansible.builtin.service_facts:
+      register: systemd_facts
+      no_log: true
+
+    - name: set systemd unit name
+      ansible.builtin.set_fact:
+        syslog_unit_file: "{{ ansible_facts.services | bodsch.core.get_service('syslog-ng') }}"
+
+    - name: detect systemd template unit
+      ansible.builtin.stat:
+        path: /etc/default/{{ syslog_unit_file }}{{ syslog_systemd_template }}
+      register: systemd_template
+      when:
+        - syslog_unit_file is match('.*@')
+
+    - name: use systemd template unit
+      when:
+        - syslog_unit_file is match('.*@')
+        - systemd_template.stat.exists
+      block:
+        - name: set link for template unit
+          ansible.builtin.file:
+            src: /lib/systemd/system/{{ syslog_unit_file }}.service
+            dest: /etc/systemd/system/{{ syslog_unit_file }}{{ syslog_systemd_template }}.service
+            state: link
+          notify:
+            - reload systemctl daemon
+
+        - name: define systemd template unit
+          ansible.builtin.set_fact:
+            syslog_unit_file: "{{ syslog_unit_file }}{{ syslog_systemd_template }}"
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: syslog_ng
+    facts:
+      version: "{{ syslog_config_version }}"
+      service_unit: "{{ syslog_unit_file | default('') }}"

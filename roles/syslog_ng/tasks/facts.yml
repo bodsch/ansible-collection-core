@@ -1,8 +1,0 @@
----
-
-- name: create custom fact file
-  bodsch.core.facts:
-    name: syslog_ng
-    facts:
-      version: "{{ syslog_config_version }}"
-      service_unit: "{{ syslog_unit_file | default('') }}"

@@ -8,15 +8,9 @@ dependency:
 driver:
   name: docker
 
-lint: |
-  set -e
-  yamllint .
-  ansible-lint .
-  flake8 .
-
 platforms:
   - name: instance
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:12}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -43,7 +37,7 @@ platforms:
         ipv4_address: "10.19.0.10"
 
   - name: client_1
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:12}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -65,7 +59,7 @@ platforms:
         ipv4_address: "10.19.0.21"
 
   - name: client_2
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:12}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true

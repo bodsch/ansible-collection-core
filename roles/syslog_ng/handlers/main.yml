@@ -16,8 +16,9 @@
     state: restarted
 
 - name: validate syslog-ng config
-  ansible.builtin.command: |
-    syslog-ng --syntax-only
+  syslog_cmd:
+    parameters:
+      - --syntax-only
 
 - name: restart systemd-journald
   ansible.builtin.service:
