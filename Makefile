@@ -1,8 +1,10 @@
 #
-export TOX_SCENARIO  ?= default
-export TOX_ANSIBLE   ?= ansible_8.5
+export COLLECTION_NAMESPACE ?= bodsch
+export COLLECTION_NAME      ?= core
+export COLLECTION_ROLE      ?=
+export COLLECTION_SCENARIO  ?= default
 
-.PHONY: converge destroy verify test lint gh-clean
+.PHONY: install uninstall doc converge destroy verify test lint gh-clean
 
 default: converge
 
