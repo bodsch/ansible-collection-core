@@ -18,7 +18,4 @@
 - name: service
   ansible.builtin.include_tasks: service.yml
 
-- name: facts
-  ansible.builtin.include_tasks: facts.yml
-
 ...

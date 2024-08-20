@@ -41,7 +41,7 @@
     dest: "/etc/syslog-ng/conf.d/{{ item }}"
     mode: 0644
   notify:
-    - restart syslog-ng
+    - validate syslog-ng config
   loop:
     - sources.conf
     - destinations.conf
@@ -59,7 +59,9 @@
     backup: true
   notify:
     - validate syslog-ng config
-    - restart syslog-ng
   tags:
     - syslog-ng
     - configuration
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
