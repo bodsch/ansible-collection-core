@@ -1,0 +1,19 @@
+
+
+{#
+https://man.archlinux.org/man/alpm-hooks.5
+
+
+[Trigger] (Required, Repeatable)
+Operation = Install|Upgrade|Remove (Required, Repeatable)
+Type = Path|Package (Required)
+Target = <Path|PkgName> (Required, Repeatable)
+
+[Action] (Required)
+Description = ... (Optional)
+When = PreTransaction|PostTransaction (Required)
+Exec = <Command> (Required)
+Depends = <PkgName> (Optional)
+AbortOnFail (Optional, PreTransaction only)
+NeedsTargets (Optional)
+#}
