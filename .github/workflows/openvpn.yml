@@ -25,8 +25,7 @@ on:
       - "!README.md"
       - 'roles/openvpn/**'
       - '.github/workflows/openvpn.yml'
-      - '.config/ansible-lint.yml'
-      - '.yamllint'
+
   pull_request:
     branches:
       - 'main'
@@ -38,8 +37,6 @@ on:
       - "!README.md"
       - 'roles/openvpn/**'
       - '.github/workflows/openvpn.yml'
-      - '.config/ansible-lint.yml'
-      - '.yamllint'
 
 env:
   COLLECTION_NAMESPACE: bodsch
@@ -81,6 +78,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
+
+      - name: force reinstall of community.docker
+        run: |
+          mkdir -p /home/runner/.ansible/collections
+          ansible-galaxy collection install community.docker --force
 
       - name: Install collection
         run: |
@@ -132,6 +134,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
+
+      - name: force reinstall of community.docker
+        run: |
+          mkdir -p /home/runner/.ansible/collections
+          ansible-galaxy collection install community.docker --force
 
       - name: Install collection
         run: |

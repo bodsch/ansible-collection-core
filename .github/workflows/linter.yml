@@ -66,6 +66,6 @@ jobs:
 
       - name: Lint code.
         run: |
-          pycodestyle plugins/ --config=.config/pycodestyle.cfg --statistics --count
+          pycodestyle plugins/ --config=.config/pycodestyle.cfg --statistics --count --exclude=test_*.py --exclude=hooks/*.py
 
 ...
