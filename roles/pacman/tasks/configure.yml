@@ -33,4 +33,10 @@
   notify:
     - update package cache
 
+- name: create pacman hooks
+  ansible.builtin.include_tasks: configure/hooks.yml
+  when:
+    - pacman_hooks is defined
+    - pacman_hooks | default([]) | count > 0
+
 ...
