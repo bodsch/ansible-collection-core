@@ -1,0 +1,24 @@
+---
+
+- name: create neccessary directories
+  ansible.builtin.file:
+    path: "/etc/pacman.d/hooks"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: create custom pacman hooks
+  ansible.builtin.template:
+    src: pacman.d/hooks/hook.j2
+    dest: "/etc/pacman.d/hooks/{{ item.name }}.hook"
+    backup: true
+    mode: 0644
+  loop:
+    "{{ pacman_hooks }}"
+  loop_control:
+    label: "/etc/pacman.d/hooks/{{ item.name }}.hook"
+  when:
+    - item.state | default('present') == "present"
+
+...
