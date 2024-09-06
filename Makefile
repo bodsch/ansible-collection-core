@@ -8,6 +8,15 @@ export COLLECTION_SCENARIO  ?= default
 
 default: converge
 
+install:
+	@hooks/install
+
+uninstall:
+	@hooks/uninstall
+
+doc:
+	@hooks/doc
+
 converge:
 	@hooks/converge
 
