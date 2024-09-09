@@ -1,0 +1,6 @@
+---
+
+collections:
+  - name: bodsch.core
+    version: "=>2.2.1"
+  - name: community.crypto
