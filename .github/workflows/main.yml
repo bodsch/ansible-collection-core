@@ -98,7 +98,7 @@ jobs:
 
 #   debian:
 #     name: "${{ matrix.image }}: ${{ matrix.collection_role }} (ansible ${{ matrix.ansible-version }}, python ${{ matrix.python_version }})"
-#     runs-on: ubuntu-20.04
+#     runs-on: ubuntu-22.04
 #     strategy:
 #       fail-fast: false
 #       matrix:

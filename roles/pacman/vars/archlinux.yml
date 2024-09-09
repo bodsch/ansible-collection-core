@@ -34,33 +34,33 @@ pacman_defaults_mirrors:
       - https://mirror.rackspace.com/archlinux/$repo/os/$arch
       - https://mirror.leaseweb.net/archlinux/$repo/os/$arch
 
-  "Europe - Czech Republic":
-    enabled: false
-    servers:
-      - https://ftp.sh.cvut.cz/artix-linux/$repo/os/$arch
-
-  "Europe - Germany":
-    enabled: true
-    servers:
-      - https://mirror.netcologne.de/artix-linux/$repo/os/$arch
-      - http://mirrors.redcorelinux.org/artixlinux/$repo/os/$arch
-      - https://mirror.pascalpuffke.de/artix-linux/$repo/os/$arch
-      - https://ftp.uni-bayreuth.de/linux/artix-linux/$repo/os/$arch
-      - https://ftp.halifax.rwth-aachen.de/artixlinux/$repo/os/$arch
-      - https://mirror.linux.pizza/artix-linux/$repo/os/$arch
-      - https://artix.unixpeople.org/repos/$repo/os/$arch
-      - https://mirror1.artixlinux.org/repos/$repo/os/$arch
-      - https://eu-mirror.artixlinux.org/repos/$repo/os/$arch
-
-  "Europe - Austria":
-    enabled: false
-    servers:
-      - http://mirror.alwyzon.net/archlinux/$repo/os/$arch
-      - https://mirror.alwyzon.net/archlinux/$repo/os/$arch
-      - http://mirror.digitalnova.at/archlinux/$repo/os/$arch
-      - http://mirror.easyname.at/archlinux/$repo/os/$arch
-      - https://at.arch.mirror.kescher.at/$repo/os/$arch
-      - http://mirror.reisenbauer.ee/archlinux/$repo/os/$arch
-      - https://mirror.reisenbauer.ee/archlinux/$repo/os/$arch
+  # "Europe - Czech Republic":
+  #   enabled: false
+  #   servers:
+  #     - https://ftp.sh.cvut.cz/artix-linux/$repo/os/$arch
+  #
+  # "Europe - Germany":
+  #   enabled: true
+  #   servers:
+  #     - https://mirror.netcologne.de/artix-linux/$repo/os/$arch
+  #     - http://mirrors.redcorelinux.org/artixlinux/$repo/os/$arch
+  #     - https://mirror.pascalpuffke.de/artix-linux/$repo/os/$arch
+  #     - https://ftp.uni-bayreuth.de/linux/artix-linux/$repo/os/$arch
+  #     - https://ftp.halifax.rwth-aachen.de/artixlinux/$repo/os/$arch
+  #     - https://mirror.linux.pizza/artix-linux/$repo/os/$arch
+  #     - https://artix.unixpeople.org/repos/$repo/os/$arch
+  #     - https://mirror1.artixlinux.org/repos/$repo/os/$arch
+  #     - https://eu-mirror.artixlinux.org/repos/$repo/os/$arch
+  #
+  # "Europe - Austria":
+  #   enabled: false
+  #   servers:
+  #     - http://mirror.alwyzon.net/archlinux/$repo/os/$arch
+  #     - https://mirror.alwyzon.net/archlinux/$repo/os/$arch
+  #     - http://mirror.digitalnova.at/archlinux/$repo/os/$arch
+  #     - http://mirror.easyname.at/archlinux/$repo/os/$arch
+  #     - https://at.arch.mirror.kescher.at/$repo/os/$arch
+  #     - http://mirror.reisenbauer.ee/archlinux/$repo/os/$arch
+  #     - https://mirror.reisenbauer.ee/archlinux/$repo/os/$arch
 
 ...

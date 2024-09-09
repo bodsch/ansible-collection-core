@@ -70,7 +70,12 @@ RemoteFileSigLevel    = {{ pacman_config.remote_file_sig_level | join(' ') }}
 # [{{ repo }}]
       {% for k, v in values.items() %}
         {% if k == "sig_level" %}
-# SigLevel      = {{ v | join(' ') }}
+          {% if v | bodsch.core.type == "list" %}
+            {% set _v = v | join(' ') %}
+          {% elif v | bodsch.core.type == "str" %}
+            {% set _v = v %}
+          {% endif %}
+# SigLevel      = {{ _v }}
         {% endif %}
         {% if k == "server" %}
 # Server        = {{ v }}
@@ -87,7 +92,12 @@ RemoteFileSigLevel    = {{ pacman_config.remote_file_sig_level | join(' ') }}
 [{{ repo }}]
       {% for k, v in values.items() %}
         {% if k == "sig_level" %}
-SigLevel      = {{ v | join(' ') }}
+          {% if v | bodsch.core.type == "list" %}
+            {% set _v = v | join(' ') %}
+          {% elif v | bodsch.core.type == "str" %}
+            {% set _v = v %}
+          {% endif %}
+SigLevel      = {{ _v }}
         {% endif %}
         {% if k == "server" %}
 Server        = {{ v }}
