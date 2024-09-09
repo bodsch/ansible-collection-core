@@ -69,6 +69,7 @@ RemoteFileSigLevel    = {{ pacman_config.remote_file_sig_level | join(' ') }}
     {% if not values.enabled | default('true') %}
 # [{{ repo }}]
       {% for k, v in values.items() %}
+        {% if k == "sig_level" %}
           {% if v | bodsch.core.type == "list" %}
             {% set _v = v | join(' ') %}
           {% elif v | bodsch.core.type == "str" %}

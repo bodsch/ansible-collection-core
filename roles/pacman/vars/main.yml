@@ -12,7 +12,7 @@ pacman_defaults_config:
   hold_pkg:
     - pacman
     - glibc
-  xfer_command: /usr/bin/curl -s -L -C - -f -o %o %u
+  xfer_command: ""                                # /usr/bin/curl -s -L -C - -f -o %o %u
   # XferCommand = /usr/bin/wget --passive-ftp -c -O %o %u
   clean_method: KeepInstalled
   architecture: auto
