@@ -1,0 +1,43 @@
+---
+
+pacman_options:
+  no_extract:
+    - "usr/share/help/* !usr/share/help/en*"
+    - "usr/share/gtk-doc/html/*"
+    - "usr/share/doc/*"
+    - "usr/share/man/*"
+    - "usr/share/info/*"
+    - "usr/share/vim/vim*/lang/*"
+
+pacman_hooks:
+
+  - name: linux-modules-post
+    trigger:
+      operations:
+        - Upgrade
+      type: Package
+      targets:
+        - linux
+    action:
+      description: "Restore Linux kernel modules"
+      when: PostTransaction
+      depends:
+        - coreutils
+        - rsync
+      exec:
+        - /bin/sh -xc 'KVER="${KVER:-$(uname -r)}"; if test -e "/lib/modules/backup/${KVER}"; then rsync -AHXal --ignore-existing "/lib/modules/backup/${KVER}" /lib/modules/; fi; rm -rf /lib/modules/backup'
+
+  - name: paccache-uninstalled
+    trigger:
+      operations:
+        - remove
+      type: Package
+      targets:
+        - "*"
+    action:
+      description: "Removing uninstalled packages from cache..."
+      when: PostTransaction
+      depends:
+        - pacman-contrib
+      exec: /bin/paccache --quiet --remove --uninstalled --keep 0
+...

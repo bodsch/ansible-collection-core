@@ -1,0 +1,41 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% set _ = item.pop('name') %}
+{% if item.get('state') %}
+{% set _ = item.pop('state') %}
+{% endif %}
+{% for key, values in item.items() %}
+[{{ key | title }}]
+  {% for k, v in values.items() %}
+    {% if v | bodsch.core.type == 'list' %}
+      {% if k.endswith("s") %}
+        {% set k = k[:-1] %}
+      {% endif %}
+      {% for i in v %}
+{{ k | title }} = {{ i }}
+      {% endfor %}
+    {% else %}
+{{ k | title }} = {{ v }}
+    {% endif %}
+  {% endfor %}
+
+{% endfor %}
+
+{#
+https://man.archlinux.org/man/alpm-hooks.5
+
+
+[Trigger] (Required, Repeatable)
+Operation = Install|Upgrade|Remove (Required, Repeatable)
+Type = Path|Package (Required)
+Target = <Path|PkgName> (Required, Repeatable)
+
+[Action] (Required)
+Description = ... (Optional)
+When = PreTransaction|PostTransaction (Required)
+Exec = <Command> (Required)
+Depends = <PkgName> (Optional)
+AbortOnFail (Optional, PreTransaction only)
+NeedsTargets (Optional)
+#}

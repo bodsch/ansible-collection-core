@@ -259,14 +259,14 @@
   notify:
     - restart openvpn-server
 
-- name: define static client IPs
-  ansible.builtin.template:
-    src: openvpn/server/ipp.txt.j2
-    dest: /etc/openvpn/ipp.txt
-    mode: 0644
-  when:
-    - openvpn_persistent_pool is defined
-    - openvpn_persistent_pool | count > 0
+# - name: define static client IPs
+#   ansible.builtin.template:
+#     src: openvpn/server/ipp.txt.j2
+#     dest: /etc/openvpn/ipp.txt
+#     mode: 0644
+#   when:
+#     - openvpn_persistent_pool is defined
+#     - openvpn_persistent_pool | count > 0
 
 - name: remove old static client IPs
   ansible.builtin.file:
@@ -281,7 +281,7 @@
     - openvpn_persistent_pool | count > 0
     - item.state | default('present') == 'absent'
 
-- name: define static client IPs
+- name: create static client IPs
   ansible.builtin.template:
     src: openvpn/server/static-client.j2
     dest: "/etc/openvpn/client/{{ item.name }}"
