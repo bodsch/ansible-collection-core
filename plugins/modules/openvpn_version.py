@@ -51,10 +51,10 @@ class OpenVPN(object):
         _stdout_lines = _stdout.split("\n")
 
         return dict(
-            stdout = _stdout,
-            stdout_lines = _stdout_lines,
-            failed = _failed,
-            version = _version
+            stdout=_stdout,
+            stdout_lines=_stdout_lines,
+            failed=_failed,
+            version=_version
         )
 
     def _exec(self, commands):

@@ -64,8 +64,8 @@ class OpenVPNClientCertificate(object):
 
         if checksums_valid:
             return dict(
-                changed = False,
-                message = msg
+                changed=False,
+                message=msg
             )
 
         if self.state == "present":
@@ -111,7 +111,7 @@ class OpenVPNClientCertificate(object):
                 return dict(
                     failed=False,
                     changed=True,
-                    message = "The client certificate has been successfully created."
+                    message="The client certificate has been successfully created."
                 )
         else:
             valid, msg = self.__validate_checksums()
@@ -126,7 +126,7 @@ class OpenVPNClientCertificate(object):
                 return dict(
                     failed=True,
                     changed=False,
-                    message = msg
+                    message=msg
                 )
 
     def __revoke_vpn_user(self):

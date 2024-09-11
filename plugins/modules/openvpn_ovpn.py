@@ -123,15 +123,15 @@ class OpenVPNOvpn(object):
 
             return dict(
                 failed=False,
-                changed= True,
-                message = f"ovpn file successful written as {self.dst_file}."
+                changed=True,
+                message=f"ovpn file successful written as {self.dst_file}."
             )
 
         else:
             return dict(
                 failed=True,
-                changed= False,
-                message = f"can not find key or certfile for user {self._username}."
+                changed=False,
+                message=f"can not find key or certfile for user {self._username}."
             )
 
     def __remove_ovpn_config(self):

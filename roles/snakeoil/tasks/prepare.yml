@@ -1,19 +1,42 @@
 ---
 
-- name: check, the certificate domain is specified
+- name: validate snakeoil variables
   delegate_to: localhost
-  ansible.builtin.assert:
-    that:
-      - snakeoil_domain is defined and snakeoil_domain | length != 0
+  ansible.builtin.set_fact:
+    _valid_snakeoil_domain: "{{ snakeoil_domain | default('') | length != 0 }}"
+    _valid_snakeoil_dhparam: "{{ not snakeoil_dhparam | default('2048') | int <= 1024 }}"
 
-- name: check, if dhparam is less than or equal to 1024
+- name: d
+  debug:
+    msg:
+      - "domain {{ _valid_snakeoil_domain }}"
+      - "dhparam {{ _valid_snakeoil_dhparam }}"
+
+- name: validate variables
   delegate_to: localhost
-  ansible.builtin.assert:
-    that:
-      - snakeoil_dhparam is defined
-      - not snakeoil_dhparam | int == 1024 or not snakeoil_dhparam | int < 1024
-    quiet: true
-    fail_msg: "please update your dhparam size greater than 1024"
+  when:
+    - not _valid_snakeoil_domain or not _valid_snakeoil_dhparam
+  block:
+    - name: check, the certificate domain is specified
+      when:
+        - not _valid_snakeoil_domain
+      ansible.builtin.fail:
+        msg: "snakeoil_domain is not defined."
+      ignore_errors: true
+
+    - name: check, if dhparam is less than or equal to 1024
+      when:
+        - not _valid_snakeoil_dhparam
+      ansible.builtin.fail:
+        msg: "please update your dhparam size greater than 1024"
+      ignore_errors: true
+
+    - name: wait 10 seconds to realise the message
+      ansible.builtin.wait_for:
+        timeout: 10
+
+    - name: full stop at errors
+      ansible.builtin.meta: end_play
 
 - name: define current_date
   delegate_to: localhost

@@ -34,9 +34,9 @@ class SyslogNgCmd(object):
 
         if not self._syslog_ng_bin:
             return dict(
-                rc = 1,
-                failed = True,
-                msg = "no installed syslog-ng found"
+                rc=1,
+                failed=True,
+                msg="no installed syslog-ng found"
             )
 
         args = []
@@ -62,10 +62,10 @@ class SyslogNgCmd(object):
 
             if (rc == 0):
                 return dict(
-                    rc = 0,
-                    failed = False,
-                    args = args,
-                    version = version
+                    rc=0,
+                    failed=False,
+                    args=args,
+                    version=version
                 )
 
         if '--syntax-only' in parameter_list:
@@ -78,18 +78,18 @@ class SyslogNgCmd(object):
 
             if rc == 0:
                 return dict(
-                    rc = rc,
-                    failed = False,
-                    args = args,
-                    msg = "syntax okay"
+                    rc=rc,
+                    failed=False,
+                    args=args,
+                    msg="syntax okay"
                 )
             else:
                 return dict(
-                    rc = rc,
-                    failed = True,
-                    args = args,
-                    stdout = out,
-                    stderr = err,
+                    rc=rc,
+                    failed=True,
+                    args=args,
+                    stdout=out,
+                    stderr=err,
                 )
 
         return result

@@ -74,16 +74,16 @@ def get_vars(host):
     # print(" -> {} / {}".format(distribution, os))
     # print(" -> {}".format(base_dir))
 
-    file_defaults      = read_ansible_yaml("{}/defaults/main".format(base_dir), "role_defaults")
-    file_vars          = read_ansible_yaml("{}/vars/main".format(base_dir), "role_vars")
-    file_distribution  = read_ansible_yaml("{}/vars/{}".format(base_dir, os), "role_distribution")
-    file_molecule      = read_ansible_yaml("{}/group_vars/all/vars".format(molecule_dir), "test_vars")
+    file_defaults = read_ansible_yaml("{}/defaults/main".format(base_dir), "role_defaults")
+    file_vars = read_ansible_yaml("{}/vars/main".format(base_dir), "role_vars")
+    file_distribution = read_ansible_yaml("{}/vars/{}".format(base_dir, os), "role_distribution")
+    file_molecule = read_ansible_yaml("{}/group_vars/all/vars".format(molecule_dir), "test_vars")
     # file_host_molecule = read_ansible_yaml("{}/host_vars/{}/vars".format(base_dir, HOST), "host_vars")
 
-    defaults_vars      = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
-    vars_vars          = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
-    distribution_vars  = host.ansible("include_vars", file_distribution).get("ansible_facts").get("role_distribution")
-    molecule_vars      = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
+    defaults_vars = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
+    vars_vars = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
+    distribution_vars = host.ansible("include_vars", file_distribution).get("ansible_facts").get("role_distribution")
+    molecule_vars = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
     # host_vars          = host.ansible("include_vars", file_host_molecule).get("ansible_facts").get("host_vars")
 
     ansible_vars = defaults_vars

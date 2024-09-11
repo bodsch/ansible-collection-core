@@ -170,6 +170,7 @@ jobs:
           - "3.11"
         scenario:
           - borgkube
+          - configured
         collection_role:
           - snakeoil
 

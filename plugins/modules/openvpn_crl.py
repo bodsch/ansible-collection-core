@@ -58,14 +58,14 @@ class OpenVPNCrl(object):
                 self.revoked_certificates = crl_info.get('revoked_certificates', [])
 
                 result = dict(
-                    failed = False,
-                    last_update = dict(
-                        raw = crl_info.get('last_update'),
-                        parsed = self.last_update
+                    failed=False,
+                    last_update=dict(
+                        raw=crl_info.get('last_update'),
+                        parsed=self.last_update
                     ),
-                    next_update = dict(
-                        raw = crl_info.get('next_update'),
-                        parsed = self.next_update
+                    next_update=dict(
+                        raw=crl_info.get('next_update'),
+                        parsed=self.next_update
                     )
                 )
 
@@ -124,17 +124,17 @@ def main():
             type="str",
             default="/etc/easy-rsa/pki"
         ),
-        list_revoked_certificates = dict(
+        list_revoked_certificates=dict(
             required=False,
             type="bool",
             default=False
         ),
-        warn_for_expire = dict(
+        warn_for_expire=dict(
             required=False,
             type="bool",
             default=True
         ),
-        expire_in_days = dict(
+        expire_in_days=dict(
             required=False,
             type="int",
             default=10

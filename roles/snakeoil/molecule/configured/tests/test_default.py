@@ -1,5 +1,3 @@
-# coding: utf-8
-from __future__ import unicode_literals
 
 from ansible.parsing.dataloader import DataLoader
 from ansible.template import Templar
@@ -7,13 +5,13 @@ from ansible.template import Templar
 import json
 import pytest
 import os
+import ssl
 
 import testinfra.utils.ansible_runner
 
-HOST = 'instance'
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(HOST)
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
 
 
 def pp_json(json_thing, sort=True, indents=2):
@@ -100,57 +98,77 @@ def get_vars(host):
     return result
 
 
-def local_facts(host):
+def test_directories(host, get_vars):
     """
-      return local facts
     """
-    return host.ansible("setup").get("ansible_facts").get("ansible_local").get("syslog_ng")
+    wanted_domain = get_vars.get("snakeoil_domain", None)
+
+    dirs = [
+        "/etc/ssl/{0}"
+    ]
+
+    for directory in dirs:
+        d = host.file(directory.format(wanted_domain))
+        assert d.is_directory
 
 
-@pytest.mark.parametrize("dirs", [
-    "/etc/syslog-ng/conf.d",
-])
-def test_directories(host, dirs):
-    d = host.file(dirs)
-    assert d.is_directory
-    assert d.exists
+def test_files(host, get_vars):
+    """
+    """
+    wanted_domain = get_vars.get("snakeoil_domain", None)
+
+    files = [
+        "/etc/ssl/{0}/dh.pem",
+        "/etc/ssl/{0}/{0}.conf",
+        "/etc/ssl/{0}/{0}.crt",
+        "/etc/ssl/{0}/{0}.csr",
+        "/etc/ssl/{0}/{0}.key",
+        "/etc/ssl/{0}/{0}.pem",
+    ]
+
+    for file in files:
+        f = host.file(file.format(wanted_domain))
+        assert f.exists
 
 
-@pytest.mark.parametrize("files", [
-    "/etc/syslog-ng/syslog-ng.conf",
-    "/etc/syslog-ng/conf.d/sources.conf",
-    "/etc/syslog-ng/conf.d/destinations.conf",
-    "/etc/syslog-ng/conf.d/filters.conf",
-    "/etc/syslog-ng/conf.d/logs.conf",
-])
-def test_files(host, files):
-    f = host.file(files)
-    assert f.is_file
-    assert f.exists
+def test_cert(host, get_vars):
+    """
+    """
+    wanted_alt_names = get_vars.get("snakeoil_alt_names", [])
+    wanted_domain = get_vars.get("snakeoil_domain", None)
+    # print(" - {} -> {}".format(wanted_domain, wanted_alt_names))
+    if len(wanted_alt_names) > 0:
+        """
+        """
+        cert_file_name = os.path.join(
+            get_vars.get("snakeoil_local_tmp_directory"),
+            wanted_domain,
+            f"{wanted_domain}.pem")
 
-
-def test_version(host):
-    config_file = "/etc/syslog-ng/syslog-ng.conf"
-    content = host.file(config_file).content_string
-
-    version = local_facts(host).get("version")
-
-    assert f"@version: {version}" in content
-
-
-def test_service(host):
-    service_unit = local_facts(host).get("service_unit")
-    service = host.service(service_unit)
-    assert service.is_enabled
-    assert service.is_running
-
-
-# def test_open_port(host):
-#     """
-#     """
-#     for i in host.socket.get_listening_sockets():
-#         print(i)
-#
-#     assert host.socket("udp://0.0.0.0:514").is_listening
-#     assert host.socket("udp://0.0.0.0:5140").is_listening
-#     # assert host.socket(f"unix:///var/lib/syslog-ng/syslog-ng.ctl").is_listening
+        if os.path.exists(cert_file_name):
+            try:
+                cert_dict = ssl._ssl._test_decode_cert(cert_file_name)
+            except Exception as e:
+                assert "Error decoding certificate: {0:}".format(e)
+            else:
+                # get all alternative names
+                alt_names = cert_dict.get("subjectAltName")
+                # convert tuple to dict
+                alt_names = dict(map(reversed, alt_names))
+                # print(f"found in certificate: {alt_names}")
+                # seperate values
+                alt_dns = [k for k, v in alt_names.items() if v == "DNS"]
+                alt_ips = [k for k, v in alt_names.items() if v == "IP Address"]
+                # print(f"DNS: {alt_dns}")
+                # print(f"IP : {alt_ips}")
+                for n in wanted_alt_names:
+                    dns = n.get("dns", [])
+                    ip = n.get("ip", [])
+                    # assert for all DNS entries
+                    for d in dns:
+                        assert d in alt_dns
+                    # assert for all IP entries
+                    for i in ip:
+                        assert i in alt_ips
+        else:
+            assert False, f"file {cert_file_name} is not present on ansible controller"

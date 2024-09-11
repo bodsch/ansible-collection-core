@@ -2,7 +2,7 @@
 namespace: bodsch
 name: core
 
-version: 2.2.2
+version: 2.2.3
 
 readme: README.md
 
@@ -18,7 +18,9 @@ license_file: ''
 
 tags: []
 
-dependencies: {}
+dependencies:
+ community.crypto: "*"
+ ansible.utils: "*"
 
 repository: https://github.com/bodsch/ansible-collection-core
 documentation: https://github.com/bodsch/ansible-collection-core/README.md

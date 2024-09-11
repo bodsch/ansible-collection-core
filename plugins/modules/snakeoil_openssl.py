@@ -50,16 +50,16 @@ class SnakeoilOpenssl(object):
             msg="failed"
         )
 
-        base_directory = os.path.join(self.directory, self.domain)
-
-        if not os.path.isdir(base_directory):
-            return dict(
-                failed=True,
-                changed=False,
-                msg=f"missing directory {base_directory}"
-            )
-
-        os.chdir(base_directory)
+        # base_directory = os.path.join(self.directory, self.domain)
+        #
+        # if not os.path.isdir(base_directory):
+        #     return dict(
+        #         failed=True,
+        #         changed=False,
+        #         msg=f"missing directory {base_directory}"
+        #     )
+        #
+        # os.chdir(base_directory)
         _ssl_args = []
 
         csr_file = os.path.join(self.directory, self.domain, f"{self.domain}.csr")
@@ -82,6 +82,15 @@ class SnakeoilOpenssl(object):
             _ssl_args.append(key_file)
             _ssl_args.append("-config")
             _ssl_args.append(self.openssl_config)
+
+            error, msg = self._base_directory()
+
+            if error:
+                return dict(
+                    failed=True,
+                    changed=False,
+                    msg=msg
+                )
 
             rc, out, err = self._exec(_ssl_args)
 
@@ -108,6 +117,15 @@ class SnakeoilOpenssl(object):
             _ssl_args.append("-days")
             _ssl_args.append(str(self.cert_life_time))
 
+            error, msg = self._base_directory()
+
+            if error:
+                return dict(
+                    failed=True,
+                    changed=False,
+                    msg=msg
+                )
+
             rc, out, err = self._exec(_ssl_args)
 
             # cat {{ domain }}.crt {{ domain }}.key >> {{ domain }}.pem
@@ -132,6 +150,15 @@ class SnakeoilOpenssl(object):
             _ssl_args.append(dh_file)
             _ssl_args.append(str(self.dhparam))
 
+            error, msg = self._base_directory()
+
+            if error:
+                return dict(
+                    failed=True,
+                    changed=False,
+                    msg=msg
+                )
+
             rc, out, err = self._exec(_ssl_args)
 
             result = dict(
@@ -146,6 +173,15 @@ class SnakeoilOpenssl(object):
             _ssl_args.append("-in")
             _ssl_args.append(dh_file)
             _ssl_args.append("-text")
+
+            error, msg = self._base_directory()
+
+            if error:
+                return dict(
+                    failed=False,
+                    changed=False,
+                    size=int(0)
+                )
 
             rc, out, err = self._exec(_ssl_args)
 
@@ -166,6 +202,22 @@ class SnakeoilOpenssl(object):
             )
 
         return result
+
+    def _base_directory(self):
+        """
+        """
+        error = False
+        msg = ""
+
+        base_directory = os.path.join(self.directory, self.domain)
+
+        if os.path.isdir(base_directory):
+            os.chdir(base_directory)
+        else:
+            error = True
+            msg = f"missing directory {base_directory}"
+
+        return (error, msg)
 
     def _exec(self, args):
         """
