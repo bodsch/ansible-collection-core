@@ -6,12 +6,6 @@
     _valid_snakeoil_domain: "{{ snakeoil_domain | default('') | length != 0 }}"
     _valid_snakeoil_dhparam: "{{ not snakeoil_dhparam | default('2048') | int <= 1024 }}"
 
-- name: d
-  debug:
-    msg:
-      - "domain {{ _valid_snakeoil_domain }}"
-      - "dhparam {{ _valid_snakeoil_dhparam }}"
-
 - name: validate variables
   delegate_to: localhost
   when:
