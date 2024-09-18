@@ -48,6 +48,12 @@ options:
       - Package name under which the result is installed.
     type: str
     required: true
+  extra_args:
+    description:
+      - optional paramaters for makepkg
+    type: list
+    required: false
+    version_added: 2.2.4
 """
 
 EXAMPLES = """
@@ -59,6 +65,19 @@ EXAMPLES = """
     name: icinga2
     repository: https://aur.archlinux.org/icinga2.git
   register: _icinga2_installed
+
+- name: "install php-pear package via aur
+  become: true
+  become_user: aur_builder
+  bodsch.core.aur:
+    state: present
+    name: php-pear
+    repository: https://aur.archlinux.org/php-pear.git
+    extra_args:
+      - --skippgpcheck
+  async: 3200
+  poll: 10
+  register: _pear_installed
 """
 
 RETURN = """
@@ -81,6 +100,7 @@ class Aur():
         self.state = module.params.get("state")
         self.name = module.params.get("name")
         self.repository = module.params.get("repository")
+        self.extra_args = module.params.get("extra_args")
 
         self.pacman_binary = self.module.get_bin_path('pacman', True)
         self.git_binary = self.module.get_bin_path('git', True)
@@ -196,6 +216,9 @@ class Aur():
             args.append("--noconfirm")
             args.append("--needed")
             args.append("--clean")
+
+            if self.extra_args and len(self.extra_args) > 0:
+                args += self.extra_args
 
             rc, out, err = self._exec(args, check=False)
 
@@ -383,7 +406,11 @@ def main():
         name=dict(
             type='str',
             required=True
-        )
+        ),
+        extra_args=dict(
+            type='list',
+            required=False
+        ),
     )
     module = AnsibleModule(
         argument_spec=args,
