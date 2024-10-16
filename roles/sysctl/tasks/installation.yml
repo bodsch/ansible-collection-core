@@ -1,0 +1,10 @@
+---
+
+- name: install procps
+  ansible.builtin.package:
+    name:
+      - procps
+    state: present
+
+...
+

@@ -1,0 +1,20 @@
+---
+
+- name: define sysctl config file
+  ansible.builtin.set_fact:
+    sysctl_config_file: "{{ item.name }}.conf"
+
+- name: create sysctl setting file
+  ansible.builtin.template:
+    src: sysctl.conf.j2
+    dest: "{{ sysctl_directory }}/{{ sysctl_config_file }}"
+    mode: 0644
+  notify:
+    - reload sysctl
+  when:
+    - item.name is defined
+    - item.rules is defined
+    - item.rules | count > 0
+    - ansible_connection not in [ "container", "docker", "community.docker.docker" ]
+  loop_control:
+    label: "{{ item.name }}"

@@ -1,0 +1,12 @@
+---
+
+- name: prepare
+  ansible.builtin.include_tasks: prepare.yaml
+
+- name: install
+  ansible.builtin.include_tasks: installation.yml
+
+- name: configure
+  ansible.builtin.include_tasks: configure/main.yml
+
+...
