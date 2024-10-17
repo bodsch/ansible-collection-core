@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+{% for k, v in item.rules.items() %}
+{{ k }} = {{ v }}
+{% endfor %}

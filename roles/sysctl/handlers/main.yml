@@ -1,0 +1,10 @@
+---
+
+- name: reload sysctl
+  ansible.builtin.shell:
+    cmd: "sysctl --load {{ sysctl_directory }}/{{ sysctl_config_file }}"
+  failed_when: false
+  when:
+    - sysctl_reload
+
+...

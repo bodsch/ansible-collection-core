@@ -1,0 +1,12 @@
+---
+
+- name:  create sysctl setting file
+  include_tasks: sysctl.yml
+  loop:
+    "{{ sysctl_rules }}"
+  loop_control:
+    loop_var: item
+  when:
+    - sysctl_rules is defined
+    - sysctl_rules | count > 0
+    - ansible_connection not in [ "container", "docker", "community.docker.docker" ]

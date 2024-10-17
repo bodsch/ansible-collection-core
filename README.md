@@ -30,6 +30,7 @@ pip install dirsync
 | [bodsch.core.logrotate](./roles/logrotate/README.md)                       | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/logrotate.yml?branch=main)][logrotate] | Installs logrotate and provides an easy way to setup additional logrotate scripts |
 | [bodsch.core.mount](./roles/mount/README.md)                               | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/mount.yml?branch=main)][mount] | Manage generic mountpoints |
 | [bodsch.core.openvpn](./roles/openvpn/README.md)                           | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/openvpn.yml?branch=main)][openvpn] | Ansible role to install and configure openvpn server. |
+| [bodsch.core.sysctl](./roles/sysctl/README.md)                             | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/sysctl.yml?branch=main)][sysctl] | Ansible role to configure sysctl. |
 
 [pacman]: https://github.com/bodsch/ansible-collection-core/actions/workflows/pacman.yml
 [fail2ban]: https://github.com/bodsch/ansible-collection-core/actions/workflows/fail2ban.yml
@@ -38,6 +39,7 @@ pip install dirsync
 [logrotate]: https://github.com/bodsch/ansible-collection-core/actions/workflows/logrotate.yml
 [mount]: https://github.com/bodsch/ansible-collection-core/actions/workflows/mount.yml
 [openvpn]: https://github.com/bodsch/ansible-collection-core/actions/workflows/openvpn.yml
+[sysctl]: https://github.com/bodsch/ansible-collection-core/actions/workflows/sysctl.yml
 
 ### Modules
 
