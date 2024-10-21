@@ -1,0 +1,8 @@
+---
+
+sshd_packages:
+  - openssh
+
+sshd_sftp_server: /usr/lib/ssh/sftp-server
+
+...
