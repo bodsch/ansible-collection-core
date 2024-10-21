@@ -11,63 +11,63 @@ sshd_binary: /usr/sbin/sshd
 sshd_hostkeys_nofips: []
 
 sshd_defaults_config:
-  port:
-    - 22
+  port: []
+  #  - 22
   address_family: any
   listen_address:
-    - "0.0.0.0"
-  HostKey:
+    - "0.0.0.0:22"
+  host_keys:
     - /etc/ssh/ssh_host_rsa_key
     - /etc/ssh/ssh_host_ecdsa_key
     - /etc/ssh/ssh_host_ed25519_key
-  RekeyLimit:
+  rekey_limit:
     - default
     - none
-  SyslogFacility: AUTH
-  LogLevel: INFO
-  LoginGraceTime: 2m
-  PermitRootLogin: prohibit-password
-  StrictModes: yes
-  MaxAuthTries: 6
-  MaxSessions: 10
-  PubkeyAuthentication: yes
+  syslog_facility: AUTH
+  log_level: INFO
+  login_grace_time: 2m
+  permit_root_login: prohibit-password
+  strict_modes: yes
+  max_auth_tries: 6
+  max_sessions: 10
+  pubkey_authentication: yes
 
   # Expect .ssh/authorized_keys2 to be disregarded by default in future.
-  AuthorizedKeysFile:
+  authorized_keys_file:
     - .ssh/authorized_keys
 
-  AuthorizedPrincipalsFile: none
+  authorized_principals_file: none
 
-  AuthorizedKeysCommand: none
-  AuthorizedKeysCommandUser: nobody
+  authorized_keys_command: none
+  authorized_keys_command_user: nobody
 
   # For this to work you will also need host keys in /etc/ssh/ssh_known_hosts
-  HostbasedAuthentication: no
+  hostbased_authentication: no
   # Change to yes if you don't trust ~/.ssh/known_hosts for
   # HostbasedAuthentication
-  IgnoreUserKnownHosts: no
+  ignore_user_known_hosts: no
   # Don't read the user's ~/.rhosts and ~/.shosts files
-  IgnoreRhosts: yes
+  ignore_rhosts: yes
 
   # To disable tunneled clear text passwords, change to no here!
-  PasswordAuthentication: yes
-  PermitEmptyPasswords: no
+  password_authentication: yes
+  permit_empty_passwords: no
 
   # Change to yes to enable challenge-response passwords (beware issues with
   # some PAM modules and threads)
-  ChallengeResponseAuthentication: no
+  challenge_response_authentication: no
 
   # Kerberos options
-  KerberosAuthentication: no
-  KerberosOrLocalPasswd: yes
-  KerberosTicketCleanup: yes
-  KerberosGetAFSToken: no
+  kerberos_authentication: no
+  kerberos_or_local_passwd: yes
+  kerberos_ticket_cleanup: yes
+  kerberos_get_afs_token: no
 
   # GSSAPI options
-  GSSAPIAuthentication: no
-  GSSAPICleanupCredentials: yes
-  GSSAPIStrictAcceptorCheck: yes
-  GSSAPIKeyExchange: no
+  gss_api_authentication: no
+  gss_api_cleanup_credentials: yes
+  gss_api_strict_acceptor_check: yes
+  gss_api_key_exchange: no
 
   # Set this to 'yes' to enable PAM authentication, account processing,
   # and session processing. If this is enabled, PAM authentication will
@@ -78,44 +78,44 @@ sshd_defaults_config:
   # If you just want the PAM account and session checks to run without
   # PAM authentication, then enable this but set PasswordAuthentication
   # and ChallengeResponseAuthentication to 'no'.
-  UsePAM: yes
+  use_pam: yes
 
-  AllowAgentForwarding: yes
-  AllowTcpForwarding: yes
-  GatewayPorts: no
-  X11Forwarding: no
-  X11DisplayOffset: 10
-  X11UseLocalhost: yes
-  PermitTTY: yes
-  PrintMotd: no
-  PrintLastLog: yes
-  TCPKeepAlive: yes
-  PermitUserEnvironment: no
-  Compression: delayed
-  ClientAliveInterval: 0
-  ClientAliveCountMax: 3
-  UseDNS: no
-  PidFile: /var/run/sshd.pid
-  MaxStartups: 10:30:100
-  PermitTunnel: no
-  ChrootDirectory: none
-  VersionAddendum: none
+  allow_agent_forwarding: yes
+  allow_tcp_forwarding: yes
+  gateway_ports: no
+  x11_forwarding: no
+  x11_display_offset: 10
+  x11_use_localhost: yes
+  permit_tty: yes
+  print_motd: no
+  print_last_log: yes
+  tcp_keep_alive: yes
+  permituser_environment: no
+  compression: delayed
+  client_alive_interval: 0
+  client_alive_count_max: 3
+  use_dns: no
+  pid_file: /var/run/sshd.pid
+  max_startups: 10:30:100
+  permit_tunnel: no
+  chroot_directory: none
+  version_addendum: none
 
   # no default banner path
-  Banner: none
+  banner: none
 
   # Allow client to pass locale environment variables
-  AcceptEnv:
+  accept_env:
     - LANG
     - LC_*
 
   # override default of no subsystems
-  Subsystem:
+  subsystem:
     - name: sftp
       path: /usr/lib/openssh/sftp-server
 
   # Example of overriding settings on a per-user basis
-  Match_User:
+  match_users:
     - username: anoncvs
       options:
         - X11Forwarding: no

@@ -1,21 +1,26 @@
 ---
 
 sshd_config:
-  ListenAddress:
+  address_family: inet
+  listen_address:
     - "{{ ansible_default_ipv4.address }}:2222"
-  LogLevel: VERBOSE
-  SyslogFacility: AUTHPRIV
-  LoginGraceTime: 2m
-  MaxAuthTries: 3
-  MaxSessions: 10
-  PubkeyAuthentication: true
-  PasswordAuthentication: false
-  AuthorizedKeysFile: /etc/ssh/authorized_keys/%u .ssh/authorized_keys
+    - "0.0.0.0:22"
+
+  log_level: VERBOSE
+  syslog_facility: AUTHPRIV
+  login_grace_time: 2m
+  max_auth_tries: 3
+  max_sessions: 10
+  pubkey_authentication: true
+  password_authentication: false
+  authorized_keys_file:
+    - "/etc/ssh/authorized_keys/%u"
+    - ".ssh/authorized_keys"
   UseDNS: false
-  ClientAliveInterval: 60
-  ClientAliveCountMax: 3
-  PrintLastLog: true
-  AcceptEnv:
+  client_alive_interval: 60
+  client_alive_count_max: 3
+  print_last_log: true
+  accept_env:
     - COLORTERM
     - LANG
     - LANGUAGE
