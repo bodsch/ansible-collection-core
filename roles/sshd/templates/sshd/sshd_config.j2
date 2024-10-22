@@ -1,400 +1,127 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 # {{ ansible_managed }}
-
-{% if sshd_config.port is defined %}
-  {% if sshd_config.port | bodsch.core.type in ["int", "string"] %}
-Port {{ sshd_config.port }}
-  {% elif sshd_config.port | bodsch.core.type in ["list"] %}
-    {% for p in sshd_config.port %}
-Port {{ p }}
-    {% endfor %}
+{% macro validate_option(value, valid_values=[]) %}
+  {% if valid_values | count > 0 %}
+    {% if value not in valid_values %}
+      {% set value = None %}
+    {% endif %}
   {% endif %}
-{% endif %}
-{% if sshd_config.address_family is defined and
-      sshd_config.address_family | string | length > 0 and
-      sshd_config.address_family in ["any", "inet", "inet6"] %}
-AddressFamily {{ sshd_config.address_family }}
-{% endif %}
-{% if sshd_config.listen_address is defined %}
-  {% if sshd_config.listen_address | bodsch.core.type in ["int", "string"] %}
-ListenAddress {{ sshd_config.listen_address }}
-  {% elif sshd_config.listen_address | bodsch.core.type in ["list"] %}
-    {% for p in sshd_config.listen_address %}
-ListenAddress {{ p }}
-    {% endfor %}
-  {% endif %}
-{% endif %}
-{% if sshd_config.host_keys is defined %}
-  {% if sshd_config.host_keys | bodsch.core.type in ["int", "string"] %}
-HostKey {{ sshd_config.host_keys }}
-  {% elif sshd_config.host_keys | bodsch.core.type in ["list"] %}
-    {% for p in sshd_config.host_keys %}
-HostKey {{ p }}
-    {% endfor %}
-  {% endif %}
-{% endif %}
-{% if sshd_config.rekey_limit is defined and
-      sshd_config.rekey_limit | string | length > 0 %}
-RekeyLimit {{ sshd_config.rekey_limit }}
-{% endif %}
-{% if sshd_config.syslog_facility is defined and
-      sshd_config.syslog_facility | string | length > 0 and
-      sshd_config.syslog_facility in ["DAEMON","USER","AUTH","LOCAL0","LOCAL1","LOCAL2","LOCAL3","LOCAL4","LOCAL5","LOCAL6","LOCAL7"] %}
-SyslogFacility {{ sshd_config.syslog_facility }}
-{% endif %}
-{% if sshd_config.log_level is defined and
-      sshd_config.log_level | string | length > 0 and
-      sshd_config.log_level in ["QUIET","FATAL","ERROR","INFO","VERBOSE","DEBUG","DEBUG1","DEBUG2","DEBUG3"] %}
-LogLevel {{ sshd_config.log_level }}
-{% endif %}
-
-{% if sshd_config.login_grace_time is defined and
-      sshd_config.login_grace_time | string | length > 0 %}
-LoginGraceTime {{ sshd_config.login_grace_time }}
-{% endif %}
-{% if sshd_config.permit_root_login is defined and
-      sshd_config.permit_root_login | string | length > 0 and
-      sshd_config.permit_root_login in ["yes","prohibit-password","forced-commands-only","no"] %}
-PermitRootLogin {{ sshd_config.permit_root_login }}
-{% endif %}
-{% if sshd_config.strict_modes is defined and
-      sshd_config.strict_modes | string | length > 0 %}
-StrictModes {{ sshd_config.strict_modes | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.max_auth_tries is defined and
-      sshd_config.max_auth_tries | string | length > 0 %}
-MaxAuthTries {{ sshd_config.max_auth_tries }}
-{% endif %}
-{% if sshd_config.max_sessions is defined and
-      sshd_config.max_sessions | string | length > 0 %}
-MaxSessions {{ sshd_config.max_sessions }}
-{% endif %}
-{% if sshd_config.pubkey_authentication is defined and
-      sshd_config.pubkey_authentication | string | length > 0 %}
-PubkeyAuthentication {{ sshd_config.pubkey_authentication | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.authorized_keys_file is defined %}
-  {% if sshd_config.authorized_keys_file | bodsch.core.type == "string" %}
-AuthorizedKeysFile {{ sshd_config.authorized_keys_file }}
-  {% elif sshd_config.authorized_keys_file | bodsch.core.type == "list" %}
-AuthorizedKeysFile {{ sshd_config.authorized_keys_file | join(' ') }}
-  {% endif %}
-{% endif %}
-{% if sshd_config.authorized_principals_file is defined and
-      sshd_config.authorized_principals_file | string | length > 0 %}
-AuthorizedPrincipalsFile {{ sshd_config.authorized_principals_file }}
-{% endif %}
-{% if sshd_config.authorized_keys_command is defined and
-      sshd_config.authorized_keys_command | string | length > 0 %}
-AuthorizedKeysCommand {{ sshd_config.authorized_keys_command }}
-{% endif %}
-{% if sshd_config.authorized_keys_command_user is defined and
-      sshd_config.authorized_keys_command_user | string | length > 0 %}
-AuthorizedKeysCommandUser {{ sshd_config.authorized_keys_command_user }}
-{% endif %}
-{% if sshd_config.hostbased_authentication is defined and
-      sshd_config.hostbased_authentication | string | length > 0 %}
-HostbasedAuthentication {{ sshd_config.hostbased_authentication | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.ignore_user_known_hosts is defined and
-      sshd_config.ignore_user_known_hosts | string | length > 0 %}
-IgnoreUserKnownHosts {{ sshd_config.ignore_user_known_hosts | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.ignore_rhosts is defined and
-      sshd_config.ignore_rhosts | string | length > 0 %}
-IgnoreRhosts {{ sshd_config.ignore_rhosts | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.password_authentication is defined and
-      sshd_config.password_authentication | string | length > 0 %}
-PasswordAuthentication {{ sshd_config.password_authentication | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.permit_empty_passwords is defined and
-      sshd_config.permit_empty_passwords | string | length > 0 %}
-PermitEmptyPasswords {{ sshd_config.permit_empty_passwords | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.challenge_response_authentication is defined and
-      sshd_config.challenge_response_authentication | string | length > 0 %}
-ChallengeResponseAuthentication {{ sshd_config.challenge_response_authentication | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.kerberos_authentication is defined and
-      sshd_config.kerberos_authentication | string | length > 0 %}
-KerberosAuthentication {{ sshd_config.kerberos_authentication | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.kerberos_or_local_passwd is defined and
-      sshd_config.kerberos_or_local_passwd | string | length > 0 %}
-KerberosOrLocalPasswd {{ sshd_config.kerberos_or_local_passwd | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.kerberos_ticket_cleanup is defined and
-      sshd_config.kerberos_ticket_cleanup | string | length > 0 %}
-KerberosTicketCleanup {{ sshd_config.kerberos_ticket_cleanup | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.kerberos_get_afs_token is defined and
-      sshd_config.kerberos_get_afs_token | string | length > 0 %}
-KerberosGetAFSToken {{ sshd_config.kerberos_get_afs_token | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.gss_api_authentication is defined and
-      sshd_config.gss_api_authentication | string | length > 0 %}
-GSSAPIAuthentication {{ sshd_config.gss_api_authentication | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.gss_api_cleanup_credentials is defined and
-      sshd_config.gss_api_cleanup_credentials | string | length > 0 %}
-GSSAPICleanupCredentials {{ sshd_config.gss_api_cleanup_credentials | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.gss_api_strict_acceptor_check is defined and
-      sshd_config.gss_api_strict_acceptor_check | string | length > 0 %}
-GSSAPIStrictAcceptorCheck {{ sshd_config.gss_api_strict_acceptor_check | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.gss_api_key_exchange is defined and
-      sshd_config.gss_api_key_exchange | string | length > 0 %}
-GSSAPIKeyExchange {{ sshd_config.gss_api_key_exchange | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-
-{% if sshd_config.use_pam is defined and
-      sshd_config.use_pam | string | length > 0 %}
-UsePAM {{ sshd_config.use_pam | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-
-{% if sshd_config.allow_agent_forwarding is defined and
-      sshd_config.allow_agent_forwarding | string | length > 0 %}
-AllowAgentForwarding {{ sshd_config.allow_agent_forwarding | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.allow_tcp_forwarding is defined and
-      sshd_config.allow_tcp_forwarding | string | length > 0 %}
-AllowTcpForwarding {{ sshd_config.allow_tcp_forwarding | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.gateway_ports is defined and
-      sshd_config.gateway_ports | string | length > 0 %}
-GatewayPorts {{ sshd_config.gateway_ports | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.x11_forwarding is defined and
-      sshd_config.x11_forwarding | string | length > 0 %}
-X11Forwarding {{ sshd_config.x11_forwarding | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.x11_display_offset is defined and
-      sshd_config.x11_display_offset | string | length > 0 %}
-X11DisplayOffset {{ sshd_config.x11_display_offset }}
-{% endif %}
-{% if sshd_config.x11_use_localhost is defined and
-      sshd_config.x11_use_localhost | string | length > 0 %}
-X11UseLocalhost {{ sshd_config.x11_use_localhost | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.permit_tty is defined and
-      sshd_config.permit_tty | string | length > 0 %}
-PermitTTY {{ sshd_config.permit_tty | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.print_motd is defined and
-      sshd_config.print_motd | string | length > 0 %}
-PrintMotd {{ sshd_config.print_motd }}
-{% endif %}
-{% if sshd_config.print_last_log is defined and
-      sshd_config.print_last_log | string | length > 0 %}
-PrintLastLog {{ sshd_config.print_last_log | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.tcp_keep_alive is defined and
-      sshd_config.tcp_keep_alive | string | length > 0 %}
-TCPKeepAlive {{ sshd_config.tcp_keep_alive | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.permituser_environment is defined and
-      sshd_config.permituser_environment | string | length > 0 %}
-PermitUserEnvironment {{ sshd_config.permituser_environment }}
-{% endif %}
-{% if sshd_config.compression is defined and
-      sshd_config.compression | string | length > 0 and
-      sshd_config.compression in ["yes","delayed","no"] %}
-Compression {{ sshd_config.compression }}
-{% endif %}
-{% if sshd_config.client_alive_interval is defined and
-      sshd_config.client_alive_interval | string | length > 0 %}
-ClientAliveInterval {{ sshd_config.client_alive_interval }}
-{% endif %}
-{% if sshd_config.client_alive_count_max is defined and
-      sshd_config.client_alive_count_max | string | length > 0 %}
-ClientAliveCountMax {{ sshd_config.client_alive_count_max }}
-{% endif %}
-{% if sshd_config.use_dns is defined and
-      sshd_config.use_dns | string | length > 0 %}
-UseDNS {{ sshd_config.use_dns | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.pid_file is defined and
-      sshd_config.pid_file | string | length > 0 %}
-PidFile {{ sshd_config.pid_file }}
-{% endif %}
-{% if sshd_config.max_startups is defined and
-      sshd_config.max_startups | string | length > 0 %}
-MaxStartups {{ sshd_config.max_startups }}
-{% endif %}
-{% if sshd_config.permit_tunnel is defined and
-      sshd_config.permit_tunnel | string | length > 0 %}
-PermitTunnel {{ sshd_config.permit_tunnel | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }}
-{% endif %}
-{% if sshd_config.chroot_directory is defined and
-      sshd_config.chroot_directory | string | length > 0 %}
-ChrootDirectory {{ sshd_config.chroot_directory }}
-{% endif %}
-{% if sshd_config.version_addendum is defined and
-      sshd_config.version_addendum | string | length > 0 %}
-VersionAddendum {{ sshd_config.version_addendum }}
-{% endif %}
-{% if sshd_config.banner is defined and
-      sshd_config.banner | string | length > 0 %}
-Banner {{ sshd_config.banner }}
-{% endif %}
-{% if sshd_config.accept_env is defined %}
-  {% if sshd_config.accept_env | bodsch.core.type == "string" %}
-AcceptEnv {{ sshd_config.accept_env }}
-  {% elif sshd_config.accept_env | bodsch.core.type == "list" %}
-    {% for p in sshd_config.accept_env %}
-AcceptEnv {{ p }}
-    {% endfor %}
-  {% endif %}
-{% endif %}
-{% if sshd_config.subsystem is defined %}
-  {% if sshd_config.subsystem | bodsch.core.type == "string" %}
-Subsystem {{ sshd_config.subsystem }}
-  {% elif sshd_config.subsystem | bodsch.core.type == "dict" %}
-# {{ sshd_config.subsystem }}
-Subsystem {{ sshd_config.subsystem['name'] | default('sftp') }} {{ sshd_config.subsystem['path'] | default('/usr/lib/openssh/sftp-server') }}
-  {% endif %}
-{% endif %}
-
-{% if sshd_config.match_users is defined %}
-  {% for users in sshd_config.match_users %}
-    {% set username = users.get('username') %}
-    {% set options = users.get('options') %}
-Match User {{ username }}
-    {% for k, v in options.items() %}
-      {% set value = v %}
-      {% if v | bodsch.core.type == "bool" %}
-        {% set value = v | bodsch.core.config_bool(true_as='yes', false_as='no') %}
+  {% if value | bodsch.core.type == "str" %}
+      {% if value | length == 0 %}
+    {% set value = None %}
       {% endif %}
-  {{ k }}  {{ value }}
-    {% endfor %}
-  {% endfor %}
-{% endif %}
-
-{#
-#       $OpenBSD: sshd_config,v 1.103 2018/04/09 20:41:22 tj Exp $
-
-# This is the sshd server system-wide configuration file.  See
-# sshd_config(5) for more information.
-
-# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin
-
-# The strategy used for options in the default sshd_config shipped with
-# OpenSSH is to specify options with their default value where
-# possible, but leave them commented.  Uncommented options override the
-# default value.
+  {% elif value | bodsch.core.type == "list" %}
+      {% if value | count == 0 %}
+    {% set value = None %}
+      {% endif %}
+  {% elif value | bodsch.core.type == "bool" %}
+    {% set value = value | bodsch.core.config_bool(true_as='yes', false_as='no') %}
+  {% endif %}
+  {{ value }}
+{% endmacro %}
+{% set _ = sshd_config.pop("Subsystem") %}
+{% set _ = sshd_config.pop("Match") %}
 
 Include /etc/ssh/sshd_config.d/*.conf
 
-#Port 22
-#AddressFamily any
-#ListenAddress 0.0.0.0
-#ListenAddress ::
-
-#HostKey /etc/ssh/ssh_host_rsa_key
-#HostKey /etc/ssh/ssh_host_ecdsa_key
-#HostKey /etc/ssh/ssh_host_ed25519_key
-
-# Ciphers and keying
-#RekeyLimit default none
-
-# Logging
-#SyslogFacility AUTH
-#LogLevel INFO
-
-# Authentication:
-
-#LoginGraceTime 2m
-#PermitRootLogin prohibit-password
-#StrictModes yes
-#MaxAuthTries 6
-#MaxSessions 10
-
-#PubkeyAuthentication yes
-
-# Expect .ssh/authorized_keys2 to be disregarded by default in future.
-#AuthorizedKeysFile     .ssh/authorized_keys .ssh/authorized_keys2
-
-#AuthorizedPrincipalsFile none
-
-#AuthorizedKeysCommand none
-#AuthorizedKeysCommandUser nobody
-
-# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts
-#HostbasedAuthentication no
-# Change to yes if you don't trust ~/.ssh/known_hosts for
-# HostbasedAuthentication
-#IgnoreUserKnownHosts no
-# Don't read the user's ~/.rhosts and ~/.shosts files
-#IgnoreRhosts yes
-
-# To disable tunneled clear text passwords, change to no here!
-#PasswordAuthentication yes
-#PermitEmptyPasswords no
-
-# Change to yes to enable challenge-response passwords (beware issues with
-# some PAM modules and threads)
-ChallengeResponseAuthentication no
-
-# Kerberos options
-#KerberosAuthentication no
-#KerberosOrLocalPasswd yes
-#KerberosTicketCleanup yes
-#KerberosGetAFSToken no
-
-# GSSAPI options
-#GSSAPIAuthentication no
-#GSSAPICleanupCredentials yes
-#GSSAPIStrictAcceptorCheck yes
-#GSSAPIKeyExchange no
-
-# Set this to 'yes' to enable PAM authentication, account processing,
-# and session processing. If this is enabled, PAM authentication will
-# be allowed through the ChallengeResponseAuthentication and
-# PasswordAuthentication.  Depending on your PAM configuration,
-# PAM authentication via ChallengeResponseAuthentication may bypass
-# the setting of "PermitRootLogin without-password".
-# If you just want the PAM account and session checks to run without
-# PAM authentication, then enable this but set PasswordAuthentication
-# and ChallengeResponseAuthentication to 'no'.
-UsePAM yes
-
-#AllowAgentForwarding yes
-#AllowTcpForwarding yes
-#GatewayPorts no
-X11Forwarding yes
-#X11DisplayOffset 10
-#X11UseLocalhost yes
-#PermitTTY yes
-PrintMotd no
-#PrintLastLog yes
-#TCPKeepAlive yes
-#PermitUserEnvironment no
-#Compression delayed
-#ClientAliveInterval 0
-#ClientAliveCountMax 3
-#UseDNS no
-#PidFile /var/run/sshd.pid
-#MaxStartups 10:30:100
-#PermitTunnel no
-#ChrootDirectory none
-#VersionAddendum none
-
-# no default banner path
-#Banner none
-
-# Allow client to pass locale environment variables
-AcceptEnv LANG LC_*
-
-# override default of no subsystems
-Subsystem       sftp    /usr/lib/openssh/sftp-server
-
-# Example of overriding settings on a per-user basis
-#Match User anoncvs
-#       X11Forwarding no
-#       AllowTcpForwarding no
-#       PermitTTY no
-#       ForceCommand cvs server
-
-#}
+{% for key, value in sshd_config.items() %}
+{# {{ key }}: {{ value }} - {{ value | bodsch.core.type }} #}
+{# # {{ value }} | {{ value | bodsch.core.type }} {{ value | string | length }} #}
+  {% if key == "Port" %}
+    {% if value | bodsch.core.type in ["int", "string"] %}
+      {% set value = value | bodsch.core.string_to_list() %}
+    {% endif %}
+    {% for x in value %}
+{{ key }}  {{ x }}
+    {% endfor %}
+  {% elif key == "AddressFamily" %}
+    {% set _valid_values = ["any", "inet", "inet6"] %}
+    {% set value = validate_option(value=value, valid_values=_valid_values) %}
+    {% if value | string | trim | length > 0 %}
+{{ key -}} {{ value -}}
+    {% endif %}
+  {% elif key == "ListenAddress" %}
+    {% set value = value | bodsch.core.string_to_list() %}
+    {% for p in value %}
+{{ key }}  {{ p }}
+    {% endfor %}
+  {% elif key == "HostKey" %}
+    {% set value = value | bodsch.core.string_to_list() %}
+    {% for p in value %}
+{{ key }}  {{ p }}
+    {% endfor %}
+  {% elif key == "RekeyLimit" %}
+    {% if value | bodsch.core.type == "string" %}
+      {% set value = value | bodsch.core.string_to_list() %}
+    {% endif %}
+{{ key }}  {{ value | join(' ') }}
+  {% elif key == "SyslogFacility" %}
+    {% set _valid_values = ["AUTHPRIV", "DAEMON","USER","AUTH","LOCAL0","LOCAL1","LOCAL2","LOCAL3","LOCAL4","LOCAL5","LOCAL6","LOCAL7"] %}
+    {% set value = validate_option(value=value, valid_values=_valid_values) %}
+    {% if value | string | trim | length > 0 %}
+{{ key -}} {{ value -}}
+    {% endif %}
+  {% elif key == "LogLevel" %}
+    {% set _valid_values = ["QUIET","FATAL","ERROR","INFO","VERBOSE","DEBUG","DEBUG1","DEBUG2","DEBUG3"] %}
+    {% set value = validate_option(value=value, valid_values=_valid_values) %}
+    {% if value | string | trim | length > 0 %}
+{{ key -}} {{ value -}}
+    {% endif %}
+  {% elif key == "LogVerbose" %}
+    {% if value | bodsch.core.type == "string" %}
+      {% set value = value | bodsch.core.string_to_list() %}
+    {% endif %}
+    {% set value = validate_option(value=value) %}
+    {% if value | string | trim | length > 0 %}
+{{ key }}  {{ value | join(',') }}
+    {% endif %}
+  {% elif key == "PermitRootLogin" %}
+    {% set _valid_values = ["yes","prohibit-password","forced-commands-only","no"] %}
+    {% set value = validate_option(value=value, valid_values=_valid_values) %}
+    {% if value | string | trim | length > 0 %}
+{{ key -}} {{ value -}}
+    {% endif %}
+  {% elif key == "AuthorizedKeysFile" %}
+    {% if value | bodsch.core.type == "string" %}
+      {% set value = value | bodsch.core.string_to_list() %}
+    {% endif %}
+{{ key }}  {{ value | join(' ') }}
+  {% elif key == "Compression" %}
+    {% set _valid_values = ["yes","delayed","no"] %}
+    {% set value = validate_option(value=value, valid_values=_valid_values) %}
+    {% if value | string | trim | length > 0 %}
+{{ key -}} {{ value -}}
+    {% endif %}
+  {% elif key == "AcceptEnv" %}
+    {% if value | bodsch.core.type == "string" %}
+      {% set value = value | bodsch.core.string_to_list() %}
+    {% endif %}
+  {# #}
+  {% elif key == "KexAlgorithms" %}
+    {% if value | bodsch.core.type == "string" %}
+      {% set value = value | bodsch.core.string_to_list() %}
+    {% endif %}
+{{ key }}  {{ value | join(',') }}
+  {% elif key == "Ciphers" %}
+    {% if value | bodsch.core.type == "string" %}
+      {% set value = value | bodsch.core.string_to_list() %}
+    {% endif %}
+{{ key }}  {{ value | join(',') }}
+  {% elif key == "MACs" %}
+    {% if value | bodsch.core.type == "string" %}
+      {% set value = value | bodsch.core.string_to_list() %}
+    {% endif %}
+{{ key }}  {{ value | join(',') }}
+  {% elif key == "HostKeyAlgorithms" %}
+    {% if value | bodsch.core.type == "string" %}
+      {% set value = value | bodsch.core.string_to_list() %}
+    {% endif %}
+{{ key }}  {{ value | join(',') }}
+  {# #}
+  {% else %}
+    {% set value = validate_option(value=value) %}
+    {% if value | string | trim | length > 0 %}
+{{ key -}} {{ value -}}
+    {% endif %}
+  {% endif %}
+{% endfor %}

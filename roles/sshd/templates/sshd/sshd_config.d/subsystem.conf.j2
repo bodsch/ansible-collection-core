@@ -1,0 +1,7 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% set _subsystem = sshd_config.get("Subsystem", {}) %}
+{% if _subsystem | count > 0 %}
+Subsystem  {{ _subsystem.get('name', 'sftp') }} {{ _subsystem.get('path', '/usr/lib/openssh/sftp-server') }}
+{% endif %}

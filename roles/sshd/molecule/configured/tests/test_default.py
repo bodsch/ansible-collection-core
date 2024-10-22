@@ -108,7 +108,9 @@ def local_facts(host):
 
 
 @pytest.mark.parametrize("dirs", [
-    "/etc/syslog-ng/conf.d",
+    "/etc/ssh",
+    "/etc/ssh/ssh_config.d",
+    "/etc/ssh/sshd_config.d",
 ])
 def test_directories(host, dirs):
     d = host.file(dirs)
@@ -117,11 +119,16 @@ def test_directories(host, dirs):
 
 
 @pytest.mark.parametrize("files", [
-    "/etc/syslog-ng/syslog-ng.conf",
-    "/etc/syslog-ng/conf.d/sources.conf",
-    "/etc/syslog-ng/conf.d/destinations.conf",
-    "/etc/syslog-ng/conf.d/filters.conf",
-    "/etc/syslog-ng/conf.d/logs.conf",
+    "/etc/ssh/ssh_config",
+    "/etc/ssh/sshd_config",
+    "/etc/ssh/ssh_host_ecdsa_key",
+    "/etc/ssh/ssh_host_ecdsa_key.pub",
+    "/etc/ssh/ssh_host_ed25519_key",
+    "/etc/ssh/ssh_host_ed25519_key.pub",
+    "/etc/ssh/ssh_host_rsa_key",
+    "/etc/ssh/ssh_host_rsa_key.pub",
+    "/etc/ssh/sshd_config.d/match_users.conf",
+    "/etc/ssh/sshd_config.d/subsystem.conf",
 ])
 def test_files(host, files):
     f = host.file(files)
@@ -130,17 +137,15 @@ def test_files(host, files):
 
 
 def test_version(host):
-    config_file = "/etc/syslog-ng/syslog-ng.conf"
+    config_file = "/etc/ssh/sshd_config"
     content = host.file(config_file).content_string
 
-    version = local_facts(host).get("version")
-
-    assert f"@version: {version}" in content
+    assert f"AddressFamily  any" in content
 
 
 def test_service(host):
-    service_unit = local_facts(host).get("service_unit")
-    service = host.service(service_unit)
+
+    service = host.service("sshd")
     assert service.is_enabled
     assert service.is_running
 
@@ -151,5 +156,5 @@ def test_open_port(host):
     for i in host.socket.get_listening_sockets():
         print(i)
 
-    assert host.socket("udp://0.0.0.0:514").is_listening
-    assert host.socket("udp://0.0.0.0:5140").is_listening
+    assert host.socket("tcp://0.0.0.0:22").is_listening
+    assert host.socket("tcp://172.17.0.2:2222").is_listening

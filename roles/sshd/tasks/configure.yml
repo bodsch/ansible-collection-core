@@ -1,43 +1,38 @@
 ---
 
-- name: check FIPS mode
-  when:
-    - sshd_hostkeys_nofips | default([])
-  block:
-    - name: check the kernel FIPS mode
-      ansible.builtin.slurp:
-        src: /proc/sys/crypto/fips_enabled
-      register: sshd_kernel_fips_mode
-      failed_when: false
-
-    - name: check the userspace FIPS mode
-      ansible.builtin.slurp:
-        src: /etc/system-fips
-      register: sshd_userspace_fips_mode
-      failed_when: false
-
-
-# - name: create /etc/sshd/conf.d
-#   ansible.builtin.file:
-#     state: directory
-#     name: /etc/sshd/conf.d
-#     mode: 0750
+# - name: check FIPS mode
+#   when:
+#     - sshd_hostkeys_nofips | default([])
+#   block:
+#     - name: check the kernel FIPS mode
+#       ansible.builtin.slurp:
+#         src: /proc/sys/crypto/fips_enabled
+#       register: sshd_kernel_fips_mode
+#       failed_when: false
 #
-# - name: write splittet configuration files
-#   ansible.builtin.template:
-#     src: "conf.d/{{ item }}.j2"
-#     dest: "/etc/sshd/conf.d/{{ item }}"
-#     mode: 0644
-#   notify:
-#     - restart sshd
-#   loop:
-#     - sources.conf
-#     - destinations.conf
-#     - filters.conf
-#     - logs.conf
-#   tags:
-#     - sshd
-#     - configuration
+#     - name: check the userspace FIPS mode
+#       ansible.builtin.slurp:
+#         src: /etc/system-fips
+#       register: sshd_userspace_fips_mode
+#       failed_when: false
+
+- name: create /etc/ssh/sshd_config.d
+  ansible.builtin.file:
+    state: directory
+    name: /etc/ssh/sshd_config.d
+    mode: 0750
+  tags:
+    - sshd
+    - configuration
+
+- name: create /etc/ssh/ssh_config.d
+  ansible.builtin.file:
+    state: directory
+    name: /etc/ssh/ssh_config.d
+    mode: 0750
+  tags:
+    - sshd
+    - configuration
 
 - name: configure ssh_config
   ansible.builtin.template:
@@ -45,6 +40,35 @@
     dest: /etc/ssh/ssh_config
     mode: 0644
     backup: true
+  tags:
+    - sshd
+    - configuration
+
+- name: create overriding settings on a per-user basis
+  ansible.builtin.template:
+    src: sshd/sshd_config.d/match_users.conf.j2
+    dest: /etc/ssh/sshd_config.d/match_users.conf
+    mode: 0644
+    backup: true
+    validate: "{{ sshd_binary }} -t -f %s"
+  notify:
+    - restart sshd
+  tags:
+    - sshd
+    - configuration
+
+- name: create subsystem configuration
+  ansible.builtin.template:
+    src: sshd/sshd_config.d/subsystem.conf.j2
+    dest: /etc/ssh/sshd_config.d/subsystem.conf
+    mode: 0644
+    backup: true
+    validate: "{{ sshd_binary }} -t -f %s"
+  notify:
+    - restart sshd
+  tags:
+    - sshd
+    - configuration
 
 - name: configure sshd.conf
   ansible.builtin.template:
@@ -53,10 +77,8 @@
     mode: 0644
     backup: true
     validate: "{{ sshd_binary }} -t -f %s"
-
-#   notify:
-#     - validate sshd config
-#     - restart sshd
-#   tags:
-#     - sshd
-#     - configuration
+  notify:
+    - restart sshd
+  tags:
+    - sshd
+    - configuration

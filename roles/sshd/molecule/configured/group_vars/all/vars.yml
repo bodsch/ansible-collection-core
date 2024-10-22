@@ -1,12 +1,12 @@
 ---
 
 sshd_config:
-  address_family: inet
+  #Port: 22
+  #address_family: inet
   listen_address:
     - "{{ ansible_default_ipv4.address }}:2222"
     - "0.0.0.0:22"
-
-  log_level: VERBOSE
+  log_level: INFO
   syslog_facility: AUTHPRIV
   login_grace_time: 2m
   max_auth_tries: 3
@@ -31,5 +31,35 @@ sshd_config:
     - LC_MESSAGES
     - LC_MEASUREMENT
     - LC_ALL
+  Ciphers:
+    - aes256-cbc
+    - aes192-cbc
+    - aes128-cbc,3des-cbc
+  host_key_algorithms:
+    - ssh-ed25519
+    - ssh-ed25519-cert-v01@openssh.com
+    - rsa-sha2-512
+  kex_algorithms:
+    - diffie-hellman-group-exchange-sha256
+    - diffie-hellman-group-exchange-sha1
+    - diffie-hellman-group14-sha1
+  MACs:
+    - hmac-sha2-256
+    - hmac-sha1
+
+  subsystem:
+    name: sftp
+    path: /usr/lib/openssh/sftp-server
+
+  # Example of overriding settings on a per-user basis
+  match_users:
+    - username: anoncvs
+      options:
+        x11_forwarding: false
+        AllowTcpForwarding: false
+        PermitTTY: false
+        ForceCommand:
+          - cvs
+          - server
 
 ...

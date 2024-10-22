@@ -19,6 +19,12 @@
         - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
       skip: true
 
+- name: detect docker environment
+  ansible.builtin.set_fact:
+    is_docker_guest: "{{
+      ansible_virtualization_role | default('host') == 'guest' and
+      ansible_virtualization_type | default('none') == 'docker' }}"
+
 - name: install requirements
   ansible.builtin.package:
     name: "{{ sshd_dependencies }}"
@@ -26,9 +32,12 @@
   when:
     - sshd_dependencies | default([]) | count > 0
 
+- name: gathering facts now
+  ansible.builtin.setup:
+
 - name: merge sshd configuration between defaults and custom
   ansible.builtin.set_fact:
-    ssh_config: "{{ ssh_defaults_config | merge_lists(ssh_config) }}"
-    sshd_config: "{{ sshd_defaults_config | combine(sshd_config, recursive=True) }}"
+    ssh_config: "{{ ssh_defaults_config | bodsch.core.merge_lists(ssh_config) }}"
+    sshd_config: "{{ sshd_defaults_config | combine(sshd_config, recursive=True) | bodsch.core.sshd_values }}"
 
 ...
