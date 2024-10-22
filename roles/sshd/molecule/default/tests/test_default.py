@@ -76,16 +76,16 @@ def get_vars(host):
     # print(" -> {} / {}".format(distribution, os))
     # print(" -> {}".format(base_dir))
 
-    file_defaults      = read_ansible_yaml(f"{base_dir}/defaults/main", "role_defaults")
-    file_vars          = read_ansible_yaml(f"{base_dir}/vars/main", "role_vars")
-    file_distibution   = read_ansible_yaml(f"{base_dir}/vars/{operation_system}", "role_distibution")
-    file_molecule      = read_ansible_yaml(f"{molecule_dir}/group_vars/all/vars", "test_vars")
+    file_defaults = read_ansible_yaml(f"{base_dir}/defaults/main", "role_defaults")
+    file_vars = read_ansible_yaml(f"{base_dir}/vars/main", "role_vars")
+    file_distibution = read_ansible_yaml(f"{base_dir}/vars/{operation_system}", "role_distibution")
+    file_molecule = read_ansible_yaml(f"{molecule_dir}/group_vars/all/vars", "test_vars")
     # file_host_molecule = read_ansible_yaml("{}/host_vars/{}/vars".format(base_dir, HOST), "host_vars")
 
-    defaults_vars      = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
-    vars_vars          = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
-    distibution_vars   = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
-    molecule_vars      = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
+    defaults_vars = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
+    vars_vars = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
+    distibution_vars = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
+    molecule_vars = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
     # host_vars          = host.ansible("include_vars", file_host_molecule).get("ansible_facts").get("host_vars")
 
     ansible_vars = defaults_vars
@@ -108,7 +108,9 @@ def local_facts(host):
 
 
 @pytest.mark.parametrize("dirs", [
-    "/etc/syslog-ng/conf.d",
+    "/etc/ssh",
+    "/etc/ssh/ssh_config.d",
+    "/etc/ssh/sshd_config.d",
 ])
 def test_directories(host, dirs):
     d = host.file(dirs)
@@ -117,11 +119,16 @@ def test_directories(host, dirs):
 
 
 @pytest.mark.parametrize("files", [
-    "/etc/syslog-ng/syslog-ng.conf",
-    "/etc/syslog-ng/conf.d/sources.conf",
-    "/etc/syslog-ng/conf.d/destinations.conf",
-    "/etc/syslog-ng/conf.d/filters.conf",
-    "/etc/syslog-ng/conf.d/logs.conf",
+    "/etc/ssh/ssh_config",
+    "/etc/ssh/sshd_config",
+    "/etc/ssh/ssh_host_ecdsa_key",
+    "/etc/ssh/ssh_host_ecdsa_key.pub",
+    "/etc/ssh/ssh_host_ed25519_key",
+    "/etc/ssh/ssh_host_ed25519_key.pub",
+    "/etc/ssh/ssh_host_rsa_key",
+    "/etc/ssh/ssh_host_rsa_key.pub",
+    "/etc/ssh/sshd_config.d/match_users.conf",
+    "/etc/ssh/sshd_config.d/subsystem.conf",
 ])
 def test_files(host, files):
     f = host.file(files)
@@ -130,17 +137,15 @@ def test_files(host, files):
 
 
 def test_version(host):
-    config_file = "/etc/syslog-ng/syslog-ng.conf"
+    config_file = "/etc/ssh/sshd_config"
     content = host.file(config_file).content_string
 
-    version = local_facts(host).get("version")
-
-    assert f"@version: {version}" in content
+    assert "AddressFamily  any" in content
 
 
 def test_service(host):
-    service_unit = local_facts(host).get("service_unit")
-    service = host.service(service_unit)
+
+    service = host.service("sshd")
     assert service.is_enabled
     assert service.is_running
 
@@ -151,6 +156,4 @@ def test_open_port(host):
     for i in host.socket.get_listening_sockets():
         print(i)
 
-    assert host.socket("udp://0.0.0.0:514").is_listening
-    assert host.socket("udp://0.0.0.0:5140").is_listening
-    # assert host.socket(f"unix:///var/lib/syslog-ng/syslog-ng.ctl").is_listening
+    assert host.socket("tcp://0.0.0.0:22").is_listening

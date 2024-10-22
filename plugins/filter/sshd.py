@@ -2,8 +2,6 @@
 from __future__ import (absolute_import, division, print_function)
 from ansible.utils.display import Display
 
-import re
-# import os
 import json
 
 __metaclass__ = type
@@ -35,10 +33,10 @@ class FilterModule(object):
 
         # short way
         if count_defaults == 0:
-            return data # self.__sort_list(data, 'host')
+            return data  # self.__sort_list(data, 'host')
 
         if count_data == 0:
-            return defaults # self.__sort_list(defaults, 'host')
+            return defaults  # self.__sort_list(defaults, 'host')
 
         # our new list from users input
         for d in data:
@@ -58,7 +56,7 @@ class FilterModule(object):
                         break
 
         # add both lists and sort
-        result = data + defaults # self.__sort_list(data + defaults, 'host')
+        result = data + defaults  # self.__sort_list(data + defaults, 'host')
 
         display.v(f"= result: {result}")
 
@@ -166,7 +164,6 @@ class FilterModule(object):
         display.v(f"= result: {result}")
 
         return result
-
 
     def __sort_list(self, _list, _filter):
         return sorted(_list, key=lambda k: k.get(_filter))

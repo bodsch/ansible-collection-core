@@ -10,7 +10,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 from ansible.utils.display import Display
-from ansible.utils.listify import listify_lookup_plugin_terms as listify
+# from ansible.utils.listify import listify_lookup_plugin_terms as listify
 from ansible.plugins.lookup import LookupBase
 import os
 import re

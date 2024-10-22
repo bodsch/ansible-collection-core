@@ -54,7 +54,9 @@ Include /etc/ssh/sshd_config.d/*.conf
     {% if value | bodsch.core.type == "string" %}
       {% set value = value | bodsch.core.string_to_list() %}
     {% endif %}
+    {% if value | count > 0 %}
 {{ key }}  {{ value | join(' ') }}
+    {% endif %}
   {% elif key == "SyslogFacility" %}
     {% set _valid_values = ["AUTHPRIV", "DAEMON","USER","AUTH","LOCAL0","LOCAL1","LOCAL2","LOCAL3","LOCAL4","LOCAL5","LOCAL6","LOCAL7"] %}
     {% set value = validate_option(value=value, valid_values=_valid_values) %}
@@ -101,22 +103,30 @@ Include /etc/ssh/sshd_config.d/*.conf
     {% if value | bodsch.core.type == "string" %}
       {% set value = value | bodsch.core.string_to_list() %}
     {% endif %}
+    {% if value | count > 0 %}
 {{ key }}  {{ value | join(',') }}
+    {% endif %}
   {% elif key == "Ciphers" %}
     {% if value | bodsch.core.type == "string" %}
       {% set value = value | bodsch.core.string_to_list() %}
     {% endif %}
+    {% if value | count > 0 %}
 {{ key }}  {{ value | join(',') }}
+    {% endif %}
   {% elif key == "MACs" %}
     {% if value | bodsch.core.type == "string" %}
       {% set value = value | bodsch.core.string_to_list() %}
     {% endif %}
+    {% if value | count > 0 %}
 {{ key }}  {{ value | join(',') }}
+    {% endif %}
   {% elif key == "HostKeyAlgorithms" %}
     {% if value | bodsch.core.type == "string" %}
       {% set value = value | bodsch.core.string_to_list() %}
     {% endif %}
+    {% if value | count > 0 %}
 {{ key }}  {{ value | join(',') }}
+    {% endif %}
   {# #}
   {% else %}
     {% set value = validate_option(value=value) %}

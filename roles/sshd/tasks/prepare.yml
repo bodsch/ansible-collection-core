@@ -37,7 +37,7 @@
 
 - name: merge sshd configuration between defaults and custom
   ansible.builtin.set_fact:
-    ssh_config: "{{ ssh_defaults_config | bodsch.core.merge_lists(ssh_config) }}"
+    ssh_config: "{{ ssh_defaults_config | bodsch.core.merge_lists(ssh_config) | bodsch.core.sshd_values }}"
     sshd_config: "{{ sshd_defaults_config | combine(sshd_config, recursive=True) | bodsch.core.sshd_values }}"
 
 ...

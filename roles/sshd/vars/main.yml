@@ -11,15 +11,15 @@ sshd_binary: /usr/sbin/sshd
 sshd_hostkeys_nofips: []
 
 sshd_defaults_config:
-  port: []                                          # 22
+  port:                                             # 22
+    - 22
   address_family: any
-  listen_address:
-    - "0.0.0.0:22"
-
+  listen_address: []
+    # - "0.0.0.0:22"
   # https://man.openbsd.org/sshd_config#RekeyLimit
-  rekey_limit:                                      # ['default', 'none']
-    - default
-    - none
+  rekey_limit: []                                   # ['default', 'none']
+    # - default
+    # - none
   syslog_facility: AUTH                             #
   log_level: INFO                                   #
   log_verbose: []                                   # 'kex.c:*:1000,*:kex_exchange_identification():*,packet.c:*'
