@@ -171,6 +171,7 @@ jobs:
         scenario:
           - configured
           - server-clients
+          - check_mode
         collection_role:
           - syslog_ng
 

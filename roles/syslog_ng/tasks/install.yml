@@ -4,6 +4,10 @@
   ansible.builtin.package:
     name: "{{ syslog_packages }}"
     state: present
+  register: install_syslog
+  tags:
+    - syslog-ng
+    - install
 
 - name: systemd
   when:
@@ -13,10 +17,16 @@
       ansible.builtin.service_facts:
       register: systemd_facts
       no_log: true
+      tags:
+        - syslog-ng
+        - install
 
     - name: set systemd unit name
       ansible.builtin.set_fact:
         syslog_unit_file: "{{ ansible_facts.services | bodsch.core.get_service('syslog-ng') }}"
+      tags:
+        - syslog-ng
+        - install
 
     - name: detect systemd template unit
       ansible.builtin.stat:
@@ -24,6 +34,9 @@
       register: systemd_template
       when:
         - syslog_unit_file is match('.*@')
+      tags:
+        - syslog-ng
+        - install
 
     - name: use systemd template unit
       when:
@@ -37,10 +50,16 @@
             state: link
           notify:
             - reload systemctl daemon
+          tags:
+            - syslog-ng
+            - install
 
         - name: define systemd template unit
           ansible.builtin.set_fact:
             syslog_unit_file: "{{ syslog_unit_file }}{{ syslog_systemd_template }}"
+          tags:
+            - syslog-ng
+            - install
 
 - name: create custom fact file
   bodsch.core.facts:
@@ -48,3 +67,6 @@
     facts:
       version: "{{ syslog_config_version }}"
       service_unit: "{{ syslog_unit_file | default('') }}"
+  tags:
+    - syslog-ng
+    - install

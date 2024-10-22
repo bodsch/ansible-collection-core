@@ -20,7 +20,7 @@ class SyslogNgCmd(object):
         """
         self.module = module
 
-        self._syslog_ng_bin = module.get_bin_path('syslog-ng', True)
+        self._syslog_ng_bin = module.get_bin_path('syslog-ng', False)
         self.parameters = module.params.get("parameters")
 
     def run(self):
@@ -31,6 +31,26 @@ class SyslogNgCmd(object):
         )
 
         parameter_list = self._flatten_parameter()
+
+        self.module.debug("-> {parameter_list}")
+
+        if self.module.check_mode:
+            self.module.debug("In check mode.")
+            if '--version' in parameter_list:
+                return dict(
+                    rc=0,
+                    failed=False,
+                    args=None,
+                    version="1"
+                )
+            if '--syntax-only' in parameter_list:
+                return dict(
+                    rc=0,
+                    failed=False,
+                    args=None,
+                    stdout="In check mode.",
+                    stderr="",
+                )
 
         if not self._syslog_ng_bin:
             return dict(

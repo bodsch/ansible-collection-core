@@ -1,0 +1,10 @@
+---
+
+- name: converge
+  hosts: instance
+  any_errors_fatal: false
+  become: false
+  check_mode: true
+
+  roles:
+    - role: bodsch.core.syslog_ng

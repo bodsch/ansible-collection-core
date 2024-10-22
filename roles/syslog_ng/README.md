@@ -1,5 +1,5 @@
 
-# Ansible Role:  `syslog-ng`
+# Ansible Role:  `syslog_ng`
 
 
 Installs and configures a classic syslog-ng service for processing log files away from journald.
@@ -7,16 +7,6 @@ Installs and configures a classic syslog-ng service for processing log files awa
 This again allows a simple, central logging service to be run on the user's own network.
 
 **This role disables journald and takes over its function!**
-
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-syslog-ng/main.yml?branch=main)][ci]
-[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-syslog-ng)][issues]
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-syslog-ng)][releases]
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
-
-[ci]: https://github.com/bodsch/ansible-syslog-ng/actions
-[issues]: https://github.com/bodsch/ansible-syslog-ng/issues?q=is%3Aopen+is%3Aissue
-[releases]: https://github.com/bodsch/ansible-syslog-ng/releases
-[quality]: https://galaxy.ansible.com/bodsch/syslog_ng
 
 ## Requirements & Dependencies
 
@@ -222,16 +212,6 @@ syslog_logs:
     destination:
       file: "remote/${FULLHOST}.log"
 ```
-
-## Contribution
-
-Please read [Contribution](CONTRIBUTING.md)
-
-## Development,  Branches (Git Tags)
-
-The `master` Branch is my *Working Horse* includes the "latest, hot shit" and can be complete broken!
-
-If you want to use something stable, please use a [Tagged Version](https://github.com/bodsch/ansible-syslog-ng/tags)!
 
 ---
 
