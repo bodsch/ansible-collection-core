@@ -1,0 +1,18 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% set _match = sshd_config.get("Match", []) %}
+{% for users in _match %}
+  {% set username = users.get('username') %}
+  {% set options = users.get('options') %}
+Match User {{ username }}
+  {% for k, v in options.items() %}
+    {% set value = v %}
+    {% if v | bodsch.core.type == "bool" %}
+      {% set value = v | bodsch.core.config_bool(true_as='yes', false_as='no') %}
+    {% elif v | bodsch.core.type == "list" %}
+      {% set value = v | join(' ') %}
+    {% endif %}
+  {{ k }}  {{ value }}
+  {% endfor %}
+{% endfor %}

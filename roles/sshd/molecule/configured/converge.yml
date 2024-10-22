@@ -1,0 +1,10 @@
+---
+
+- name: converge
+  hosts: instance
+  gather_facts: true
+  any_errors_fatal: false
+  become: false
+
+  roles:
+    - role: bodsch.core.sshd

@@ -1,0 +1,17 @@
+---
+
+- name: reload systemctl daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when:
+    - ansible_service_mgr == 'systemd'
+
+- name: reload sshd
+  ansible.builtin.service:
+    name: sshd
+    state: reloaded
+
+- name: restart sshd
+  ansible.builtin.service:
+    name: sshd
+    state: restarted

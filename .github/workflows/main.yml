@@ -69,6 +69,7 @@ jobs:
           - logrotate
           - openvpn
           - sysctl
+          - sshd
 
     steps:
       - name: check out the codebase.
