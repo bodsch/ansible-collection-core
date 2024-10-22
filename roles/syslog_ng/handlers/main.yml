@@ -9,16 +9,23 @@
   ansible.builtin.service:
     name: '{{ syslog_unit_file }}'
     state: reloaded
+  when:
+    - not ansible_check_mode
 
 - name: restart syslog-ng
   ansible.builtin.service:
     name: '{{ syslog_unit_file }}'
     state: restarted
+  when:
+    - not ansible_check_mode
 
 - name: validate syslog-ng config
-  syslog_cmd:
+  bodsch.core.syslog_cmd:
     parameters:
       - --syntax-only
+  check_mode: true
+  when:
+    - not ansible_check_mode
 
 - name: restart systemd-journald
   ansible.builtin.service:

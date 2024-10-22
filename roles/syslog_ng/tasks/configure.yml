@@ -1,10 +1,13 @@
 ---
 
 - name: detect config version
-  syslog_cmd:
+  bodsch.core.syslog_cmd:
     parameters:
       - --version
   register: _syslog_config_version
+  tags:
+    - syslog-ng
+    - configuration
 
 - name: set syslog config version
   ansible.builtin.set_fact:
@@ -13,17 +16,26 @@
     - _syslog_config_version is defined
     - _syslog_config_version.version is defined
     - _syslog_config_version.version | int != 0
+  tags:
+    - syslog-ng
+    - configuration
 
 - name: assert syslog_config_version
   ansible.builtin.assert:
     that: syslog_config_version | length != 0
     msg: "I can't found an valid syslog-ng version :("
+  tags:
+    - syslog-ng
+    - configuration
 
 - name: create /etc/syslog-ng/conf.d
   ansible.builtin.file:
     state: directory
     name: /etc/syslog-ng/conf.d
     mode: 0750
+  tags:
+    - syslog-ng
+    - configuration
 
 - name: create directory for syslog clients
   ansible.builtin.file:
@@ -34,6 +46,9 @@
   when:
     - syslog_server_log_destinations is defined
     - syslog_server_log_destinations | default([]) | count > 0
+  tags:
+    - syslog-ng
+    - configuration
 
 - name: write splittet configuration files
   ansible.builtin.template:

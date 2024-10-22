@@ -17,5 +17,7 @@
 
 - name: service
   ansible.builtin.include_tasks: service.yml
+  when:
+    - not ansible_check_mode
 
 ...
