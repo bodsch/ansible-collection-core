@@ -18,6 +18,7 @@ class FilterModule(object):
         return {
             'type': self.var_type,
             'config_bool': self.config_bool_as_string,
+            'string_to_list': self.string_to_list,
         }
 
     def var_type(self, var):
@@ -46,5 +47,22 @@ class FilterModule(object):
             result = true_as if data else false_as
         else:
             result = data
+
+        return result
+
+    def string_to_list(self, data):
+        """
+        """
+        display.v(f"string_to_list({data}, {type(data)})")
+
+        result = []
+        if isinstance(data, str):
+            result.append(data)
+        elif isinstance(data, int):
+            result.append(str(data))
+        elif isinstance(data, list):
+            result = data
+
+        display.v(f"= result: {result}")
 
         return result

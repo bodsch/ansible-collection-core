@@ -1,0 +1,6 @@
+---
+
+sshd_packages:
+  - openssh
+
+...
