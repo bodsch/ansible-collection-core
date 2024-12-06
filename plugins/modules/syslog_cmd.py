@@ -10,6 +10,62 @@ import re
 
 from ansible.module_utils.basic import AnsibleModule
 
+# ---------------------------------------------------------------------------------------
+
+DOCUMENTATION = r"""
+---
+module: syslog_cmd
+version_added: 1.1.3
+author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+
+short_description: Accepts CLI commandos for syslog-ng.
+
+description:
+    - Accepts CLI commandos for syslog-ng.
+
+options:
+  source_directory:
+    parameters:
+      - A list of parameters.
+    type: list
+    default: []
+    required: true
+"""
+
+EXAMPLES = r"""
+- name: validate syslog-ng config
+  bodsch.core.syslog_cmd:
+    parameters:
+      - --syntax-only
+  check_mode: true
+  when:
+    - not ansible_check_mode
+
+- name: detect config version
+  bodsch.core.syslog_cmd:
+    parameters:
+      - --version
+  register: _syslog_config_version
+"""
+
+RETURN = r"""
+failed:
+  description:
+    - changed or not
+  type: int
+failed:
+  description:
+    - Failed, or not.
+  type: bool
+args:
+  description:
+    - Arguments with which syslog-ng is called.
+  type: str
+
+"""
+
+# ---------------------------------------------------------------------------------------
+
 
 class SyslogNgCmd(object):
     module = None
@@ -151,7 +207,10 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            parameters=dict(required=True, type='list'),
+            parameters=dict(
+                required=True,
+                type='list'
+            ),
         ),
         supports_check_mode=True,
     )
