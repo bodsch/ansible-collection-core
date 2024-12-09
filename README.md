@@ -46,12 +46,14 @@ pip install dirsync
 
 | Name                      | Description |
 |:--------------------------|:----|
-| [remove_ansible_backups](./plugins/modules/remove_ansible_backups.py) | Remove older backup files created by ansible |
-| [package_version](./plugins/modules/package_version.py)               | Attempts to determine the version of a package to be installed or already installed. |
-| [aur](./plugins/modules/aur.py)                                       | Installing packages for ArchLinux with aur |
-| [journalctl](./plugins/modules/journalctl.py)                         | Query the systemd journal with a very limited number of possible parameters |
-| [facts](./plugins/modules/facts.py)                                   | Write ansible facts |
-| [sync_directory](./plugins/modules/sync_directory.py)                 | Syncronises directories similar to rsync |
+| [bodsch.core.remove_ansible_backups](./plugins/modules/remove_ansible_backups.py) | Remove older backup files created by ansible |
+| [bodsch.core.package_version](./plugins/modules/package_version.py)               | Attempts to determine the version of a package to be installed or already installed. |
+| [bodsch.core.aur](./plugins/modules/aur.py)                                       | Installing packages for ArchLinux with aur |
+| [bodsch.core.journalctl](./plugins/modules/journalctl.py)                         | Query the systemd journal with a very limited number of possible parameters |
+| [bodsch.core.facts](./plugins/modules/facts.py)                                   | Write ansible facts |
+| [bodsch.core.sync_directory](./plugins/modules/sync_directory.py)                 | Syncronises directories similar to rsync |
+| [bodsch.core.check_mode](./plugins/modules/check_mode.py)                         | Replacement for `ansible_check_mode`. |
+| [bodsch.core.facts](./plugins/modules/facts.py)                                   | Creates a facts file for ansible. |
 
 
 
@@ -90,6 +92,8 @@ pip install -r requirements.txt
 
 You can either call modules by their Fully Qualified Collection Name (FQCN), such as `bodsch.core.remove_ansible_backups`, 
 or you can call modules by their short name if you list the `bodsch.core` collection in the playbook's `collections` keyword:
+
+
 
 ```yaml
 ---

@@ -15,15 +15,34 @@ module: check_mode
 version_added: 2.5.0
 author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
 
-short_description: another solution for ansible_check_mode
+short_description: Replacement for ansible_check_mode.
 
 description:
-    - returns a valid state for check_mode
+    - Replacement for ansible_check_mode.
+    - The magic variable `ansible_check_mode` was not defined with the correct value in some cases.
 
 options:
 """
 
+EXAMPLES = r"""
+- name: detect ansible check_mode
+  bodsch.core.check_mode:
+  register: _check_mode
+
+- name: define check_mode
+  ansible.builtin.set_fact:
+    check_mode: '{{ _check_mode.check_mode }}'
+"""
+
+RETURN = r"""
+check_mode:
+  description:
+    - Status for check_mode.
+  type: bool
+"""
+
 # ---------------------------------------------------------------------------------------
+
 
 class CheckMode(object):
     """
@@ -35,40 +54,23 @@ class CheckMode(object):
         """
         self.module = module
 
-        self._openvpn = module.get_bin_path('/bin/true', True)
-
     def run(self):
         """
         """
+        result = dict(
+            failed=False,
+            changed=False,
+            check_mode=False
+        )
+
         if self.module.check_mode:
-            return dict(
+            result = dict(
                 failed=False,
                 changed=False,
                 check_mode=True
             )
-        else:
-            return dict(
-                failed=False,
-                changed=False,
-                check_mode=False
-            )
 
-    def _exec(self, commands):
-        """
-        """
-        rc, out, err = self.module.run_command(commands, check_rc=False)
-
-        if int(rc) != 0:
-            self.module.log(msg=f"  rc : '{rc}'")
-            self.module.log(msg=f"  out: '{out}'")
-            self.module.log(msg=f"  err: '{err}'")
-
-        return rc, out
-
-
-# ===========================================
-# Module execution.
-#
+        return result
 
 
 def main():
@@ -83,7 +85,7 @@ def main():
     o = CheckMode(module)
     result = o.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 
