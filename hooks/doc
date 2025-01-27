@@ -27,7 +27,6 @@ then
     echo ""
   done
 
-  exit 0
   # -------------------------------------------------
   ansible_filter=$(
     ansible-doc --list ${COLLECTION_NAMESPACE}.${COLLECTION_NAME} --type filter --json | jq -r 'keys[]'
