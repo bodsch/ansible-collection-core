@@ -187,7 +187,7 @@ By default, a template called `tmpl` is created, which is defined as follows:
 
 `'${YEAR}-${MONTH}-${DAY}T${HOUR}:${MIN}:${SEC} ${LEVEL} ${MSGHDR}${MSG}\n'`
 
-By default, each destrination is assigned this template.  
+By default, each destination is assigned this template.  
 If this is not desired, `use_template` must be set in the `syslog_logs` configuration.
 
 ```yaml
@@ -208,7 +208,7 @@ syslog_message_templates:
 syslog_logs:
   remote:
     source: net
-    template: ngix
+    template: nginx
     destination:
       file: "remote/${FULLHOST}.log"
 ```
