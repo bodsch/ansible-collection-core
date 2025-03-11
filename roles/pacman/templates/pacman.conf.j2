@@ -38,22 +38,28 @@ NoUpgrade       = {{ pacman_config.no_upgrade | join(' ') }}
 NoExtract       = {{ pacman_config.no_extract | join(' ') }}
 {% endif %}
 
-{% if pacman_config.use_syslog is defined %}
+{% if pacman_config.use_syslog is defined and
+      pacman_config.use_syslog %}
 UseSyslog
 {% endif %}
-{% if pacman_config.color is defined %}
+{% if pacman_config.color is defined and
+      pacman_config.color %}
 Color
 {% endif %}
-{% if pacman_config.no_progress_bar is defined %}
+{% if pacman_config.no_progress_bar is defined and
+      not pacman_config.no_progress_bar %}
 NoProgressBar
 {% endif %}
-{% if pacman_config.check_space is defined %}
+{% if pacman_config.check_space is defined and
+      pacman_config.check_space %}
 CheckSpace
 {% endif %}
-{% if pacman_config.verbose_pkg_lists is defined %}
+{% if pacman_config.verbose_pkg_lists is defined and
+      pacman_config.verbose_pkg_lists %}
 VerbosePkgLists
 {% endif %}
-{% if pacman_config.parallel_downloads is defined %}
+{% if pacman_config.parallel_downloads is defined and
+      pacman_config.parallel_downloads | string | length > 0 %}
 ParallelDownloads = {{ pacman_config.parallel_downloads }}
 {% endif %}
 
