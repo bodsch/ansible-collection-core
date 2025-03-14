@@ -20,6 +20,23 @@ fail2ban_filters:
         - 'sshd\[\S*\]: Address <HOST> (.*) POSSIBLE BREAK-IN ATTEMPT!'
       ignoreregex: ''
 
+  - name: sshd-unknown-user
+    author: bodsch
+    description: |
+      The regex should math against
+
+      # Invalid user <USER> from <HOST> port 54520
+      # Connection closed by invalid user <USER> <HOST> port 54520 [preauth]
+    includes:
+      before: common.conf
+    definition:
+      daemon: sshd
+    definition:
+      failregex:
+        - '^[iI]nvalid user <F-USER>.*?</F-USER> (?:from )?<HOST>'
+        - '^Connection closed by invalid user <F-USER>.*?</F-USER>?<HOST>'
+      ignoreregex: ''
+
   - name: sshd-ddos
     author: bodsch
     description: |

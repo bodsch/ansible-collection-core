@@ -82,6 +82,11 @@ fail2ban_defaults_jails:
     port: ssh
     filter: sshd
     logpath: '%(auth_log)s'
+  - name: ssh-unknown-user
+    enabled: false
+    mode: ddos
+    filter: sshd
+    logpath: '%(auth_log)s'
   - name: ssh-breakin
     enabled: false
     port: ssh
@@ -95,6 +100,67 @@ fail2ban_defaults_jails:
 
 fail2ban_defaults_actions: []
 
-fail2ban_defaults_filters: []
+fail2ban_defaults_filters:
+  - name: sshd-break-in
+    author: bodsch
+    definition:
+      failregex:
+        - 'sshd\[\S*\]: Address <HOST> (.*) POSSIBLE BREAK-IN ATTEMPT!'
+      ignoreregex: ''
+
+  - name: sshd-unknown-user
+    author: bodsch
+    description: |
+      The regex should math against
+
+      # Invalid user <USER> from <HOST> port 54520
+      # Connection closed by invalid user <USER> <HOST> port 54520 [preauth]
+    includes:
+      before: common.conf
+    definition:
+      daemon: sshd
+    definition:
+      failregex:
+        - '^[iI]nvalid user <F-USER>.*?</F-USER> (?:from )?<HOST>'
+        - '^Connection closed by invalid user <F-USER>.*?</F-USER>?<HOST>'
+      ignoreregex: ''
+
+  - name: sshd-ddos
+    author: bodsch
+    description: |
+      The regex here also relates to a exploit:
+
+      http://www.securityfocus.com/bid/17958/exploit
+      The example code here shows the pushing of the exploit straight after
+      reading the server version. This is where the client version string normally
+      pushed. As such the server will read this unparsible information as
+      "Did not receive identification string".
+    includes:
+      before: common.conf
+    definition:
+      daemon: sshd
+      failregex:
+        - '^%(__prefix_line)sDid not receive identification string from <HOST>\s*$'
+      ignoreregex: ''
+
+  - name: nginx-botsearch
+    author: Frantisek Sumsal
+    description: |
+      Fail2Ban filter to match web requests for selected URLs that don't exist
+
+      DEV Notes:
+      Based on apache-botsearch filter
+    includes:
+      before: botsearch-common.conf
+    definition:
+      failregex:
+        - '^<HOST> \- \S+ \[\] \"(GET|POST|HEAD) \/<block> \S+\" 404 .+$'
+        - '^ \[error\] \d+#\d+: \*\d+ (\S+ )?\"\S+\" (failed|is not found) \(2\: No such file or directory\), client\: <HOST>\, server\: \S*\, request: \"(GET|POST|HEAD) \/<block> \S+\"\, .*?$'
+      ignoreregex: ''
+      datepattern:
+        - '{^LN-BEG}%%ExY(?P<_sep>[-/.])%%m(?P=_sep)%%d[T ]%%H:%%M:%%S(?:[.,]%%f)?(?:\s*%%z)?'
+        - '^[^\[]*\[({DATE})'
+        - '{^LN-BEG}'
+
 
 ...
