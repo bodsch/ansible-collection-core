@@ -7,15 +7,6 @@
 
 TOX_TEST="${1}"
 
-echo ""
-
-if [ -e collections.yml ]
-then
-  ansible_collection
-fi
-
-echo ""
-
 if [[ ! -z "${COLLECTION_ROLE// }" ]]
 then
   if [ -d "roles/${COLLECTION_ROLE}" ]
@@ -24,6 +15,11 @@ then
     echo ""
 
     pushd "roles/${COLLECTION_ROLE}" > /dev/null
+
+    if [ -e collections.yml ]
+    then
+      ansible_collection
+    fi
 
     tox "${TOX_OPTS}" -- molecule ${TOX_TEST} --scenario-name ${COLLECTION_SCENARIO}
 
@@ -39,6 +35,11 @@ else
     echo ""
 
     pushd roles/${role} > /dev/null
+
+    if [ -e collections.yml ]
+    then
+      ansible_collection
+    fi
 
     if [ "${TOX_TEST}" = "lint" ]
     then

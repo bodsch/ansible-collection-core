@@ -121,12 +121,6 @@ class PackageVersion(object):
 
         self.module.log(msg=f"  - pkg       : {self.distribution} - {self.version} - {self.codename}")
 
-        # (self.distribution, self.version, self.codename) = distro.linux_distribution(
-        #     full_distribution_name=False
-        # )
-        #
-        # self.module.log(msg=f"  - pkg       : {self.distribution} - {self.version} - {self.codename}")
-
     def run(self):
         """
         """
@@ -151,14 +145,26 @@ class PackageVersion(object):
             )
 
         if version is not None:
+            major_version = None
+            minor_version = None
+            platform_version = None
+
             version_splitted = version.split(".")
 
+            # self.module.log(msg=f"  - version_splitted  : {version_splitted}")
             major_version = version_splitted[0]
-            minor_version = version_splitted[1]
+
+            if len(version_splitted) > 1:
+                minor_version = version_splitted[1]
+
+            if minor_version:
+                platform_version='.'.join([major_version, minor_version])
+            else:
+                platform_version=major_version
 
             version = dict(
                 full_version=version,
-                platform_version='.'.join([major_version, minor_version]),
+                platform_version=platform_version,
                 major_version=major_version,
                 version_string_compressed=version.replace('.', '')
             )
@@ -176,6 +182,8 @@ class PackageVersion(object):
           support apt
         """
         import apt
+
+        pkg = None
 
         cache = apt.cache.Cache()
 
@@ -209,29 +217,31 @@ class PackageVersion(object):
             #  [php-fpm=2:7.4+75]
             # debian:9 : 1:10.4.20+maria~stretch'
             # debian 10: 1:10.4.20+maria~buster
-
-            if pkg:
-                # self.module.log(msg="  - pkg       : {} ({})".format(pkg, type(pkg)))
-                # self.module.log(msg="  - installed : {}".format(pkg.is_installed))
-                # self.module.log(msg="  - shortname : {}".format(pkg.shortname))
-                # self.module.log(msg="  - versions  : {}".format(pkg.versions))
-                # self.module.log(msg="  - versions  : {}".format(pkg.versions[0]))
-
-                pkg_version = pkg.versions[0]
-                version = pkg_version.version
-
-                if version[1] == ":":
-                    pattern = re.compile(r"(?<=\:)(?P<version>.*?)(?=[-+])")
-                else:
-                    pattern = re.compile(r"(?P<version>.*?)(?=[-+])")
-
-                result = re.search(pattern, version)
-                version_string = result.group('version')
-
+            #
         except KeyError as error:
             self.module.log(msg=f"error         : {error}")
             return False, None, f"package {self.package_name} is not installed"
 
+        if pkg:
+            # self.module.log(msg=f"  - pkg       : {pkg} ({type(pkg)})")
+            # self.module.log(msg=f"  - installed : {pkg.is_installed}")
+            # self.module.log(msg=f"  - shortname : {pkg.shortname}")
+            # self.module.log(msg=f"  - versions  : {pkg.versions}")
+            # self.module.log(msg=f"  - versions  : {pkg.versions[0]}")
+
+            pkg_version = pkg.versions[0]
+            version = pkg_version.version
+
+            if version[1] == ":":
+                pattern = re.compile(r"(?<=\:)(?P<version>.*?)(?=[-+])")
+            else:
+                pattern = re.compile(r"(?P<version>.*?)(?=[-+])")
+
+            result = re.search(pattern, version)
+            version_string = result.group('version')
+
+
+            # self.module.log(msg=f"  - version_string  : {version_string}")
         return False, version_string, ""
 
     def _search_yum(self):

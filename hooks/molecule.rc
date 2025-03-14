@@ -43,19 +43,13 @@ vercomp() {
   return 0
 }
 
-check_collection() {
-  local collection_name=${1}
-  local collection_version=${2}
-
-}
-
-ansible_collection() {
+list_collections() {
 
   if [ -f collections.yml ]
   then
     echo "required collection(s)"
 
-    collections=$(ansible-galaxy collection list --format json)
+    collections=$(ansible-galaxy collection list --format json | grep -v -E "starting run|Validate TLS")
 
     is_installed="false"
 
@@ -77,6 +71,8 @@ ansible_collection() {
             --arg REPOSITORY "$REPOSITORY" \
             'to_entries | map(select(.key == $REPOSITORY)) | from_entries')
 
+        # echo "$repo"
+
         installed_version=$(echo ${repo} | \
           jq -r \
             --arg COLLECTION "$COLLECTION" \
@@ -85,41 +81,20 @@ ansible_collection() {
         if [[ ! -z "${installed_version}" ]]
         then
           echo "  - '${collection}' is installed in version ${installed_version} (in ${repository})."
-          is_installed="true"
         fi
-
-        if [[ ! -z "${required_version}" ]]
-        then
-          echo "  - '${collection}' should be installed in version ${required_version}"
-
-          vercomp "${installed_version}" "${required_version}"
-
-          case $? in
-            0) op='=' ;;
-            1) op='>' ;;
-            2) op='<' ;;
-          esac
-
-          if [[ $is_installed = "false" ]] && [[ $op = "<" ]]
-          then
-            # echo "FAIL: Expected '$3', Actual '$op', Arg1 '$1', Arg2 '$2'"
-            echo "    re-install for version ${required_version}"
-
-            remove_collection ${collection}
-            install_collection ${collection}
-          else
-            :
-            # echo "Pass: '$1 $op $2'"
-            continue
-          fi
-        else
-          :
-          continue
-        fi
-
       done < <(echo "${collections}" | jq -r 'keys[]')
     done
+  fi
+}
 
+ansible_collection() {
+
+  if [ -f collections.yml ]
+  then
+    list_collections
+
+    # force install of all collections
+    ansible-galaxy collection install --force --requirements-file collections.yml > /dev/null
   fi
 }
 
