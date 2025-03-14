@@ -21,11 +21,11 @@ syslog_options:
   # Set permissions on newly created 'messages' files
   owner: root
   group: root
-  perm: 0755
+  perm: "0755"
   # Set permissions on newly created directories
   dir_owner: root
   dir_group: root
-  dir_perm: 0755
+  dir_perm: "0755"
   create_dirs: true
   # Maximum length of a message in bytes.
   log_msg_size: 18192

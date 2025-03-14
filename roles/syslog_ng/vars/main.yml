@@ -17,7 +17,7 @@ syslog_defaults_options:
   log_fifo_size: 10000
   mark_freq: 3600
   perm: "0640"
-  stats_freq: 43200
+  stats_freq: 43200                 # obsoleted keyword, please update your configuration; keyword='stats_freq', change='Use the stats() block. E.g. stats(freq(1));
   time_reopen: 10
   ts_format: iso
   use_dns: false
