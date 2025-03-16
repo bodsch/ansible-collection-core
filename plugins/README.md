@@ -123,7 +123,7 @@ from ansible_collections.bodsch.core.plugins.module_utils.cache.cache_valid impo
 
 ### `union_by`
 
-- `union(docker_defaults_python_packages, union_by='name'))`
+- `union(docker_defaults_python_packages, union_by='name')`
 
 ### - `parse_checksum`
 

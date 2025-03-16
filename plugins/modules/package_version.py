@@ -158,9 +158,9 @@ class PackageVersion(object):
                 minor_version = version_splitted[1]
 
             if minor_version:
-                platform_version='.'.join([major_version, minor_version])
+                platform_version = '.'.join([major_version, minor_version])
             else:
-                platform_version=major_version
+                platform_version = major_version
 
             version = dict(
                 full_version=version,
@@ -239,7 +239,6 @@ class PackageVersion(object):
 
             result = re.search(pattern, version)
             version_string = result.group('version')
-
 
             # self.module.log(msg=f"  - version_string  : {version_string}")
         return False, version_string, ""

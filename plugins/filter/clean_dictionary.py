@@ -20,9 +20,11 @@ In der is_empty-Funktion wurde eine Überprüfung hinzugefügt, um sicherzustell
 Wenn der Wert 0 ist, wird er beibehalten.
 """
 
+
 class FilterModule(object):
     """
     """
+
     def filters(self):
         return {
             'remove_empty_values': self.remove_empty_values,
