@@ -8,7 +8,7 @@
   ansible.builtin.template:
     src: sysctl.conf.j2
     dest: "{{ sysctl_directory }}/{{ sysctl_config_file }}"
-    mode: 0644
+    mode: "0644"
   notify:
     - reload sysctl
   when:

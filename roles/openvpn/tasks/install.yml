@@ -45,13 +45,13 @@
           ansible.builtin.file:
             state: directory
             path: "{{ openvpn_easyrsa.directory }}/pki"
-            mode: 0770
+            mode: "0770"
 
         - name: create pki directory structure
           ansible.builtin.file:
             state: directory
             path: "{{ openvpn_easyrsa.directory }}/pki/{{ item }}"
-            mode: 0700
+            mode: "0700"
           loop:
             - certs_by_serial
             - issued
@@ -76,12 +76,12 @@
       ansible.builtin.copy:
         src: up.sh
         dest: /etc/openvpn/
-        mode: 0750
+        mode: "0750"
 
     - name: copy down.sh to system
       ansible.builtin.copy:
         src: down.sh
         dest: /etc/openvpn/
-        mode: 0750
+        mode: "0750"
 
 ...

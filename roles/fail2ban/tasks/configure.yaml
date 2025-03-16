@@ -1,12 +1,20 @@
 ---
 
+- name: merge fail2ban configuration between defaults and custom
+  ansible.builtin.set_fact:
+    fail2ban_jails: "{{ fail2ban_defaults_jails | bodsch.core.merge_jails(fail2ban_jails) }}"
+    fail2ban_filters: "{{ fail2ban_defaults_filters | bodsch.core.merge_jails(fail2ban_filters) }}"
+    fail2ban_actions: "{{ fail2ban_defaults_actions | bodsch.core.merge_jails(fail2ban_actions) }}"
+    fail2ban_conf: "{{ fail2ban_defaults_conf | combine(fail2ban_conf, recursive=True) }}"
+    fail2ban_jail: "{{ fail2ban_defaults_jail | combine(fail2ban_jail, recursive=True) }}"
+
 - name: update configuration file - /etc/fail2ban/fail2ban.conf
   ansible.builtin.template:
     src: etc/fail2ban/fail2ban.conf.j2
     dest: /etc/fail2ban/fail2ban.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
     backup: true
   notify:
     - restart fail2ban
@@ -17,7 +25,7 @@
     dest: /etc/fail2ban/paths-{{ item.key }}.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   loop:
     "{{ fail2ban_path_definitions | dict2items }}"
   loop_control:
@@ -31,7 +39,7 @@
     dest: /etc/fail2ban/jail.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
     backup: true
   notify:
     - restart fail2ban
@@ -42,7 +50,7 @@
     dest: /etc/fail2ban/jail.local
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify:
     - restart fail2ban
 
@@ -52,7 +60,7 @@
     dest: /etc/fail2ban/filter.d/{{ item.name }}.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   loop:
     "{{ fail2ban_filters }}"
   loop_control:
@@ -66,7 +74,7 @@
     dest: /etc/fail2ban/action.d/{{ item.name }}.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   loop:
     "{{ fail2ban_actions }}"
   loop_control:

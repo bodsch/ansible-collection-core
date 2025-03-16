@@ -98,6 +98,9 @@ Include /etc/ssh/sshd_config.d/*.conf
     {% if value | bodsch.core.type == "string" %}
       {% set value = value | bodsch.core.string_to_list() %}
     {% endif %}
+    {% if value | count > 0 %}
+{{ key }}  {{ value | join(' ') }}
+    {% endif %}
   {# #}
   {% elif key == "KexAlgorithms" %}
     {% if value | bodsch.core.type == "string" %}

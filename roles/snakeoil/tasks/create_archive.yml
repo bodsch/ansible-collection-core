@@ -36,4 +36,4 @@
           community.general.archive:
             path: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}"
             dest: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}_{{ current_date }}.tgz"
-            mode: 0600
+            mode: "0600"

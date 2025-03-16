@@ -22,14 +22,6 @@
         - default.yaml
       skip: true
 
-- name: merge fail2ban configuration between defaults and custom
-  ansible.builtin.set_fact:
-    fail2ban_jails: "{{ fail2ban_defaults_jails | bodsch.core.merge_jails(fail2ban_jails) }}"
-    fail2ban_filters: "{{ fail2ban_defaults_filters | bodsch.core.merge_jails(fail2ban_filters) }}"
-    fail2ban_actions: "{{ fail2ban_defaults_actions | bodsch.core.merge_jails(fail2ban_actions) }}"
-    fail2ban_conf: "{{ fail2ban_defaults_conf | combine(fail2ban_conf, recursive=True) }}"
-    fail2ban_jail: "{{ fail2ban_defaults_jail | combine(fail2ban_jail, recursive=True) }}"
-
 - name: update package cache
   ansible.builtin.package:
     update_cache: true

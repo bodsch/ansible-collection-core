@@ -1,34 +1,7 @@
 
-# Ansible Role:  `fail2ban`
+# Ansible Role:  `bodsch.core.fail2ban`
 
 An Ansible Role that installs and configure fail2ban 2.x on Debian/Ubuntu, ArchLinux and ArtixLinux (mabybe also on other `openrc` based Systemes).
-
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-fail2ban/main.yml?branch=main)][ci]
-[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-fail2ban)][issues]
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-fail2ban)][releases]
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
-
-[ci]: https://github.com/bodsch/ansible-fail2ban/actions
-[issues]: https://github.com/bodsch/ansible-fail2ban/issues?q=is%3Aopen+is%3Aissue
-[releases]: https://github.com/bodsch/ansible-fail2ban/releases
-[quality]: https://galaxy.ansible.com/bodsch/fail2ban
-
-
-## Requirements & Dependencies
-
-None
-
-### Operating systems
-
-Tested on
-
-* ArchLinux
-* Debian based
-    - Debian 10 / 11 / 12
-    - Ubuntu 20.04 / 22.04
-
-> **RedHat-based systems are no longer officially supported! May work, but does not have to.**
-
 
 ## Role Variables
 
@@ -52,8 +25,6 @@ can be an IP address, a CIDR mask or a DNS host.
 ## Example Playbook
 
 see into [molecule test](molecule/default/converge.yml) and [configuration](molecule/default/group_vars/all/vars.yml)
-
-
 
 ```yaml
 fail2ban_ignoreips:
@@ -115,24 +86,6 @@ fail2ban_jails:
     maxretry: 2
 ```
 
-
-## Contribution
-
-Please read [Contribution](CONTRIBUTING.md)
-
-## Development,  Branches (Git Tags)
-
-The `master` Branch is my *Working Horse* includes the "latest, hot shit" and can be complete broken!
-
-If you want to use something stable, please use a [Tagged Version](https://github.com/bodsch/ansible-fail2ban/tags)!
-
-
 ## Author
 
 - Bodo Schulz
-
-## License
-
-[Apache](LICENSE)
-
-**FREE SOFTWARE, HELL YEAH!**

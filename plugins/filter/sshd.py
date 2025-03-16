@@ -25,26 +25,25 @@ class FilterModule(object):
         count_defaults = len(defaults)
         count_data = len(data)
 
-        display.v("defaults: ({type}) {len} - {data} entries".format(data=defaults, type=type(defaults), len=count_defaults))
+        display.vv("defaults: ({type}) {len} - {data} entries".format(data=defaults, type=type(defaults), len=count_defaults))
         display.vv(json.dumps(data, indent=2, sort_keys=False))
-        display.v("data    : ({type}) {len} - {data} entries".format(data=data, type=type(data), len=count_data))
+        display.vv("data    : ({type}) {len} - {data} entries".format(data=data, type=type(data), len=count_data))
 
         result = []
 
         # short way
         if count_defaults == 0:
-            return data  # self.__sort_list(data, 'host')
+            return data
 
         if count_data == 0:
-            return defaults  # self.__sort_list(defaults, 'host')
+            return defaults
 
         # our new list from users input
         for d in data:
             _name = d['host']
             # search the name in the default map
             _defaults_name = self.__search(defaults, _name)
-
-            display.v(f"  _defaults_name    : {_defaults_name}")
+            # display.vv(f"  _defaults_name    : {_defaults_name}")
             # when not found, put these on the new result list
             if not _defaults_name:
                 result.append(_defaults_name)
@@ -56,9 +55,9 @@ class FilterModule(object):
                         break
 
         # add both lists and sort
-        result = data + defaults  # self.__sort_list(data + defaults, 'host')
+        result = data + defaults
 
-        display.v(f"= result: {result}")
+        display.vv(f"= result: {result}")
 
         return result
 
@@ -69,6 +68,7 @@ class FilterModule(object):
         :param data: Ansible Datenkonstrukt
         :return: Ansible Datenkonstrukt mit den ersetzten Keys.
         """
+        display.v(f"sshd_values({data})")
 
         # Hilfsfunktion zur Rekursion
         def replace_keys(obj):

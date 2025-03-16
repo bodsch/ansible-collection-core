@@ -4,15 +4,28 @@ Documentation for the collection.
 
 This collection aims to offer an set of small ansible modules or helper functions.
 
+## supported Operating systems
+
+Tested on
+
+* ArchLinux
+* Debian based
+    - Debian 10 / 11 / 12
+    - Ubuntu 20.04 / 22.04
+
+> **RedHat-based systems are no longer officially supported! May work, but does not have to.**
+
 
 ## Requirements & Dependencies
 
 - `dnspython`
 - `dirsync`
+- `netaddr`
 
 ```bash
 pip install dnspython
 pip install dirsync
+pip install netaddr
 ```
 
 ## Included content

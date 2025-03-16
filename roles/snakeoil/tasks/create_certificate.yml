@@ -67,13 +67,13 @@
       ansible.builtin.file:
         path: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}"
         state: directory
-        mode: 0750
+        mode: "0750"
 
     - name: create openssl config
       ansible.builtin.template:
         src: csr.j2
         dest: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}/{{ snakeoil_domain }}.conf"
-        mode: 0660
+        mode: "0660"
 
     - name: create {{ snakeoil_domain }}.csr
       bodsch.core.snakeoil_openssl:

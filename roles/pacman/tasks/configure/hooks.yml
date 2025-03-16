@@ -13,7 +13,7 @@
     src: pacman.d/hooks/hook.j2
     dest: "/etc/pacman.d/hooks/{{ item.name }}.hook"
     backup: true
-    mode: 0644
+    mode: "0644"
   loop:
     "{{ pacman_hooks }}"
   loop_control:

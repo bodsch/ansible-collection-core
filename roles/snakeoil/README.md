@@ -1,37 +1,20 @@
 
-# Ansible Role:  `snakeoil`
+# Ansible Role:  `bodsch.core.snakeoil`
 
 build a simple snakeoil certificate for a test environment.
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-snakeoil/main.yml?branch=main)][ci]
-[![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-snakeoil)][issues]
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-snakeoil)][releases]
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
-
-[ci]: https://github.com/bodsch/ansible-snakeoil/actions
-[issues]: https://github.com/bodsch/ansible-snakeoil/issues?q=is%3Aopen+is%3Aissue
-[releases]: https://github.com/bodsch/ansible-snakeoil/releases
-[quality]: https://galaxy.ansible.com/bodsch/snakeoil
-
-
-## Operating systems
-
-Tested on
-
-* Arch Linux
-* Debian based
-    - Debian 10 / 11
-    - Ubuntu 20.10
 
 ## config parameters
 
-- `snakeoil_extract_to` (default: '') - extract on remote machine
-- `snakeoil_domain`     (default: '') - domain for a certificat (e.g. `bar.local`)
-- `snakeoil_life_time`  (default: `29`) - certificat lifetime in days
-- `snakeoil_alt_names`  (default: `[]`) - an array with alternate names or IPs
-- `snakeoil_dhparam`    (default: `1024`) - diffie-hellman parameter length
-- `snakeoil_force`      (default: `false`) - force recreate a certificate (delete the old files)
-- `snakeoil_dn`         - dictionary with configuration parameters
+| Variable             | default    | description |
+| :----                | :----      | :----       |
+| `snakeoil_extract_to`| `''`       | extract on remote machine |
+| `snakeoil_domain`    | `''`       | domain for a certificat (e.g. `bar.local`) |
+| `snakeoil_life_time` | `29`       | certificat lifetime in days |
+| `snakeoil_alt_names` | `[]`       | an array with alternate names or IPs |
+| `snakeoil_dhparam`   | `1024`     | diffie-hellman parameter length |
+| `snakeoil_force`     | `false`    | force recreate a certificate (delete the old files) |
+| `snakeoil_dn`        | `{}`       | dictionary with configuration parameters |
 
 ## default
 
@@ -135,9 +118,3 @@ cat cm.local.key >> cm.local.pem
 ## Author and License
 
 - Bodo Schulz
-
-## License
-
-[Apache](LICENSE)
-
-`FREE SOFTWARE, HELL YEAH!`

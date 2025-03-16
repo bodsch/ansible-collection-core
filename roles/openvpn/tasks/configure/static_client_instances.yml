@@ -22,13 +22,13 @@
           ansible.builtin.file:
             dest: /etc/systemd/system/openvpn-client@{{ openvpn_client_name }}.service.d
             state: directory
-            mode: 0755
+            mode: "0755"
 
         - name: create overwrite.conf for systemd
           ansible.builtin.template:
             src: init/systemd/override.conf.j2
             dest: "/etc/systemd/system/openvpn-client@{{ openvpn_client_name }}.service.d/override.conf"
-            mode: 0444
+            mode: "0444"
           notify:
             - systemctl daemon-reload
             - restart openvpn-client
@@ -45,7 +45,7 @@
   ansible.builtin.file:
     state: directory
     path: '{{ openvpn_directory }}/keys/{{ openvpn_client_name }}/'
-    mode: 0755
+    mode: "0755"
   tags:
     - setup
     - openvpn
@@ -78,13 +78,13 @@
       ansible.builtin.file:
         state: directory
         path: /root/vpn-configs
-        mode: 0700
+        mode: "0700"
 
     - name: create export directory
       ansible.builtin.file:
         state: directory
         path: /tmp/openvpn-export
-        mode: 0700
+        mode: "0700"
 
     - name: mount tmpfs to export
       ansible.posix.mount:
@@ -98,14 +98,14 @@
       ansible.builtin.file:
         state: directory
         path: "/tmp/openvpn-export/{{ openvpn_client_name }}"
-        mode: 0700
+        mode: "0700"
 
     - name: copy files for export
       ansible.builtin.copy:
         remote_src: true
         src: "{{ file }}"
         dest: "/tmp/openvpn-export/{{ openvpn_client_name }}/"
-        mode: 0600
+        mode: "0600"
       loop:
         - "{{ openvpn_directory }}/keys/server/ta.key"
         - "{{ openvpn_easyrsa.directory }}/pki/private/{{ openvpn_client_name }}.key"
@@ -120,7 +120,7 @@
         format: gz
         path: "/tmp/openvpn-export/{{ openvpn_client_name }}"
         dest: "/root/vpn-configs/{{ openvpn_client_name }}.tar.gz"
-        mode: 0600
+        mode: "0600"
 
     - name: umount export tmpfs
       ansible.posix.mount:
@@ -154,13 +154,13 @@
 - name: fix rights for openvpn key file
   ansible.builtin.file:
     path: "{{ openvpn_directory }}/keys/{{ openvpn_client_name }}/{{ openvpn_client_name }}.key"
-    mode: 0600
+    mode: "0600"
 
 - name: create openvpn client config
   ansible.builtin.template:
     src: openvpn/clients/client.conf.j2
     dest: "{{ openvpn_directory }}/client/{{ openvpn_client_name }}.conf"
-    mode: 0640
+    mode: "0640"
   notify:
     - restart openvpn-client
 

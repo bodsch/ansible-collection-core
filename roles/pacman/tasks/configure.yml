@@ -5,7 +5,7 @@
     src: pacman.d/mirrorlist.j2
     dest: /etc/pacman.d/mirrorlist
     backup: true
-    mode: 0644
+    mode: "0644"
   notify:
     - update package cache
 
@@ -14,7 +14,7 @@
     src: pacman.d/mirrorlist.j2
     dest: "{{ item.file }}"
     backup: true
-    mode: 0644
+    mode: "0644"
   loop:
     "{{ pacman_custom_mirrors }}"
   loop_control:
@@ -29,7 +29,7 @@
     src: pacman.conf.j2
     dest: /etc/pacman.conf
     backup: true
-    mode: 0644
+    mode: "0644"
   notify:
     - update package cache
 

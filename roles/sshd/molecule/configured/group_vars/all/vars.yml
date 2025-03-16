@@ -24,13 +24,7 @@ sshd_config:
     - COLORTERM
     - LANG
     - LANGUAGE
-    - LC_CTYPE
-    - LC_NUMERIC
-    - LC_TIME
-    - LC_COLLATE
-    - LC_MESSAGES
-    - LC_MEASUREMENT
-    - LC_ALL
+    - LC_*
   Ciphers:
     - aes256-cbc
     - aes192-cbc

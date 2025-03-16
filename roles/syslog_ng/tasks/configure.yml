@@ -32,7 +32,7 @@
   ansible.builtin.file:
     state: directory
     name: /etc/syslog-ng/conf.d
-    mode: 0750
+    mode: "0750"
   tags:
     - syslog-ng
     - configuration
@@ -41,7 +41,7 @@
   ansible.builtin.file:
     state: directory
     name: "{{ item }}"
-    mode: 0775
+    mode: "0775"
   loop: "{{ syslog_server_log_destinations }}"
   when:
     - syslog_server_log_destinations is defined
@@ -54,7 +54,7 @@
   ansible.builtin.template:
     src: "conf.d/{{ item }}.j2"
     dest: "/etc/syslog-ng/conf.d/{{ item }}"
-    mode: 0644
+    mode: "0644"
   notify:
     - validate syslog-ng config
   loop:
@@ -70,7 +70,7 @@
   ansible.builtin.template:
     src: syslog-ng.conf.j2
     dest: /etc/syslog-ng/syslog-ng.conf
-    mode: 0644
+    mode: "0644"
     backup: true
   notify:
     - validate syslog-ng config

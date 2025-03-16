@@ -6,7 +6,7 @@
     path: '{{ openvpn_directory }}/server'
     owner: "{{ openvpn_owner }}"
     group: "{{ openvpn_group }}"
-    mode: 0755
+    mode: "0755"
   tags:
     - openvpn
     - openvpn_setup
@@ -17,7 +17,7 @@
     path: '{{ openvpn_directory }}/keys/server'
     owner: "{{ openvpn_owner }}"
     group: "{{ openvpn_group }}"
-    mode: 0755
+    mode: "0755"
   tags:
     - openvpn
     - openvpn_setup
@@ -28,7 +28,7 @@
   ansible.builtin.template:
     src: easy-rsa/vars.j2
     dest: '{{ openvpn_easyrsa.directory }}/vars'
-    mode: 0644
+    mode: "0644"
     owner: root
     group: root
     backup: true
@@ -38,7 +38,7 @@
     state: link
     src: "{{ openvpn_easyrsa.directory }}/{{ openvpn_easyrsa.openssl_config }}"
     dest: "{{ openvpn_easyrsa.directory }}/pki/{{ openvpn_easyrsa.openssl_config }}"
-    mode: 0644
+    mode: "0644"
     owner: root
     group: root
   when:
@@ -133,7 +133,7 @@
     owner: "{{ openvpn_owner }}"
     group: "{{ openvpn_group }}"
     remote_src: true
-    mode: '0644'
+    mode: "0644"
 
 - name: copy server certificate to openvpn server directory
   ansible.builtin.copy:
@@ -142,7 +142,7 @@
     owner: "{{ openvpn_owner }}"
     group: "{{ openvpn_group }}"
     remote_src: true
-    mode: '0644'
+    mode: "0644"
 
 - name: copy server key to openvpn server directory
   ansible.builtin.copy:
@@ -151,7 +151,7 @@
     owner: "{{ openvpn_owner }}"
     group: "{{ openvpn_group }}"
     remote_src: true
-    mode: 0600
+    mode: "0600"
 
 - name: copy DH parameter file to openvpn server directory
   ansible.builtin.copy:
@@ -160,7 +160,7 @@
     owner: "{{ openvpn_owner }}"
     group: "{{ openvpn_group }}"
     remote_src: true
-    mode: '0644'
+    mode: "0644"
 
 - name: generate a tls-auth key
   bodsch.core.openvpn:
@@ -175,7 +175,7 @@
     path: "{{ openvpn_easyrsa.directory }}/pki"
     owner: "{{ openvpn_owner }}"
     group: "{{ openvpn_group }}"
-    mode: 0770
+    mode: "0770"
     # recurse: true
 
 - name: change rights for crl.pem
@@ -184,13 +184,13 @@
     path: "{{ openvpn_easyrsa.directory }}/pki/crl.pem"
     owner: "{{ openvpn_owner }}"
     group: "{{ openvpn_group }}"
-    mode: 0640
+    mode: "0640"
 
 - name: fetch CA certificate to ansible controller
   ansible.builtin.fetch:
     src: "{{ openvpn_easyrsa.directory }}/pki/ca.crt"
     dest: "{{ openvpn_local_tmp_directory }}/"
-    mode: 0600
+    mode: "0600"
     flat: true
   no_log: true
 
@@ -198,7 +198,7 @@
   ansible.builtin.fetch:
     src: "{{ openvpn_directory }}/keys/server/ta.key"
     dest: "{{ openvpn_local_tmp_directory }}/"
-    mode: 0600
+    mode: "0600"
     flat: true
   no_log: true
 
@@ -252,7 +252,7 @@
   ansible.builtin.template:
     src: openvpn/server/server.conf.j2
     dest: "{{ openvpn_directory }}/server/server.conf"
-    mode: '0644'
+    mode: "0644"
     owner: "{{ openvpn_owner }}"
     group: "{{ openvpn_group }}"
     backup: true
@@ -263,7 +263,7 @@
 #   ansible.builtin.template:
 #     src: openvpn/server/ipp.txt.j2
 #     dest: /etc/openvpn/ipp.txt
-#     mode: 0644
+#     mode: "0644"
 #   when:
 #     - openvpn_persistent_pool is defined
 #     - openvpn_persistent_pool | count > 0
@@ -285,7 +285,7 @@
   ansible.builtin.template:
     src: openvpn/server/static-client.j2
     dest: "/etc/openvpn/client/{{ item.name }}"
-    mode: 0644
+    mode: "0644"
   loop:
     "{{ openvpn_persistent_pool }}"
   loop_control:

@@ -59,13 +59,13 @@
       ansible.builtin.copy:
         src: "{{ snakeoil_local_tmp_directory }}/{{ snakeoil_domain }}_{{ current_date }}.tgz"
         dest: "{{ snakeoil_remote_tmp_directory }}/"
-        mode: 0600
+        mode: "0600"
 
     - name: create {{ snakeoil_extract_to }}
       ansible.builtin.file:
         path: "{{ snakeoil_extract_to }}"
         state: directory
-        mode: 0750
+        mode: "0750"
 
     - name: extract {{ snakeoil_domain }}_{{ current_date }}.tgz
       ansible.builtin.unarchive:

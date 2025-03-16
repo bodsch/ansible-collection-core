@@ -6,7 +6,7 @@
     dest: "{{ item.passwordfile }}"
     owner: root
     group: root
-    mode: 0640
+    mode: "0640"
     backup: true
   no_log: true
   loop:

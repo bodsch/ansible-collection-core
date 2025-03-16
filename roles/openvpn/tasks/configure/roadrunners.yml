@@ -20,7 +20,7 @@
   ansible.builtin.fetch:
     src: "/root/vpn-configs/{{ client.name }}.ovpn"
     dest: "{{ openvpn_config_save_dir }}/{{ client.name }}.ovpn"
-    mode: 0600
+    mode: "0600"
     flat: true
     validate_checksum: false
   loop_control:

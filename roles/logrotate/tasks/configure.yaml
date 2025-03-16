@@ -5,21 +5,21 @@
   ansible.builtin.template:
     src: logrotate.conf.j2
     dest: /etc/logrotate.conf
-    mode: 0644
+    mode: "0644"
 
 - name: create directory {{ logrotate_conf_dir }}
   become: true
   ansible.builtin.file:
     path: "{{ logrotate_conf_dir }}"
     state: directory
-    mode: 0755
+    mode: "0755"
 
 - name: create directory {{ logrotate_global.archive_directory }}
   become: true
   ansible.builtin.file:
     path: "{{ logrotate_global.archive_directory }}"
     state: directory
-    mode: 0755
+    mode: "0755"
   when:
     - logrotate_global.archive_directory is defined
     - logrotate_global.archive_directory | length > 0
@@ -29,7 +29,7 @@
   ansible.builtin.template:
     src: logrotate.d.j2
     dest: "{{ logrotate_conf_dir }}/{{ item.key }}"
-    mode: 0644
+    mode: "0644"
   loop:
     "{{ logrotate_scripts | dict2items }}"
   loop_control:

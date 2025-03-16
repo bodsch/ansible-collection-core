@@ -1,5 +1,5 @@
 
-# Ansible Role:  `syslog_ng`
+# Ansible Role:  `bodsch.core.syslog_ng`
 
 
 Installs and configures a classic syslog-ng service for processing log files away from journald.
@@ -7,31 +7,6 @@ Installs and configures a classic syslog-ng service for processing log files awa
 This again allows a simple, central logging service to be run on the user's own network.
 
 **This role disables journald and takes over its function!**
-
-## Requirements & Dependencies
-
-Ansible Collections
-
-- [bodsch.core](https://github.com/bodsch/ansible-collection-core)
-
-```bash
-ansible-galaxy collection install bodsch.core
-```
-or
-```bash
-ansible-galaxy collection install --requirements-file collections.yml
-```
-
-
-## tested operating systems
-
-Tested on
-
-* ArchLinux
-* ArtixLinux
-* Debian based
-    - Debian 10 / 11 / 12
-    - Ubuntu 20.04 / 22.04
 
 ## usage
 
@@ -218,9 +193,3 @@ syslog_logs:
 ## Author and License
 
 - Bodo Schulz
-
-## License
-
-[Apache](LICENSE)
-
-**FREE SOFTWARE, HELL YEAH!**
