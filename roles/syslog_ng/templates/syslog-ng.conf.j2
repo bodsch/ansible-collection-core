@@ -5,24 +5,19 @@
 {% if syslog_scl is defined %}
 @include "{{ syslog_scl }}"
 {% endif %}
+{% set data = syslog_options | bodsch.core.verify_syslog_options() %}
 
 options {
-{% for k, v in syslog_options.items() %}
+{% for k, v in data.items() %}
   {% if v | bodsch.core.type == "bool" %}
   {{ k }}({{ v | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }});
   {% elif v | bodsch.core.type == "str" %}
-    {% if k in ["perm", "dir_perm", "dir-perm"] %}
+    {% if k in ["perm", "dir_perm", "dir-perm", "stats"] %}
   {{ k }}({{ v }});
     {% else %}
   {{ k }}("{{ v }}");
     {% endif %}
   {% else %}
-    {% if k == "stats_freq" %}
-      {# obsoleted keyword, please update your configuration; keyword='stats_freq'
-         change='Use the stats() block. E.g. stats(freq(1)); #}
-      {% set k = "stats" %}
-      {% set v = "freq({0})".format(v) %}
-    {% endif %}
   {{ k }}({{ v }});
   {% endif %}
 {% endfor %}

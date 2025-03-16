@@ -19,6 +19,7 @@ class FilterModule(object):
             'get_service': self.get_service,
             'log_directories': self.log_directories,
             'syslog_network_definition': self.syslog_network_definition,
+            'verify_syslog_options': self.verify_syslog_options,
         }
 
     def get_service(self, data, search_for):
@@ -118,3 +119,20 @@ class FilterModule(object):
 
         # display.v(f"= res {res}")
         return res
+
+    def verify_syslog_options(self, data):
+        """
+        """
+        # display.v(f"verify_syslog_options({data})")
+
+        if data.get("stats_freq", None):
+            """
+                obsoleted keyword, please update your configuration; keyword='stats_freq'
+                change='Use the stats() block. E.g. stats(freq(1));
+            """
+            stats_freq = data.get("stats_freq")
+            data.pop("stats_freq")
+            data["stats"] = f"freq({stats_freq})"
+
+        # display.v(f"= result {data}")
+        return data
