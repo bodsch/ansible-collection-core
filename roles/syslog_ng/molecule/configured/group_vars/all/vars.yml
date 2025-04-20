@@ -32,6 +32,13 @@ syslog_options:
   # make ISO-8601 timestamps
   ts_format: iso
 
+  stats:
+    freq: ""                        # 1
+    level: 100                      # 1
+    lifetime: ""                    # 1000
+    max-dynamics: ""                # 10000
+    syslog-stats: true              # true
+
 syslog_logs:
   ansible:
     file_name: ansible.log

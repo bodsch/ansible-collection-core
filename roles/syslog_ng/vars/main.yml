@@ -22,6 +22,12 @@ syslog_defaults_options:
   ts_format: iso
   use_dns: false
   use_fqdn: false
+  stats:
+    freq: ""                        # 1
+    level: ""                       # 1
+    lifetime: ""                    # 1000
+    max-dynamics: ""                # 10000
+    syslog-stats: ""                # true
 
 syslog_defaults_sources:
   src:

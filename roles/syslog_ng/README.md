@@ -46,11 +46,21 @@ syslog_options:
   log_fifo_size: 10000
   mark_freq: 3600
   perm: "0640"
+  # obsoleted keyword
+  # please update your configuration!
+  # keyword='stats_freq', change='Use the stats() block. E.g. stats(freq(x));
   stats_freq: 43200
   time_reopen: 10
   ts_format: iso
   use_dns: false
   use_fqdn: false
+  # Available in syslog-ng 4.1 and later
+  stats:
+    freq: ""                        # 1
+    level: ""                       # 1
+    lifetime: ""                    # 1000
+    max-dynamics: ""                # 10000
+    syslog-stats: ""                # true
 ```
 
 ### `syslog_logs`
