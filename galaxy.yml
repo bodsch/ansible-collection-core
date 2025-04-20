@@ -2,7 +2,7 @@
 namespace: bodsch
 name: core
 
-version: 2.6.2
+version: 2.6.3
 
 readme: README.md
 
@@ -19,6 +19,7 @@ license_file: ''
 tags: []
 
 dependencies:
+ community.general: ">=10.5"
  community.crypto: "*"
  ansible.utils: "*"
 

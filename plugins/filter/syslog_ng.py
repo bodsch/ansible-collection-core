@@ -5,6 +5,8 @@ from ansible.utils.display import Display
 import re
 import os
 
+from ansible.plugins.test.core import version_compare
+
 __metaclass__ = type
 
 display = Display()
@@ -120,19 +122,23 @@ class FilterModule(object):
         # display.v(f"= res {res}")
         return res
 
-    def verify_syslog_options(self, data):
+    def verify_syslog_options(self, data, version):
         """
         """
-        # display.v(f"verify_syslog_options({data})")
+        # display.v(f"verify_syslog_options({data}, {version})")
 
-        if data.get("stats_freq", None):
-            """
-                obsoleted keyword, please update your configuration; keyword='stats_freq'
-                change='Use the stats() block. E.g. stats(freq(1));
-            """
-            stats_freq = data.get("stats_freq")
-            data.pop("stats_freq")
-            data["stats"] = f"freq({stats_freq})"
+        if version_compare(str(version), '4.1', '>='):
+            if data.get("stats_freq", None):
+                """
+                    obsoleted keyword, please update your configuration; keyword='stats_freq'
+                    change='Use the stats() block. E.g. stats(freq(1));
+                """
+                stats_freq = data.get("stats_freq")
+                data.pop("stats_freq")
+                data["stats"]["freq"] = stats_freq
+
+        if version_compare(str(version), '4.1', '<'):
+            data.pop("stats")
 
         # display.v(f"= result {data}")
         return data

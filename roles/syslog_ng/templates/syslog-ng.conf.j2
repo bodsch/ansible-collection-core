@@ -5,18 +5,32 @@
 {% if syslog_scl is defined %}
 @include "{{ syslog_scl }}"
 {% endif %}
-{% set data = syslog_options | bodsch.core.verify_syslog_options() %}
+{% set data = syslog_options | bodsch.core.verify_syslog_options(version=syslog_config_version) %}
 
 options {
 {% for k, v in data.items() %}
   {% if v | bodsch.core.type == "bool" %}
   {{ k }}({{ v | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }});
   {% elif v | bodsch.core.type == "str" %}
-    {% if k in ["perm", "dir_perm", "dir-perm", "stats"] %}
+    {% if k in ["perm", "dir_perm", "dir-perm"] %}
   {{ k }}({{ v }});
     {% else %}
   {{ k }}("{{ v }}");
     {% endif %}
+  {% elif v | bodsch.core.type == "dict" %}
+    {% if k == "stats" %}
+  stats (
+      {% for sub_key, sub_value in v.items() %}
+        {% if sub_value | string | length > 0 %}
+          {% if sub_value | bodsch.core.type == "bool" %}
+    {{ sub_key }}({{ sub_value | bool | bodsch.core.config_bool(true_as='yes', false_as='no') }})
+          {% else %}
+    {{ sub_key }}({{ sub_value }})
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  );
   {% else %}
   {{ k }}({{ v }});
   {% endif %}

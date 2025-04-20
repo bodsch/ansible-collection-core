@@ -11,11 +11,17 @@
           ansible_os_family | lower == 'artix linux'
       block:
         - name: update pacman system
-          ansible.builtin.command: |
-            pacman --refresh --sync --sysupgrade --noconfirm
+          community.general.pacman:
+            update_cache: true
+            upgrade: true
+            # extra_args:
+            #   - --refresh
+            #   - --sync
+            #   - --sysupgrade
+            #   - --noconfirm
           register: pacman
-          changed_when: pacman.rc != 0
-          failed_when: pacman.rc != 0
+          # changed_when: pacman.rc != 0
+          # failed_when: pacman.rc != 0
 
         - name: create depends service
           ansible.builtin.copy:
