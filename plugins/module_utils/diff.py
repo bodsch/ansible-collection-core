@@ -1,192 +1,208 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
-# Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
-# SPDX-License-Identifier: Apache-2.0
-
-from __future__ import absolute_import, division, print_function
-import os
 import json
 import difflib
 import itertools
 import textwrap
 import typing
+from pathlib import Path
 
 
 class SideBySide:
     """
-      -> https://gist.github.com/jlumbroso/3ef433b4402b4f157728920a66cc15ed
+    Erlaubt nebeneinanderstehende Vergleiche (Side‐by‐Side) von zwei Text-Versionen.
+    Jetzt mit Ausgabe der Zeilennummern bei Änderungen.
     """
 
-    def __init__(self, module, left, right):
+    def __init__(
+        self,
+        module,
+        left: typing.Union[str, dict, typing.List[str]],
+        right: typing.Union[str, dict, typing.List[str]],
+    ):
         """
-          Initialize all needed Variables
+        :param module: Objekt mit einer .log(...)‐Methode zum Debuggen
+        :param left:  Ursprünglicher Text (dict, String oder Liste von Zeilen)
+        :param right: Neuer Text (dict, String oder Liste von Zeilen)
         """
         self.module = module
-
-        if isinstance(left, dict):
-            left = json.dumps(left, indent=2)
-
-        if isinstance(right, dict):
-            right = json.dumps(right, indent=2)
-
-        if isinstance(left, str):
-            left = left.split("\n")
-
-        if isinstance(right, str):
-            right = right.split("\n")
-
         self.default_separator = " | "
+        self.left = self._normalize_input(left)
+        self.right = self._normalize_input(right)
 
-        self.left = left
-        self.right = right
-        self.width = 140
-        self.as_string = True
-        self.left_title = "  Original"
-        self.right_title = "  Update"
-
-    def side_by_side(self,
-                     left: typing.List[str],
-                     right: typing.List[str],
-                     width: int = 78,
-                     as_string: bool = False,
-                     separator: typing.Optional[str] = None,
-                     left_title: typing.Optional[str] = None,
-                     right_title: typing.Optional[str] = None,
-                     ) -> typing.Union[str, typing.List[str]]:
+    @staticmethod
+    def _normalize_input(
+        data: typing.Union[str, dict, typing.List[str]]
+    ) -> typing.List[str]:
         """
-            Returns either the list of lines, or string of lines, that results from
-            merging the two lists side-by-side.
-
-            :param left: Lines of text to place on the left side
-            :type left: typing.List[str]
-            :param right: Lines of text to place on the right side
-            :type right: typing.List[str]
-            :param width: Character width of the overall output, defaults to 78
-            :type width: int, optional
-            :param as_string: Whether to return a string (as opposed to a list of strings), defaults to False
-            :type as_string: bool, optional
-            :param separator: String separating the left and right side, defaults to " | "
-            :type separator: typing.Optional[str], optional
-            :param left_title: Title to place on the left side, defaults to None
-            :type left_title: typing.Optional[str], optional
-            :param right_title: Title to place on the right side, defaults to None
-            :type right_title: typing.Optional[str], optional
-            :return: Lines or text of the merged side-by-side output.
-            :rtype: typing.Union[str, typing.List[str]]
+        Konvertiert dict → JSON‐String, String → Liste von Zeilen (splitlines),
+        Liste bleibt unverändert (kopiert).
         """
-        separator = separator or self.default_separator
+        if isinstance(data, dict):
+            data = json.dumps(data, indent=2)
+        if isinstance(data, str):
+            return data.splitlines()
+        if isinstance(data, list):
+            return data.copy()
+        raise TypeError(f"Erwartet dict, str oder List[str], nicht {type(data)}")
 
-        mid_width = (width - len(separator) - (1 - width % 2)) // 2
-
-        tw = textwrap.TextWrapper(
-            width=mid_width,
+    @staticmethod
+    def _wrap_and_flatten(
+        lines: typing.List[str], width: int
+    ) -> typing.List[str]:
+        """
+        Wrappt jede Zeile auf maximal `width` Zeichen und flacht verschachtelte Listen ab.
+        Leere Zeilen bleiben als [""] erhalten.
+        """
+        wrapper = textwrap.TextWrapper(
+            width=width,
             break_long_words=False,
-            replace_whitespace=False
+            replace_whitespace=False,
         )
+        flat: typing.List[str] = []
+        for line in lines:
+            wrapped = wrapper.wrap(line)
+            if not wrapped:
+                # Wenn wrapper.wrap("") → [] → wir wollen [""] erhalten
+                flat.append("")
+            else:
+                flat.extend(wrapped)
+        return flat
 
-        def reflow(lines):
-            wrapped_lines = list(map(tw.wrap, lines))
-            wrapped_lines_with_linebreaks = [
-                [""] if len(wls) == 0 else wls
-                for wls in wrapped_lines
-            ]
-            return list(itertools.chain.from_iterable(wrapped_lines_with_linebreaks))
-
-        left = reflow(left)
-        right = reflow(right)
-
-        zip_pairs = itertools.zip_longest(left, right)
-
-        if left_title is not None or right_title is not None:
-            left_title = left_title or ""
-            right_title = right_title or ""
-            zip_pairs = [
-                (left_title, right_title),
-                (mid_width * "-", mid_width * "-")
-            ] + list(zip_pairs)
-
-        lines = []
-        for left, right in zip_pairs:
-            left = left or ""
-            right = right or ""
-            spaces = (" " * max(0, mid_width - len(left)))
-
-            line = f"{left}{spaces}{separator}{right}"
-            lines.append(line)
-
-        if as_string:
-            return "\n".join(lines)
-
-        return lines
-
-    def better_diff(self,
-                    left: typing.List[str],
-                    right: typing.List[str],
-                    width: int = 78,
-                    as_string: bool = True,
-                    separator: typing.Optional[str] = None,
-                    left_title: typing.Optional[str] = None,
-                    right_title: typing.Optional[str] = None,
-                    ) -> typing.Union[str, typing.List[str]]:
+    def side_by_side(
+        self,
+        left: typing.List[str],
+        right: typing.List[str],
+        width: int = 78,
+        as_string: bool = False,
+        separator: typing.Optional[str] = None,
+        left_title: typing.Optional[str] = None,
+        right_title: typing.Optional[str] = None,
+    ) -> typing.Union[str, typing.List[str]]:
         """
-            Returns a side-by-side comparison of the two provided inputs, showing
-            common lines between both inputs, and the lines that are unique to each.
+        Gibt nebeneinanderstehende Zeilen zurück:
+          [Links-Text][Padding][separator][Rechts-Text]
 
-            :param left: Lines of text to place on the left side
-            :type left: typing.List[str]
-            :param right: Lines of text to place on the right side
-            :type right: typing.List[str]
-            :param width: Character width of the overall output, defaults to 78
-            :type width: int, optional
-            :param as_string: Whether to return a string (as opposed to a list of strings), defaults to True
-            :type as_string: bool, optional
-            :param separator: String separating the left and right side, defaults to " | "
-            :type separator: typing.Optional[str], optional
-            :param left_title: Title to place on the left side, defaults to None
-            :type left_title: typing.Optional[str], optional
-            :param right_title: Title to place on the right side, defaults to None
-            :type right_title: typing.Optional[str], optional
-            :return: Lines or text of the merged side-by-side diff comparison output.
-            :rtype: typing.Union[str, typing.List[str]]
+        :param left: Liste von Zeilen (bereits nummeriert/aufbereitet)
+        :param right: Liste von Zeilen (bereits nummeriert/aufbereitet)
+        :param width: Maximale Gesamtbreite (inkl. Separator)
+        :param as_string: True → Rückgabe als einziger String mit "\n"
+        :param separator: String, der links und rechts trennt (Default " | ")
+        :param left_title: Überschrift ganz oben links (optional)
+        :param right_title: Überschrift ganz oben rechts (optional)
+        :return: Entweder List[str] oder ein einziger String
         """
+        sep = separator or self.default_separator
+        # Berechne, wie viele Zeichen pro Seite bleiben:
+        side_width = (width - len(sep) - (1 - width % 2)) // 2
+
+        # Wrap/flatten beide Seiten
+        left_wrapped = self._wrap_and_flatten(left, side_width)
+        right_wrapped = self._wrap_and_flatten(right, side_width)
+
+        # Paare bilden, fehlende Zeilen mit leerem String auffüllen
+        pairs = list(itertools.zip_longest(left_wrapped, right_wrapped, fillvalue=""))
+
+        # Falls Überschriften angegeben, voranstellen (einschließlich Unterstreichung)
+        if left_title or right_title:
+            lt = left_title or ""
+            rt = right_title or ""
+            underline = "-" * side_width
+            header = [(lt, rt), (underline, underline)]
+            pairs = header + pairs
+
+        # Jetzt jede Zeile zusammenbauen
+        lines: typing.List[str] = []
+        for l_line, r_line in pairs:
+            l_text = l_line or ""
+            r_text = r_line or ""
+            pad = " " * max(0, side_width - len(l_text))
+            lines.append(f"{l_text}{pad}{sep}{r_text}")
+
+        return "\n".join(lines) if as_string else lines
+
+    def better_diff(
+        self,
+        left: typing.Union[str, typing.List[str]],
+        right: typing.Union[str, typing.List[str]],
+        width: int = 78,
+        as_string: bool = True,
+        separator: typing.Optional[str] = None,
+        left_title: typing.Optional[str] = None,
+        right_title: typing.Optional[str] = None,
+    ) -> typing.Union[str, typing.List[str]]:
+        """
+        Gibt einen Side-by-Side-Diff mit Markierung von gleichen/entfernten/hinzugefügten Zeilen
+        und zusätzlich mit den Zeilennummern in den beiden Input-Dateien.
+
+        Syntax der Prefixe:
+          "  " → Zeile vorhanden in beiden Dateien
+          "- " → Zeile nur in der linken Datei
+          "+ " → Zeile nur in der rechten Datei
+          "? " → wird komplett ignoriert
+
+        Die Ausgabe hat Form:
+          <LNr>: <Linke-Zeile>  |  <RNr>: <Rechte-Zeile>
+        bzw. bei fehlender link/rechts-Zeile:
+          <LNr>: <Linke-Zeile>  |       -
+          -      |  <RNr>: <Rechte-Zeile>
+
+        :param left: Ursprungstext als String oder Liste von Zeilen
+        :param right: Vergleichstext als String oder Liste von Zeilen
+        :param width: Gesamtbreite inkl. Separator
+        :param as_string: True, um einen einzelnen String zurückzubekommen
+        :param separator: Trenner (Standard: " | ")
+        :param left_title: Überschrift links (optional)
+        :param right_title: Überschrift rechts (optional)
+        :return: Side-by-Side-Liste oder einzelner String
+        """
+        # 1) Ausgangsdaten normalisieren
+        l_lines = left.splitlines() if isinstance(left, str) else left.copy()
+        r_lines = right.splitlines() if isinstance(right, str) else right.copy()
+
+        # 2) Differenz-Berechnung
         differ = difflib.Differ()
+        diffed = list(differ.compare(l_lines, r_lines))
 
-        left_side = []
-        right_side = []
+        # 3) Zähler für Zeilennummern
+        left_lineno = 1
+        right_lineno = 1
 
-        if isinstance(left, str):
-            left = left.split("\n")
+        left_side: typing.List[str] = []
+        right_side: typing.List[str] = []
 
-        if isinstance(right, str):
-            right = right.split("\n")
+        # 4) Durchlaufe alle Diff‐Einträge
+        for entry in diffed:
+            code = entry[:2]   # "  ", "- ", "+ " oder "? "
+            content = entry[2:]  # Der eigentliche Text
 
-        # adapted from
-        # LINK: https://stackoverflow.com/a/66091742/408734
-        difflines = list(differ.compare(left, right))
+            if code == "  ":
+                # Zeile existiert in beiden Dateien
+                # Linke Seite: "  <LNr>: <Text>"
+                # Rechte Seite: "  <RNr>: <Text>"
+                left_side.append(f"{left_lineno:>4}: {content}")
+                right_side.append(f"{right_lineno:>4}: {content}")
+                left_lineno += 1
+                right_lineno += 1
 
-        for line in difflines:
-            """
-            """
-            op = line[0]
-            tail = line[2:]
+            elif code == "- ":
+                # Nur in der linken Datei
+                left_side.append(f"{left_lineno:>4}: {content}")
+                # Rechts ein Platzhalter "-" ohne Nummer
+                right_side.append("    -")
+                left_lineno += 1
 
-            if op == " ":
-                # line is same in both
-                left_side.append(f" {tail}")
-                right_side.append(f" {tail}")
+            elif code == "+ ":
+                # Nur in der rechten Datei
+                # Links wird ein "+" angezeigt, ohne LNr
+                left_side.append("    +")
+                right_side.append(f"{right_lineno:>4}: {content}")
+                right_lineno += 1
 
-            elif op == "-":
-                # line is only on the left
-                left_side.append(f" {tail}")
-                right_side.append("-")
+            # "? " ignorieren wir komplett
 
-            elif op == "+":
-                # line is only on the right
-                left_side.append("+")
-                right_side.append(f" {tail}")
-
+        # 5) Nun übergeben wir die nummerierten Zeilen an side_by_side()
         return self.side_by_side(
             left=left_side,
             right=right_side,
@@ -197,42 +213,74 @@ class SideBySide:
             right_title=right_title,
         )
 
-    def diff(self,
-             width: int = 78,
-             as_string: bool = True,
-             separator: typing.Optional[str] = None,
-             left_title: typing.Optional[str] = None,
-             right_title: typing.Optional[str] = None,
-             ) -> typing.Union[str, typing.List[str]]:
+    def diff(
+        self,
+        width: int = 78,
+        as_string: bool = True,
+        separator: typing.Optional[str] = None,
+        left_title: typing.Optional[str] = None,
+        right_title: typing.Optional[str] = None,
+    ) -> typing.Union[str, typing.List[str]]:
         """
+        Führt better_diff() für die in __init__ geladenen left/right‐Strings aus.
+
+        :param width: Gesamtbreite inkl. Separator
+        :param as_string: True, um einen einzelnen String zurückzubekommen
+        :param separator: Trenner (Standard: " | ")
+        :param left_title: Überschrift links (optional)
+        :param right_title: Überschrift rechts (optional)
+
+        :return: Side-by-Side-Liste oder einzelner String
         """
-        return self.better_diff(self.left, self.right, width, as_string, separator, left_title, right_title)
+        return self.better_diff(
+            left=self.left,
+            right=self.right,
+            width=width,
+            as_string=as_string,
+            separator=separator,
+            left_title=left_title,
+            right_title=right_title,
+        )
 
-    def diff_between_files(self, file_1, file_2):
+    def diff_between_files(
+        self,
+        file_1: typing.Union[str, Path],
+        file_2: typing.Union[str, Path],
+    ) -> typing.Union[str, typing.List[str]]:
         """
+        Liest zwei Dateien ein und liefert ihren Side-by-Side‐Diff (mit Zeilennummern).
+
+        :param file_1: Pfad zur ersten Datei
+        :param file_2: Pfad zur zweiten Datei
+        :return: Liste der formatierten Zeilen oder einziger String (as_string=True)
         """
-        self.module.log(f"diff_between_files({file_1}, {file_2})")
-        old_data = ""
-        tmp_data = ""
-        diff_side_by_side = ""
+        f1 = Path(file_1)
+        f2 = Path(file_2)
 
-        if os.path.isfile(file_1):
-            self.module.log(f"  file_1: {file_1}")
-            with open(file_1, "r") as f:
-                old_data = f.readlines()
-                old_data = "\n".join(old_data)
+        self.module.log(f"diff_between_files({f1}, {f2})")
 
-        if os.path.isfile(file_2):
-            self.module.log(f"  file_2: {file_2}")
-            with open(file_2, "r") as f:
-                tmp_data = f.readlines()
-                tmp_data = "\n".join(tmp_data)
+        if not f1.is_file() or not f2.is_file():
+            self.module.log(f"  Eine oder beide Dateien existieren nicht: {f1}, {f2}")
+            # Hier geben wir für den Fall „Datei fehlt“ einfach einen leeren String zurück.
+            return ""
 
-        self.module.log(f"  old_data: {old_data}")
-        self.module.log(f"  tmp_data: {tmp_data}")
+        # Dateien in Listen von Zeilen einlesen (ohne trailing "\n")
+        old_lines = f1.read_text(encoding="utf-8").splitlines()
+        new_lines = f2.read_text(encoding="utf-8").splitlines()
 
-        diff_side_by_side = self.diff(width=140, left_title="  Original", right_title="  Update")
+        self.module.log(f"  Gelesen: {len(old_lines)} Zeilen aus {f1}")
+        self.module.log(f"  Gelesen: {len(new_lines)} Zeilen aus {f2}")
 
-        self.module.log(f"  diff_side_by_side: {diff_side_by_side}")
+        diffed = self.better_diff(
+            left=old_lines,
+            right=new_lines,
+            width=140,
+            as_string=True,
+            separator=self.default_separator,
+            left_title="  Original",
+            right_title="  Update",
+        )
 
-        return diff_side_by_side
+        # Nur einen Auszug fürs Logging (z.B. erste 200 Zeichen)
+        self.module.log(f"  diffed output (gekürzt):\n{diffed[:200]}...")
+        return diffed
