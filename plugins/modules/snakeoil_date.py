@@ -134,7 +134,15 @@ class SnakeoilDate(object):
                 month = Month[date_pattern.group('month')].value
                 # our new timeformat: 2022-10-24 09:31:51
                 # datetime_format = "%Y-%m-%d %H:%M:%S"
-                date_not_after = f"{date_pattern.group('year')}-{month}-{date_pattern.group('day')} {date_pattern.group('hour')}:{date_pattern.group('minute')}:{date_pattern.group('second')}"
+                # date_not_after =
+                #   f"{date_pattern.group('year')}-{month}-{date_pattern.group('day'
+                #   )} {date_pattern.group('hour')}:{date_pattern.group('minute')}:{date_pattern.group('second')}"
+                year = date_pattern.group("year")
+                day = date_pattern.group("day")
+                hour = date_pattern.group("hour")
+                minute = date_pattern.group("minute")
+                second = date_pattern.group("second")
+                date_not_after = f"{year}-{month}-{day} {hour}:{minute}:{second}"
 
             if self.validate_datetime(date_not_after):
                 """

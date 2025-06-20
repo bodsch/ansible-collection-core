@@ -111,7 +111,7 @@ class Aur():
         """
         installed, installed_version = self.package_installed(self.name)
 
-        self.module.log(msg=f"  {self.name} is installed: {installed} / {installed_version}")
+        self.module.log(msg=f"  {self.name} is installed: {installed} / version: {installed_version}")
 
         if installed and self.state == "absent":
             sudo_binary = self.module.get_bin_path('sudo', True)
@@ -185,7 +185,7 @@ class Aur():
 
         version_string = None
         if out:
-            pattern = re.compile(r"icinga2 (?P<version>.*)-.*", re.MULTILINE)
+            pattern = re.compile(fr"{self.name} (?P<version>.*)-.*", re.MULTILINE)
 
             version = re.search(pattern, out)
             if version:

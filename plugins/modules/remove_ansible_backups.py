@@ -108,7 +108,23 @@ class RemoveAnsibleBackups(object):
             """
             os.chdir(self.path)
 
-            file_pattern = re.compile(r"(?P<file_name>.*)\.(.*)\.(?P<year>\d{4})-(?P<month>.{2})-(?P<day>\d+)@(?P<hour>\d+):(?P<minute>\d+):(?P<second>\d{2})~", re.MULTILINE)
+            # file_pattern = re.compile(r"
+            #   (?P<file_name>.*)\.(.*)\.(?P<year>\d{4})-(?P<month>.{2})-
+            #   (?P<day>\d+)@(?P<hour>\d+):(?P<minute>\d+):(?P<second>\d{2})~", re.MULTILINE)
+
+            file_pattern = re.compile(
+                r"""
+                (?P<file_name>.*)\.           # Alles vor dem ersten Punkt (Dateiname)
+                (.*)\.                        # Irgendein Teil nach dem ersten Punkt (z.B. Erweiterung)
+                (?P<year>\d{4})-              # Jahr (4-stellig)
+                (?P<month>.{2})-             # Monat (2 Zeichen – ggf. besser \d{2}?)
+                (?P<day>\d+)@                # Tag, dann @
+                (?P<hour>\d+):               # Stunde
+                (?P<minute>\d+):             # Minute
+                (?P<second>\d{2})~           # Sekunde, dann Tilde
+                """,
+                re.VERBOSE | re.MULTILINE
+            )
 
             # self.module.log(msg=f"search files in {self.path}")
 

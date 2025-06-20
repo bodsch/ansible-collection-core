@@ -17,7 +17,7 @@ then
   # ansible-doc --list --list_files -t module ${COLLECTION_NAMESPACE}.${COLLECTION_NAME}
 
   ansible_modules=$(
-    ansible-doc --list ${COLLECTION_NAMESPACE}.${COLLECTION_NAME} --json | jq -r 'keys[]'
+    ansible-doc --list ${COLLECTION_NAMESPACE}.${COLLECTION_NAME} --type module --json | jq -r 'keys[]'
   )
 
   for i in ${ansible_modules}
@@ -38,6 +38,7 @@ then
     PAGER='cat' ansible-doc --type filter ${i}
     echo ""
   done
+
 fi
 
 exit 0
