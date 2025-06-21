@@ -164,6 +164,7 @@ jobs:
         python_version:
           - '3.12'
         scenario:
+          - configured
           - pacman-hooks
         collection_role:
           - pacman
