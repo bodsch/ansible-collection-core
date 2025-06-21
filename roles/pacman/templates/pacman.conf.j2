@@ -6,67 +6,63 @@
 # See the pacman.conf(5) manpage for option and repository directives
 
 [options]
-RootDir         = {{ pacman_config.root_dir }}
-DBPath          = {{ pacman_config.db_path }}
-CacheDir        = {{ pacman_config.cache_dir }}
-LogFile         = {{ pacman_config.log_file }}
-GPGDir          = {{ pacman_config.gpg_dir }}
-HookDir         = {{ pacman_config.hook_dir }}
-HoldPkg         = {{ pacman_config.hold_pkg | join(' ') }}
+RootDir               = {{ pacman_config.root_dir }}
+DBPath                = {{ pacman_config.db_path }}
+CacheDir              = {{ pacman_config.cache_dir }}
+LogFile               = {{ pacman_config.log_file }}
+GPGDir                = {{ pacman_config.gpg_dir }}
+HookDir               = {{ pacman_config.hook_dir }}
+HoldPkg               = {{ pacman_config.hold_pkg | default([]) | join(' ') }}
 {% if pacman_config.xfer_command is defined and
       pacman_config.xfer_command | string | length > 0 %}
-XferCommand     = {{ pacman_config.xfer_command }}
+XferCommand           = {{ pacman_config.xfer_command }}
 {% endif %}
-CleanMethod     = {{ pacman_config.clean_method }}
-Architecture    = {{ pacman_config.architecture }}
+CleanMethod           = {{ pacman_config.clean_method }}
+Architecture          = {{ pacman_config.architecture }}
 
 # Pacman won't upgrade packages listed in IgnorePkg and members of IgnoreGroup
-{% if pacman_config.ignore_pkg is defined and
-      pacman_config.ignore_pkg | count > 0 %}
-IgnorePkg       = {{ pacman_config.ignore_pkg | join(' ') }}
+{% if pacman_config.ignore_pkg | default([]) | count > 0 %}
+IgnorePkg             = {{ pacman_config.ignore_pkg | join(' ') }}
 {% endif %}
-{% if pacman_config.ignore_group is defined and
-      pacman_config.ignore_group | count > 0 %}
-IgnoreGroup     = {{ pacman_config.ignore_group | join(' ') }}
+{% if pacman_config.ignore_group | default([]) | count > 0 %}
+IgnoreGroup           = {{ pacman_config.ignore_group | join(' ') }}
 {% endif %}
-{% if pacman_config.no_upgrade is defined and
-      pacman_config.no_upgrade | count > 0 %}
-NoUpgrade       = {{ pacman_config.no_upgrade | join(' ') }}
+{% if pacman_config.no_upgrade | default([]) | count > 0 %}
+NoUpgrade             = {{ pacman_config.no_upgrade | join(' ') }}
 {% endif %}
-{% if pacman_config.no_extract is defined and
-      pacman_config.no_extract | count > 0 %}
-NoExtract       = {{ pacman_config.no_extract | join(' ') }}
+{% if pacman_config.no_extract | default([]) | count > 0 %}
+NoExtract             = {{ pacman_config.no_extract | join(' ') }}
 {% endif %}
 
-{% if pacman_config.use_syslog is defined and
-      pacman_config.use_syslog %}
+{% if pacman_config.use_syslog | default('true') | bool %}
 UseSyslog
 {% endif %}
-{% if pacman_config.color is defined and
-      pacman_config.color %}
+{% if pacman_config.color | default('true') | bool %}
 Color
 {% endif %}
-{% if pacman_config.no_progress_bar is defined and
-      not pacman_config.no_progress_bar %}
+{% if pacman_config.no_progress_bar | default('true') | bool %}
 NoProgressBar
 {% endif %}
-{% if pacman_config.check_space is defined and
-      pacman_config.check_space %}
+{% if pacman_config.check_space | default('true') | bool %}
 CheckSpace
 {% endif %}
-{% if pacman_config.verbose_pkg_lists is defined and
-      pacman_config.verbose_pkg_lists %}
+{% if pacman_config.verbose_pkg_lists | default('true') | bool %}
 VerbosePkgLists
 {% endif %}
-{% if pacman_config.parallel_downloads is defined and
-      pacman_config.parallel_downloads | string | length > 0 %}
-ParallelDownloads = {{ pacman_config.parallel_downloads }}
+{% if pacman_config.parallel_downloads | default('5') | string | length > 0 %}
+ParallelDownloads     = {{ pacman_config.parallel_downloads }}
+{% endif %}
+{% if pacman_config.download_user | default('alpm') | string | length > 0 %}
+DownloadUser          = {{ pacman_config.download_user }}
+{% endif %}
+{% if pacman_config.disable_sandbox | default('true') | bool %}
+# No kernel landlock in containerd
+DisableSandbox
 {% endif %}
 
-SigLevel              = {{ pacman_config.sig_level | join(' ') }}
-LocalFileSigLevel     = {{ pacman_config.local_file_sig_level | join(' ') }}
-{% if pacman_config.remote_file_sig_level is defined and
-      pacman_config.remote_file_sig_level | count > 0 %}
+SigLevel              = {{ pacman_config.sig_level | default([]) | join(' ') }}
+LocalFileSigLevel     = {{ pacman_config.local_file_sig_level | default([]) | join(' ') }}
+{% if pacman_config.remote_file_sig_level | default([]) | count > 0 %}
 RemoteFileSigLevel    = {{ pacman_config.remote_file_sig_level | join(' ') }}
 {% endif %}
 
