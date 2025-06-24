@@ -64,7 +64,6 @@ jobs:
         collection_role:
           - pacman
           - fail2ban
-          - snakeoil
           - syslog_ng
           - logrotate
           - openvpn
