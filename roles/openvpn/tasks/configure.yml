@@ -22,6 +22,28 @@
     - setup
     - openvpn
 
+- name: d
+  become: false
+  delegate_to: localhost
+  run_once: true
+  debug:
+    msg: "{{ ansible_play_hosts }}"
+
+- name: Create a combined list
+  become: false
+  delegate_to: localhost
+  run_once: true
+  set_fact:
+    combined_list: "{{ combined_list | default([]) + hostvars[item].openvpn_mobile_clients }}"
+  loop: "{{ ansible_play_hosts }}"
+  loop_control:
+    loop_var: item
+  no_log: true
+
+- name: define client list
+  ansible.builtin.set_fact:
+    openvpn_client_list: "{{ combined_list }}"
+
 - name: configure openvpn server
   ansible.builtin.include_tasks: configure/server.yml
   when:
@@ -33,12 +55,12 @@
     - openvpn_mobile_clients is defined
     - openvpn_mobile_clients | count > 0
 
-- name: change rights for created files
-  ansible.builtin.file:
-    state: directory
-    path: "{{ openvpn_directory }}/keys"
-    owner: "{{ openvpn_owner }}"
-    group: "{{ openvpn_group }}"
-    recurse: true
+# - name: change rights for created files
+#   ansible.builtin.file:
+#     state: directory
+#     path: "{{ openvpn_directory }}/keys"
+#     owner: "{{ openvpn_owner }}"
+#     group: "{{ openvpn_group }}"
+#     recurse: true
 
 ...
