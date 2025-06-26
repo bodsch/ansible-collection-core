@@ -23,9 +23,6 @@ class FilterModule(object):
         # display.v(f"openvpn_clients({data}, {hostvars})")
         client = hostvars.get("openvpn_mobile_clients", None)
         if client and isinstance(client, list):
-            # client_name = client.get("name")
-            display.v(f"  - {client}")
             data += client
-        # display.v(f" = result : {data}")
 
         return data
