@@ -114,16 +114,6 @@ class OpenVPNClientCertificate(object):
 
             rc, out, err = self._exec(args)
 
-            _out = out.splitlines()
-            _err = err.splitlines()
-            # self.module.log(msg=f"= _out: {_out} {type(_out)}")
-            # self.module.log(msg=f"= _err: {_err} {type(_err)}")
-            _output = []
-            _output += _out
-            _output += _err
-
-            self.module.log(msg=f"= output: {_output}")
-
             if rc != 0:
                 """
                 """
@@ -179,16 +169,6 @@ class OpenVPNClientCertificate(object):
         args.append(username)
 
         rc, out, err = self._exec(args)
-
-        _out = out.splitlines()
-        _err = err.splitlines()
-        # self.module.log(msg=f"= _out: {_out} {type(_out)}")
-        # self.module.log(msg=f"= _err: {_err} {type(_err)}")
-        _output = []
-        _output += _out
-        _output += _err
-
-        self.module.log(msg=f"= output: {_output}")
 
         if rc == 0:
             # remove checksums
@@ -288,16 +268,25 @@ class OpenVPNClientCertificate(object):
         """
           execute shell program
         """
-        self.module.log(msg=f"_exec(commands={commands}, check_rc={check_rc}")
-        self.module.log("-------------------------------------------------------------------------")
-
+        # self.module.log(msg=f"_exec(commands={commands}, check_rc={check_rc}")
+        # self.module.log("-------------------------------------------------------------------------")
         rc, out, err = self.module.run_command(commands, check_rc=check_rc)
-        self.module.log(msg=f"  rc : '{rc}'")
-        self.module.log(msg=f"  out: '{out}'")
-        self.module.log(msg=f"  err: '{err}'")
-        self.module.log("-------------------------------------------------------------------------")
+        # self.module.log(msg=f"  rc : '{rc}'")
+        # self.module.log(msg=f"  out: '{out}'")
+        # self.module.log(msg=f"  err: '{err}'")
+        # self.module.log("-------------------------------------------------------------------------")
         return rc, out, err
 
+    def result_values(self, out: str, err: str) -> list:
+        """
+    "   """
+        _out = out.splitlines()
+        _err = err.splitlines()
+        _output = []
+        _output += _out
+        _output += _err
+        # self.module.log(msg=f"= output: {_output}")
+        return _output
 
 # ===========================================
 # Module execution.

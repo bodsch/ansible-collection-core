@@ -4,8 +4,10 @@
 # (c) 2022-2023, Bodo Schulz <bodo@boone-schulz.de>
 
 from __future__ import absolute_import, division, print_function
+import os
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.bodsch.core.plugins.module_utils.easyrsa import EasyRSA
 from ansible.module_utils.common.text.converters import to_native
 
 from ansible_collections.community.crypto.plugins.module_utils.crypto.basic import (
@@ -28,8 +30,9 @@ class OpenVPNCrl(object):
         """
         """
         self.module = module
-
+        self.state = module.params.get('state')
         self.pki_dir = module.params.get('pki_dir')
+        self.working_dir = module.params.get('working_dir', None)
         self.list_revoked_certificates = module.params.get('list_revoked_certificates')
         self.warn_for_expire = module.params.get('warn_for_expire')
         self.expire_in_days = module.params.get('expire_in_days')
@@ -39,57 +42,114 @@ class OpenVPNCrl(object):
     def run(self):
         """
         """
-        data = None
-
-        try:
-            with open(self.crl_file, 'rb') as f:
-                data = f.read()
-        except (IOError, OSError) as e:
-            msg = f'Error while reading CRL file from disk: {e}'
-            self.module.log(msg)
-            self.module.fail_json(msg)
-
-        if data:
-            try:
-                crl_info = get_crl_info(self.module, data, list_revoked_certificates=self.list_revoked_certificates)
-
-                self.last_update = get_relative_time_option(crl_info.get('last_update'), 'last_update')
-                self.next_update = get_relative_time_option(crl_info.get('next_update'), 'next_update')
-                self.revoked_certificates = crl_info.get('revoked_certificates', [])
-
-                result = dict(
-                    failed=False,
-                    last_update=dict(
-                        raw=crl_info.get('last_update'),
-                        parsed=self.last_update
-                    ),
-                    next_update=dict(
-                        raw=crl_info.get('next_update'),
-                        parsed=self.next_update
-                    )
-                )
-
-                if self.warn_for_expire:
-                    expired = self.expired(self.next_update)
-
-                    result.update({
-                        "expired": expired
-                    })
-
-                    if expired:
-                        result.update({"warn": True})
-
-                if self.list_revoked_certificates:
-                    result.update({
-                        "revoked_certificates": self.revoked_certificates
-                    })
-
-            except OpenSSLObjectError as e:
-                msg = f'Error while decoding CRL file: {to_native(e)}'
-                self.module.log(msg)
-                self.module.fail_json(msg)
+        if self.state == "status":
+            result = self.test_crl()
+        if self.state == "renew":
+            result = self.renew_crl()
 
         return result
+
+    def test_crl(self):
+        """
+        """
+        data = None
+
+        if os.path.isfile(self.crl_file):
+            try:
+                with open(self.crl_file, 'rb') as f:
+                    data = f.read()
+            except (IOError, OSError) as e:
+                msg = f'Error while reading CRL file from disk: {e}'
+                self.module.log(msg)
+                # self.module.fail_json(msg)
+
+                return dict(
+                    failed=True,
+                    msg=msg
+                )
+        if not data:
+            return dict(
+                failed=True,
+                msg="Upps. This error should not occur."
+            )
+
+        try:
+            crl_info = get_crl_info(self.module, data, list_revoked_certificates=self.list_revoked_certificates)
+
+            self.last_update = get_relative_time_option(crl_info.get('last_update'), 'last_update')
+            self.next_update = get_relative_time_option(crl_info.get('next_update'), 'next_update')
+            self.revoked_certificates = crl_info.get('revoked_certificates', [])
+
+            result = dict(
+                failed=False,
+                last_update=dict(
+                    raw=crl_info.get('last_update'),
+                    parsed=self.last_update
+                ),
+                next_update=dict(
+                    raw=crl_info.get('next_update'),
+                    parsed=self.next_update
+                )
+            )
+
+            if self.warn_for_expire:
+                expired = self.expired(self.next_update)
+
+                result.update({
+                    "expired": expired
+                })
+
+                if expired:
+                    result.update({"warn": True})
+
+            if self.list_revoked_certificates:
+                result.update({
+                    "revoked_certificates": self.revoked_certificates
+                })
+
+            return result
+
+        except OpenSSLObjectError as e:
+            msg = f'Error while decoding CRL file: {to_native(e)}'
+            self.module.log(msg)
+            # self.module.fail_json(msg)
+            return dict(
+                failed=True,
+                msg=msg
+            )
+
+    def renew_crl(self):
+        """
+            rm '{{ openvpn_easyrsa.directory }}/pki/crl.pem'
+        """
+        if self.working_dir:
+            os.chdir(self.working_dir)
+
+        if os.path.isfile(self.crl_file):
+            os.remove(self.crl_file)
+
+        ersa = EasyRSA(
+            module=self.module,
+            force = True,
+            working_dir = self.working_dir
+        )
+
+        rc, changed, msg = ersa.gen_crl()
+
+        if rc == 0:
+            return dict(
+                failed=False,
+                changed=changed,
+                msg=msg
+            )
+        else:
+            return dict(
+                failed=True,
+                changed=changed,
+                msg=msg
+            )
+
+        return (rc, changed, msg)
 
     def expired(self, next_update):
         """
@@ -97,18 +157,15 @@ class OpenVPNCrl(object):
         from datetime import datetime
 
         result = False
-
         now = datetime.now()
 
         time_diff = next_update - now
         time_diff_in_days = time_diff.days
-
-        self.module.log(f" - {time_diff_in_days} vs. {self.expire_in_days}")
+        # self.module.log(f" - {time_diff_in_days} vs. {self.expire_in_days}")
 
         if time_diff_in_days <= self.expire_in_days:
             result = True
 
-        self.module.log(f" - {result}")
         return result
 
 
@@ -117,12 +174,18 @@ def main():
     args = dict(
         state=dict(
             default="status",
-            choices=["status"]
+            choices=[
+                "status",
+                "renew"
+            ]
         ),
         pki_dir=dict(
             required=False,
             type="str",
             default="/etc/easy-rsa/pki"
+        ),
+        working_dir=dict(
+            required=False
         ),
         list_revoked_certificates=dict(
             required=False,
