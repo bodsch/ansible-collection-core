@@ -132,9 +132,9 @@
   when:
     - openvpn_crl.expired | default('false') | bool
   block:
-    - name: crl is expired
-      ansible.builtin.debug:
-        msg: "{{ openvpn_crl }}"
+    # - name: crl is expired
+    #   ansible.builtin.debug:
+    #     msg: "{{ openvpn_crl }}"
 
     - name: renew CRL
       bodsch.core.easyrsa:
@@ -228,8 +228,10 @@
 - name: create or revoke client certificate
   delegate_to: "{{ openvpn_server.name }}"
   bodsch.core.openvpn_client_certificate:
-    clients: "{{ openvpn_client_list | default([]) }}"
+    clients: "{{ openvpn_client_list }}"
     working_dir: '{{ openvpn_easyrsa.directory }}'
+  when:
+    - openvpn_client_list | default([]) | count > 0
 
 # ------------------------------------------------------------------------------------------------
 
