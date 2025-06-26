@@ -22,27 +22,27 @@
     - setup
     - openvpn
 
-- name: d
-  become: false
-  delegate_to: localhost
-  run_once: true
-  debug:
-    msg: "{{ ansible_play_hosts }}"
+# - name: d
+#   become: false
+#   delegate_to: localhost
+#   run_once: true
+#   debug:
+#     msg: "{{ ansible_play_hosts }}"
 
-- name: Create a combined list
+- name: create a combined client list
   become: false
   delegate_to: localhost
   run_once: true
-  set_fact:
-    combined_list: "{{ combined_list | default([]) + hostvars[item].openvpn_mobile_clients }}"
+  ansible.builtin.set_fact:
+    openvpn_client_list: "{{ openvpn_client_list | default([]) | bodsch.core.openvpn_clients(hostvars[item]) }}"
   loop: "{{ ansible_play_hosts }}"
   loop_control:
     loop_var: item
   no_log: true
 
-- name: define client list
-  ansible.builtin.set_fact:
-    openvpn_client_list: "{{ combined_list }}"
+# - name: define client list
+#   ansible.builtin.set_fact:
+#     openvpn_client_list: "{{ combined_list }}"
 
 - name: configure openvpn server
   ansible.builtin.include_tasks: configure/server.yml
