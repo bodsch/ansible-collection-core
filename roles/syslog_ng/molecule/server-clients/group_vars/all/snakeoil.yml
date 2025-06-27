@@ -4,14 +4,14 @@ snakeoil_extract_to: '/etc/ssl'
 snakeoil_domain: molecule.local
 
 snakeoil_email: "cert@{{ snakeoil_domain }}"
-snakeoil_life_time: 15
+snakeoil_life_time: 7
 
 snakeoil_alt_names:
   - dns:
       - molecule.local
       - syslog.molecule.local
 
-snakeoil_dhparam: 1024
+snakeoil_dhparam: 2048
 
 snakeoil_extract_owner: root
 snakeoil_extract_group: root

@@ -44,62 +44,16 @@
   when:
     - ansible_distribution | lower == "ubuntu"
 
-- name: initialize easy-rsa PKI
+- name: initialize easy-rsa - (this is going to take a long time)
   bodsch.core.easyrsa:
-    state: init-pki
-    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
-  register: _init_result
-  args:
-    chdir: '{{ openvpn_easyrsa.directory }}'
-    creates: '{{ openvpn_easyrsa.directory }}/pki'
-
-- name: build CA certifikate & key
-  bodsch.core.easyrsa:
-    state: build-ca
     pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
     req_cn_ca: "{{ openvpn_certificate.req_cn_ca }}"
-    keysize: 4096
-  args:
-    chdir: '{{ openvpn_easyrsa.directory }}'
-    creates: '{{ openvpn_easyrsa.directory }}/pki/ca.crt'
-  register: openvpn_ca_created
-
-- name: create initial CRL
-  bodsch.core.easyrsa:
-    state: gen-crl
-    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
-  args:
-    chdir: '{{ openvpn_easyrsa.directory }}'
-    creates: '{{ openvpn_easyrsa.directory }}/pki/crl.pem'
-
-- name: create DH parameters (this is going to take a long time)
-  bodsch.core.easyrsa:
-    state: gen-dh
-    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
-    keysize: "{{ openvpn_diffie_hellman_keysize }}"
-  args:
-    chdir: '{{ openvpn_easyrsa.directory }}'
-    creates: '{{ openvpn_easyrsa.directory }}/pki/dh.pem'
-
-- name: request openvpn server certificate
-  bodsch.core.easyrsa:
-    state: gen-req
-    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
     req_cn_server: '{{ openvpn_certificate.req_cn_server }}'
-  args:
-    chdir: '{{ openvpn_easyrsa.directory }}'
-    creates: '{{ openvpn_easyrsa.directory }}/pki/reqs/{{ openvpn_certificate.req_cn_server }}.req'
-  register: server_cert_request
-
-- name: sign openvpn server certificate
-  bodsch.core.easyrsa:
-    state: sign-req
-    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
-    req_cn_server: '{{ openvpn_certificate.req_cn_server }}'
-  args:
-    chdir: '{{ openvpn_easyrsa.directory }}'
-    creates: '{{ openvpn_easyrsa.directory }}/pki/issued/{{ openvpn_certificate.req_cn_server }}.crt'
-  when: server_cert_request is succeeded
+    ca_keysize: 4096
+    dh_keysize: "{{ openvpn_diffie_hellman_keysize }}"
+    working_dir: '{{ openvpn_easyrsa.directory }}'
+    # force: true
+  register: _easyrsa_result
 
 - name: validate crl
   bodsch.core.openvpn_crl:
@@ -107,22 +61,13 @@
     expire_in_days: "{{ openvpn_easyrsa.crl_warn.expire_in_days }}"
   register: openvpn_crl
 
-- name: renew crl
+- name: renew CRL
   when:
     - openvpn_crl.expired | default('false') | bool
-  block:
-    - name: crl is expired
-      ansible.builtin.debug:
-        msg: "{{ openvpn_crl }}"
-
-    - name: renew CRL
-      bodsch.core.easyrsa:
-        state: gen-crl
-        force: true
-        pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
-      args:
-        chdir: '{{ openvpn_easyrsa.directory }}'
-        creates: '{{ openvpn_easyrsa.directory }}/pki/crl.pem'
+  bodsch.core.openvpn_crl:
+    state: renew
+    force: true
+    working_dir: '{{ openvpn_easyrsa.directory }}/pki'
 
 # ------------------------------------------------------------------------------------------------
 
@@ -201,6 +146,16 @@
     mode: "0600"
     flat: true
   no_log: true
+
+# ------------------------------------------------------------------------------------------------
+
+- name: create or revoke client certificate
+  delegate_to: "{{ openvpn_server.name }}"
+  bodsch.core.openvpn_client_certificate:
+    clients: "{{ openvpn_client_list }}"
+    working_dir: '{{ openvpn_easyrsa.directory }}'
+  when:
+    - openvpn_client_list | default([]) | count > 0
 
 # ------------------------------------------------------------------------------------------------
 

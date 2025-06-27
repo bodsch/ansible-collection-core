@@ -5,8 +5,11 @@
 
 from __future__ import absolute_import, division, print_function
 import os
+import shutil
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.bodsch.core.plugins.module_utils.easyrsa import EasyRSA
+from ansible_collections.bodsch.core.plugins.module_utils.module_results import results
 
 # ---------------------------------------------------------------------------------------
 
@@ -16,50 +19,117 @@ module: easyrsa
 version_added: 1.1.3
 author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
 
-short_description: Accepts CLI commandos for syslog-ng.
+short_description: Manage a Public Key Infrastructure (PKI) using EasyRSA.
 
 description:
-    - Accepts CLI commandos for syslog-ng.
+  - This module allows management of a PKI environment using EasyRSA.
+  - It supports initialization of a PKI directory, creation of a Certificate Authority (CA),
+    generation of certificate signing requests (CSR), signing of certificates, generation of
+    a certificate revocation list (CRL), and generation of Diffie-Hellman (DH) parameters.
+  - It is useful for automating the setup of secure communication infrastructure.
+
 
 options:
-  source_directory:
-    parameters:
-      - A list of parameters.
-    type: list
-    default: []
-    required: true
+  pki_dir:
+    description:
+      - Path to the PKI directory where certificates and keys will be stored.
+    required: false
+    type: str
+
+  force:
+    description:
+      - If set to true, the existing PKI directory will be deleted and recreated.
+    required: false
+    type: bool
+    default: false
+
+  req_cn_ca:
+    description:
+      - Common Name (CN) to be used for the CA certificate.
+    required: false
+    type: str
+
+  req_cn_server:
+    description:
+      - Common Name (CN) to be used for the server certificate request.
+    required: false
+    type: str
+
+  ca_keysize:
+    description:
+      - Key size (in bits) for the CA certificate.
+    required: false
+    type: int
+
+  dh_keysize:
+    description:
+      - Key size (in bits) for the Diffie-Hellman parameters.
+    required: false
+    type: int
+
+  working_dir:
+    description:
+      - Directory in which to execute the EasyRSA commands.
+      - If not set, commands will be executed in the current working directory.
+    required: false
+    type: str
+
 """
 
 EXAMPLES = r"""
-- name: validate syslog-ng config
-  bodsch.core.syslog_cmd:
-    parameters:
-      - --syntax-only
-  check_mode: true
-  when:
-    - not ansible_check_mode
-
-- name: detect config version
-  bodsch.core.syslog_cmd:
-    parameters:
-      - --version
-  register: _syslog_config_version
+- name: initialize easy-rsa - (this is going to take a long time)
+  bodsch.core.easyrsa:
+    pki_dir: '{{ openvpn_easyrsa.directory }}/pki'
+    req_cn_ca: "{{ openvpn_certificate.req_cn_ca }}"
+    req_cn_server: '{{ openvpn_certificate.req_cn_server }}'
+    ca_keysize: 4096
+    dh_keysize: "{{ openvpn_diffie_hellman_keysize }}"
+    working_dir: '{{ openvpn_easyrsa.directory }}'
+    force: true
+  register: _easyrsa_result
 """
 
 RETURN = r"""
-failed:
-  description:
-    - changed or not
-  type: int
-failed:
-  description:
-    - Failed, or not.
+changed:
+  description: Indicates whether any changes were made during module execution.
   type: bool
-args:
-  description:
-    - Arguments with which syslog-ng is called.
-  type: str
+  returned: always
 
+failed:
+  description: Indicates whether the module failed.
+  type: bool
+  returned: always
+
+state:
+  description: A detailed list of results from each EasyRSA operation.
+  type: list
+  elements: dict
+  returned: always
+  sample:
+    - init-pki:
+        failed: false
+        changed: true
+        msg: The PKI was successfully created.
+    - build-ca:
+        failed: false
+        changed: true
+        msg: ca.crt and ca.key were successfully created.
+    - gen-crl:
+        failed: false
+        changed: true
+        msg: crl.pem was successfully created.
+    - gen-req:
+        failed: false
+        changed: true
+        msg: server.req was successfully created.
+    - sign-req:
+        failed: false
+        changed: true
+        msg: server.crt was successfully created.
+    - gen-dh:
+        failed: false
+        changed: true
+        msg: dh.pem was successfully created.
 """
 
 # ---------------------------------------------------------------------------------------
@@ -67,164 +137,102 @@ args:
 
 class EasyRsa(object):
     """
-    Main Class to implement the Icinga2 API Client
     """
     module = None
 
     def __init__(self, module):
         """
-          Initialize all needed Variables
         """
         self.module = module
 
-        self.state = module.params.get("state")
-        self.force = module.params.get("force", False)
-        self._pki_dir = module.params.get('pki_dir', None)
-        self._req_cn_ca = module.params.get('req_cn_ca', None)
-        self._req_cn_server = module.params.get('req_cn_server', None)
-        self._keysize = module.params.get('keysize', None)
-        self._chdir = module.params.get('chdir', None)
-        self._creates = module.params.get('creates', None)
+        self.state = ""
 
-        self._easyrsa = module.get_bin_path('easyrsa', True)
+        self.force = module.params.get("force", False)
+        self.pki_dir = module.params.get('pki_dir', None)
+        self.req_cn_ca = module.params.get('req_cn_ca', None)
+        self.req_cn_server = module.params.get('req_cn_server', None)
+        self.ca_keysize = module.params.get('ca_keysize', None)
+        self.dh_keysize = module.params.get('dh_keysize', None)
+        self.working_dir = module.params.get('working_dir', None)
+
+        self.easyrsa = module.get_bin_path('easyrsa', True)
 
     def run(self):
         """
           runner
         """
-        result = dict(
-            failed=False,
-            changed=False,
-            ansible_module_results="none"
+        result_state = []
+
+        if self.working_dir:
+            os.chdir(self.working_dir)
+
+        # self.module.log(msg=f"-> pwd : {os.getcwd()}")
+
+        if self.force:
+            # self.module.log(msg="force mode ...")
+            # self.module.log(msg=f"remove {self.pki_dir}")
+
+            if os.path.isdir(self.pki_dir):
+                shutil.rmtree(self.pki_dir)
+
+        ersa = EasyRSA(
+            module=self.module,
+            force = self.force,
+            pki_dir = self.pki_dir,
+            req_cn_ca = self.req_cn_ca,
+            req_cn_server = self.req_cn_server,
+            ca_keysize = self.ca_keysize,
+            dh_keysize = self.dh_keysize,
+            working_dir = self.working_dir
         )
 
-        if self._chdir:
-            os.chdir(self._chdir)
+        steps = [
+            ("init-pki", ersa.create_pki),
+            ("build-ca", ersa.build_ca),
+            ("gen-crl", ersa.gen_crl),
+            ("gen-req", ersa.gen_req),
+            ("sign-req", ersa.sign_req),
+            ("gen-dh", ersa.gen_dh)
+        ]
 
-        if self.force and self._creates:
-            self.module.log(msg="force mode ...")
-            if os.path.exists(self._creates):
-                self.module.log(msg=f"remove {self._creates}")
-                os.remove(self._creates)
+        for step_name, step_func in steps:
+            self.module.log(msg=f"  - {step_name}")
+            rc, changed, msg = step_func()
 
-        if self._creates:
-            if os.path.exists(self._creates):
+            result_state.append({
+                step_name: {
+                    "failed": rc != 0,
+                    "changed": changed,
+                    "msg": msg
+                }
+            })
+            if rc != 0:
+                break
 
-                message = "nothing to do."
+        _state, _changed, _failed, state, changed, failed = results(self.module, result_state)
 
-                if self.state == "init-pki":
-                    message = "PKI already created"
-                if self.state == "build-ca":
-                    message = "CA already created"
-                if self.state == "gen-crl":
-                    message = "CRL already created"
-                if self.state == "gen-dh":
-                    message = "DH already created"
-                if self.state == "gen-req":
-                    message = "keypair and request already created"
-                if self.state == "sign-req":
-                    message = "certificate alread signed"
-
-                return dict(
-                    changed=False,
-                    message=message
-                )
-
-        args = []
-        args.append(self._easyrsa)
-
-        if self.state == "init-pki":
-            args.append(self.state)
-            # args.append(f"--pki-dir={self._pki_dir}")
-
-        if self.state == "build-ca":
-            """
-                easyrsa --batch --req-cn='{{ openvpn_req_cn_ca }}' build-ca nopass
-            """
-            args.append("--batch")
-            # args.append(f"--pki-dir={self._pki_dir}")
-            args.append(f"--req-cn={self._req_cn_ca}")
-
-            if self._keysize:
-                args.append(f"--keysize={self._keysize}")
-            args.append(self.state)
-            args.append("nopass")
-
-        if self.state == "gen-crl":
-            """
-                ./easyrsa gen-crl
-            """
-            # args.append(f"--pki-dir={self._pki_dir}")
-            args.append(self.state)
-
-        if self.state == "gen-dh":
-            """
-                ./easyrsa gen-dh
-            """
-            if self._keysize:
-                args.append(f"--keysize={self._keysize}")
-            # args.append(f"--pki-dir={self._pki_dir}")
-            args.append(self.state)
-
-        if self.state == "gen-req":
-            """
-                ./easyrsa --batch --req-cn='{{ openvpn_req_cn_server }}' gen-req '{{ openvpn_req_cn_server }}' nopass
-            """
-            args.append("--batch")
-            # args.append(f"--pki-dir={self._pki_dir}")
-            if self._req_cn_ca:
-                args.append(f"--req-cn={self._req_cn_ca}")
-            args.append(self.state)
-            args.append(self._req_cn_server)
-            args.append("nopass")
-
-        if self.state == "sign-req":
-            """
-                ./easyrsa --batch sign-req server '{{ openvpn_req_cn_server }}'
-            """
-            args.append("--batch")
-            # args.append(f"--pki-dir={self._pki_dir}")
-            args.append(self.state)
-            args.append("server")
-            args.append(self._req_cn_server)
-
-        rc, out = self._exec(args)
-
-        result['result'] = f"{out.rstrip()}"
-
-        if rc == 0:
-            result['changed'] = True
-        else:
-            result['failed'] = True
+        result = dict(
+            changed=_changed,
+            failed=failed,
+            state=result_state
+        )
 
         return result
 
-    def _exec(self, commands):
-        """
-          execute shell program
-        """
-        # self.module.log(msg=f"  commands: '{commands}'")
-        rc, out, err = self.module.run_command(commands, check_rc=True)
+    def list_files(self, startpath):
+        for root, dirs, files in os.walk(startpath):
+            level = root.replace(startpath, '').count(os.sep)
+            indent = ' ' * 4 * (level)
+            self.module.log(msg=f"{indent}{os.path.basename(root)}/")
+            subindent = ' ' * 4 * (level + 1)
+            for f in files:
+                self.module.log(msg=f"{subindent}{f}")
 
-        if int(rc) != 0:
-            self.module.log(msg=f"  rc : '{rc}'")
-            self.module.log(msg=f"  out: '{out}'")
-            self.module.log(msg=f"  err: '{err}'")
-
-        return rc, out
-
-
-# ===========================================
-# Module execution.
-#
 
 def main():
 
     args = dict(
-        state=dict(
-            default="init-pki",
-            choices=["init-pki", "build-ca", "gen-crl", "gen-dh", "gen-req", "sign-req"]
-        ),
+
         pki_dir=dict(
             required=False,
             type="str"
@@ -240,14 +248,15 @@ def main():
         req_cn_server=dict(
             required=False
         ),
-        keysize=dict(
+        ca_keysize=dict(
             required=False,
             type="int"
         ),
-        chdir=dict(
-            required=False
+        dh_keysize=dict(
+            required=False,
+            type="int"
         ),
-        creates=dict(
+        working_dir=dict(
             required=False
         ),
     )

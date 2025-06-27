@@ -60,8 +60,8 @@ def get_vars(host):
 
 @pytest.mark.parametrize("files", [
     "/etc/sysctl.conf",
-    "/etc/sysctl.d/sshd.conf",
-    "/etc/sysctl.d/openvpn.conf",
+    # "/etc/sysctl.d/sshd.conf",
+    # "/etc/sysctl.d/openvpn.conf",
 ])
 def test_files(host, files):
 

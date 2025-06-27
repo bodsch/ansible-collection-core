@@ -8,10 +8,10 @@
 
 - name: reload sshd
   ansible.builtin.service:
-    name: sshd
+    name: "{{ sshd_service }}"
     state: reloaded
 
 - name: restart sshd
   ansible.builtin.service:
-    name: sshd
+    name: "{{ sshd_service }}"
     state: restarted

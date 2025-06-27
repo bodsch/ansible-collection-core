@@ -23,16 +23,16 @@ pacman_defaults_repositories:
     include: /etc/pacman.d/mirrorlist
 
   community:
-    enabled: true
+    enabled: false
     include: /etc/pacman.d/mirrorlist
 
-pacman_defaults_mirrors:
-  "Default mirrors":
-    enabled: true
-    servers:
-      - https://geo.mirror.pkgbuild.com/$repo/os/$arch
-      - https://mirror.rackspace.com/archlinux/$repo/os/$arch
-      - https://mirror.leaseweb.net/archlinux/$repo/os/$arch
+pacman_defaults_mirrors: {}
+  # "Default mirrors":
+  #   enabled: true
+  #   servers:
+  #     - https://geo.mirror.pkgbuild.com/$repo/os/$arch
+  #     - https://mirror.rackspace.com/archlinux/$repo/os/$arch
+  #     - https://mirror.leaseweb.net/archlinux/$repo/os/$arch
 
   # "Europe - Czech Republic":
   #   enabled: false

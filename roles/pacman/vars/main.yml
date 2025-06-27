@@ -29,6 +29,9 @@ pacman_defaults_config:
   check_space: true
   verbose_pkg_lists: false
   parallel_downloads: 5
+  download_user: alpm
+  disable_sandbox: false
+
   # By default, pacman accepts packages signed by keys that its local keyring
   # trusts (see pacman-key and its man page), as well as unsigned packages.
   # https://archlinux.org/pacman/pacman.conf.5.html#SC

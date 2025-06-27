@@ -25,11 +25,4 @@
         - default.yaml
       skip: true
 
-- name: merge pacman config configuration between defaults and custom
-  ansible.builtin.set_fact:
-    pacman_config: "{{ pacman_defaults_config | combine(pacman_config, recursive=True) }}"
-    pacman_repositories: "{{ pacman_defaults_repositories | combine(pacman_repositories, recursive=True) }}"
-    pacman_mirrors: "{{ pacman_defaults_mirrors | combine(pacman_mirrors, recursive=True) }}"
-    pacman_options: "{{ pacman_defaults_options | combine(pacman_options, recursive=True) }}"
-
 ...

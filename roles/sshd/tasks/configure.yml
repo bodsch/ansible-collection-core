@@ -42,6 +42,15 @@
     - sshd
     - configuration
 
+- name: create /run/sshd for config tests
+  ansible.builtin.file:
+    state: directory
+    name: /run/sshd
+    mode: "0755"
+  tags:
+    - sshd
+    - configuration
+
 - name: configure ssh_config
   ansible.builtin.template:
     src: sshd/ssh_config.j2
@@ -51,6 +60,22 @@
   tags:
     - sshd
     - configuration
+
+- name: configure sshd.conf
+  ansible.builtin.template:
+    src: sshd/sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    mode: "0644"
+    backup: true
+    validate: "{{ sshd_binary }} -t -f %s"
+  notify:
+    - restart sshd
+  tags:
+    - sshd
+    - configuration
+
+- name: restart sshd if needed
+  ansible.builtin.meta: flush_handlers
 
 - name: create overriding settings on a per-user basis
   ansible.builtin.template:
@@ -78,15 +103,3 @@
     - sshd
     - configuration
 
-- name: configure sshd.conf
-  ansible.builtin.template:
-    src: sshd/sshd_config.j2
-    dest: /etc/ssh/sshd_config
-    mode: "0644"
-    backup: true
-    validate: "{{ sshd_binary }} -t -f %s"
-  notify:
-    - restart sshd
-  tags:
-    - sshd
-    - configuration

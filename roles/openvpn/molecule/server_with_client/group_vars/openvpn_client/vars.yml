@@ -1,5 +1,8 @@
 ---
 
+openvpn_server:
+  name: server
+
 openvpn_type: client
 
 openvpn_systemd:

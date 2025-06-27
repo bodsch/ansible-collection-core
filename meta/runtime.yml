@@ -1,3 +1,19 @@
 ---
 
-requires_ansible: '>=2.9.0'
+requires_ansible: '>=2.12'
+
+platforms:
+  - name: ArchLinux
+  - name: Debian
+    versions:
+      - bullseye
+      - bookworm
+  - name: Ubuntu
+    versions:
+      - focal
+      - jammy
+
+python_versions:
+  - "3.10"
+  - "3.11"
+  - "3.12"

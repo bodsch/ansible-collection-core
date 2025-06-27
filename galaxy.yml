@@ -2,7 +2,7 @@
 namespace: bodsch
 name: core
 
-version: 2.6.5
+version: 2.7.0
 
 readme: README.md
 
@@ -16,12 +16,20 @@ license:
 
 license_file: ''
 
-tags: []
+tags:
+  - pki
+  - vpn
+  - openvpn
+  - easyrsa
+  - certificate
+  - security
+  - automation
 
 dependencies:
+ ansible.utils: "*"
+ ansible.posix: "*"
  community.general: ">=10.5"
  community.crypto: "*"
- ansible.utils: "*"
 
 repository: https://github.com/bodsch/ansible-collection-core
 documentation: https://github.com/bodsch/ansible-collection-core/README.md
