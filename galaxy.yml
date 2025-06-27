@@ -16,7 +16,14 @@ license:
 
 license_file: ''
 
-tags: []
+tags:
+  - pki
+  - vpn
+  - openvpn
+  - easyrsa
+  - certificate
+  - security
+  - automation
 
 dependencies:
  ansible.utils: "*"

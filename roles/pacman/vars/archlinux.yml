@@ -23,7 +23,7 @@ pacman_defaults_repositories:
     include: /etc/pacman.d/mirrorlist
 
   community:
-    enabled: true
+    enabled: false
     include: /etc/pacman.d/mirrorlist
 
 pacman_defaults_mirrors: {}

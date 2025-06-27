@@ -86,6 +86,8 @@ pacman_options:
 
 [Artix Support](https://wiki.artixlinux.org/Main/Repositories)
 
+[cleaning old repositories](https://archlinux.org/news/cleaning-up-old-repositories/)
+
 
 ```yaml
 pacman_repositories:
@@ -111,7 +113,7 @@ pacman_repositories:
     include: /etc/pacman.d/mirrorlist
 
   community:
-    enabled: true
+    enabled: false
     include: /etc/pacman.d/mirrorlist
 ```
 

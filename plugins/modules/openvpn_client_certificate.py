@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# (c) 2022, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2022-2025, Bodo Schulz <bodo@boone-schulz.de>
 
 from __future__ import absolute_import, division, print_function
 import os
@@ -14,11 +14,187 @@ from ansible_collections.bodsch.core.plugins.module_utils.directory import creat
 from ansible_collections.bodsch.core.plugins.module_utils.checksum import Checksum
 from ansible_collections.bodsch.core.plugins.module_utils.module_results import results
 
+# ---------------------------------------------------------------------------------------
+
+DOCUMENTATION = r"""
+---
+module: openvpn_client_certificate
+short_description: Manage OpenVPN client certificates using EasyRSA.
+version_added: "1.1.3"
+author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+
+description:
+  - This module manages OpenVPN client certificates using EasyRSA.
+  - It supports the creation and revocation of client certificates.
+  - Certificates are tracked via checksums to detect changes.
+  - Ideal for automated PKI workflows with OpenVPN infrastructure.
+
+options:
+  clients:
+    description:
+      - A list of client definitions, each representing a certificate to be created or revoked.
+    required: true
+    type: list
+    elements: dict
+    suboptions:
+      name:
+        description:
+          - Name of the OpenVPN client.
+        required: true
+        type: str
+      state:
+        description:
+          - Whether the certificate should exist or be revoked.
+        required: false
+        default: present
+        choices: [present, absent]
+        type: str
+      roadrunner:
+        description:
+          - Optional boolean flag, can be used for specific logic in a role.
+        required: false
+        type: bool
+      static_ip:
+        description:
+          - Static IP address for the client (optional, used in templating).
+        required: false
+        type: str
+      remote:
+        description:
+          - Remote server address or hostname.
+        required: false
+        type: str
+      port:
+        description:
+          - Port used by OpenVPN for this client.
+        required: false
+        type: int
+      proto:
+        description:
+          - Protocol to use (typically UDP or TCP).
+        required: false
+        type: str
+      device:
+        description:
+          - Network device (usually tun).
+        required: false
+        type: str
+      ping:
+        description:
+          - Ping interval for the client.
+        required: false
+        type: int
+      ping_restart:
+        description:
+          - Time before restarting connection after ping timeout.
+        required: false
+        type: int
+      cert:
+        description:
+          - Certificate file name for the client.
+        required: false
+        type: str
+      key:
+        description:
+          - Key file name for the client.
+        required: false
+        type: str
+      tls_auth:
+        description:
+          - TLS authentication settings.
+        required: false
+        type: dict
+        suboptions:
+          enabled:
+            description:
+              - Whether TLS auth is enabled.
+            type: bool
+            required: false
+
+  force:
+    description:
+      - If true, the client certificate will be re-created even if it already exists.
+    required: false
+    type: bool
+    default: false
+
+  working_dir:
+    description:
+      - Path to the EasyRSA working directory.
+      - All EasyRSA commands will be executed within this directory.
+    required: false
+    type: str
+"""
+
+EXAMPLES = r"""
+- name: create or revoke client certificate
+  bodsch.core.openvpn_client_certificate:
+    clients:
+      - name: molecule
+        state: present
+        roadrunner: false
+        static_ip: 10.8.3.100
+        remote: server
+        port: 1194
+        proto: udp
+        device: tun
+        ping: 20
+        ping_restart: 45
+        cert: molecule.crt
+        key: molecule.key
+        tls_auth:
+          enabled: true
+      - name: roadrunner_one
+        state: present
+        roadrunner: true
+        static_ip: 10.8.3.10
+        remote: server
+        port: 1194
+        proto: udp
+        device: tun
+        ping: 20
+        ping_restart: 45
+        cert: roadrunner_one.crt
+        key: roadrunner_one.key
+        tls_auth:
+          enabled: true
+    working_dir: /etc/easy-rsa
+  when:
+    - openvpn_client_list | default([]) | count > 0
+"""
+
+RETURN = r"""
+RETURN:
+  changed:
+    description: Indicates whether any changes were made during module execution.
+    type: bool
+    returned: always
+  failed:
+    description: Indicates whether the module failed.
+    type: bool
+    returned: always
+  state:
+    description: List of results per client certificate operation.
+    type: list
+    elements: dict
+    returned: always
+    sample:
+      - molecule:
+          failed: false
+          changed: true
+          message: The client certificate has been successfully created.
+      - roadrunner_one:
+          failed: false
+          changed: false
+          message: The client certificate has already been created.
+"""
+
+# ---------------------------------------------------------------------------------------
+
 
 class OpenVPNClientCertificate(object):
     """
     """
-    module = None
 
     def __init__(self, module):
         """
@@ -33,9 +209,6 @@ class OpenVPNClientCertificate(object):
         self.bin_openvpn = module.get_bin_path('openvpn', True)
         self.bin_easyrsa = module.get_bin_path('easyrsa', True)
 
-        # import socket
-        # self.module.log(msg=f"-> hostname: {socket.gethostname()}")
-
     def run(self):
         """
           runner
@@ -47,29 +220,21 @@ class OpenVPNClientCertificate(object):
         if self.working_dir:
             os.chdir(self.working_dir)
 
-        # self.module.log(msg=f"-> pwd      : {os.getcwd()}")
-
-        if self.force:
-            # self.module.log(msg="force mode ...")
-            # self.module.log(msg=f"remove {self.checksum_directory}")
-            if os.path.isdir(self.checksum_directory):
-                shutil.rmtree(self.checksum_directory)
-
-        # self.module.log(msg=f"-> clients      : {self.clients}")
         for client in self.clients:
             res = {}
             username = client.get("name")
             state = client.get("state", "present")
-            # self.module.log(msg=f"  - name: {username}")
 
             self.checksum_directory = f"{Path.home()}/.ansible/cache/openvpn/{username}"
 
             if state == "absent":
                 res[username] = self.revoke_vpn_user(username=username)
             if state == "present":
-                res[username] = self.create_vpn_user(username=username)
+                if self.force:
+                    if os.path.isdir(self.checksum_directory):
+                        shutil.rmtree(self.checksum_directory)
 
-            # self.module.log(msg=f"-> res      : {res}")
+                res[username] = self.create_vpn_user(username=username)
 
             result_state.append(res)
 
@@ -178,6 +343,9 @@ class OpenVPNClientCertificate(object):
             args.append(self.bin_easyrsa)
             args.append("gen-crl")
 
+        if os.path.isdir(self.checksum_directory):
+            shutil.rmtree(self.checksum_directory)
+
         return dict(
             changed=True,
             failed=False,
@@ -236,8 +404,6 @@ class OpenVPNClientCertificate(object):
 
         changed, checksum, old_checksum = self.checksum.validate_from_file(checksum_file, file_name)
 
-        self.module.log(msg=f"  - {file_name} ({checksum_file}): {changed}, '{checksum}', '{old_checksum}'")
-
         if os.path.exists(file_name) and not os.path.exists(checksum_file):
             self.write_checksum(file_name=file_name, checksum_file=checksum_file)
             changed = False
@@ -255,26 +421,12 @@ class OpenVPNClientCertificate(object):
         checksum = self.checksum.checksum_from_file(file_name)
         self.checksum.write_checksum(checksum_file, checksum)
 
-    def list_files(self, startpath):
-        for root, dirs, files in os.walk(startpath):
-            level = root.replace(startpath, '').count(os.sep)
-            indent = ' ' * 4 * (level)
-            self.module.log(msg=f"{indent}{os.path.basename(root)}/")
-            subindent = ' ' * 4 * (level + 1)
-            for f in files:
-                self.module.log(msg=f"{subindent}{f}")
-
     def _exec(self, commands, check_rc=False):
         """
           execute shell program
         """
-        # self.module.log(msg=f"_exec(commands={commands}, check_rc={check_rc}")
-        # self.module.log("-------------------------------------------------------------------------")
+        self.module.log(msg=f"OpenVPNClientCertificate::_exec(commands={commands}, check_rc={check_rc}")
         rc, out, err = self.module.run_command(commands, check_rc=check_rc)
-        # self.module.log(msg=f"  rc : '{rc}'")
-        # self.module.log(msg=f"  out: '{out}'")
-        # self.module.log(msg=f"  err: '{err}'")
-        # self.module.log("-------------------------------------------------------------------------")
         return rc, out, err
 
     def result_values(self, out: str, err: str) -> list:
@@ -287,10 +439,6 @@ class OpenVPNClientCertificate(object):
         _output += _err
         # self.module.log(msg=f"= output: {_output}")
         return _output
-
-# ===========================================
-# Module execution.
-#
 
 
 def main():
