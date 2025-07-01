@@ -4,9 +4,9 @@
   hosts: localhost
   gather_facts: false
   vars:
-    json_entry: ""            # Note mit JSON
-    login_entry: ""           # Login mit username/password
-    raw_note: ""                                   # Note mit einfachem Text
+    json_entry: "37588485-5149-42e8-af98-1876f1e472cd"            # Note mit JSON
+    login_entry: "4e1f183d-6983-44d9-ba5c-9c64ecdff482"           # Login mit username/password
+    raw_note: "expressschnitte.org"                                   # Note mit einfachem Text
     broken_json_entry: ""     # Note mit ungültigem JSON
   tasks:
     - name: "Test: String lesen"
@@ -25,11 +25,31 @@
       set_fact:
         json_data: "{{ lookup('bodsch.core.rbw', json_entry, parse_json=True) }}"
 
+    - name: "Test: Multi fetch"
+      set_fact:
+        multi_data: "{{ lookup('bodsch.core.rbw', raw_note, login_entry) }}"
+
+    - name: "Test: Lookup mit Index-Daten (name, folder, user)"
+      set_fact:
+        indexed_entry: "{{ lookup('bodsch.core.rbw',
+          {'name': 'expresszuschnitt.de', 'folder': '', 'user': ''},
+          field='password',
+          use_index=True) }}"
+
+    - name: "Ausgabe: Indexed Entry"
+      debug:
+        msg: "Indexed Entry: {{ indexed_entry }}"
+
     - name: "Ausgabe: JSON-Felder"
       debug:
         msg:
           - "Token: {{ json_data.token | default('nicht gesetzt') }}"
           - "URL: {{ json_data.url | default('nicht gesetzt') }}"
+
+    - name: "Ausgabe: Multi fetch"
+      debug:
+        msg:
+          - "Multi Data: {{ multi_data | default('nicht gesetzt') }}"
 
     - name: "Test: Defektes JSON → Fallback zu leerem Dict"
       set_fact:
@@ -48,3 +68,4 @@
       rescue:
         - debug:
             msg: "Wie erwartet: JSON ungültig – Fehler behandelt."
+
