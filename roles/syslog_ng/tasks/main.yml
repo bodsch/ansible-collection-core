@@ -8,6 +8,8 @@
 
 - name: configure
   ansible.builtin.include_tasks: configure.yml
+  notify:
+    - reload syslog-ng
 
 - name: configure journald
   ansible.builtin.include_tasks: configure_journald.yml
