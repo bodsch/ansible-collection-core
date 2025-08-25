@@ -11,7 +11,7 @@
     state: reloaded
   when:
     - not ansible_check_mode
-    - systemd_facts["ansible_facts"]["services"]["syslog-ng.service"]["state"] | default('not-found') == "running"
+    - systemd_facts["ansible_facts"]["services"][syslog_unit_file]["state"] | default('not-found') == "running"
 
 - name: restart syslog-ng
   ansible.builtin.service:
@@ -19,7 +19,7 @@
     state: restarted
   when:
     - not ansible_check_mode
-    - systemd_facts["ansible_facts"]["services"]["syslog-ng.service"]["state"] | default('not-found') == "stopped"
+    - systemd_facts["ansible_facts"]["services"][syslog_unit_file]["state"] | default('not-found') == "stopped"
 
 - name: validate syslog-ng config
   bodsch.core.syslog_cmd:
