@@ -57,6 +57,8 @@
     mode: "0644"
   notify:
     - validate syslog-ng config
+    - reload syslog-ng
+    - restart syslog-ng
   loop:
     - sources.conf
     - destinations.conf
@@ -74,6 +76,8 @@
     backup: true
   notify:
     - validate syslog-ng config
+    - reload syslog-ng
+    - restart syslog-ng
   tags:
     - syslog-ng
     - configuration
