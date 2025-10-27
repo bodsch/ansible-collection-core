@@ -39,7 +39,7 @@ class FilterModule(object):
 
         # String-ähnliche Wrapper (z.B. AnsibleUnsafeText)
         if isinstance(value, str) or t.__name__ in _STR_WRAPPERS:
-            return "str"
+            return "string"
 
         # Bytes
         if isinstance(value, bytes):

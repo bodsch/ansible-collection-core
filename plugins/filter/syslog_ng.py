@@ -128,17 +128,20 @@ class FilterModule(object):
         # display.v(f"verify_syslog_options({data}, {version})")
 
         if version_compare(str(version), '4.1', '>='):
-            if data.get("stats_freq", None):
+            if data.get("stats_freq") is not None:
+                stats_freq = data.pop("stats_freq")
                 """
                     obsoleted keyword, please update your configuration; keyword='stats_freq'
                     change='Use the stats() block. E.g. stats(freq(1));
                 """
-                stats_freq = data.get("stats_freq")
-                data.pop("stats_freq")
+                # sicherstellen, dass 'stats' ein dict ist
+                if not isinstance(data.get("stats"), dict):
+                    data["stats"] = {}
+
                 data["stats"]["freq"] = stats_freq
 
         if version_compare(str(version), '4.1', '<'):
-            data.pop("stats")
+            data.pop("stats", None)  # kein KeyError
 
         # display.v(f"= result {data}")
         return data
