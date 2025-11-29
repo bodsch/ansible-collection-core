@@ -7,8 +7,7 @@
 
 
 def validate(value, default=None):
-    """
-    """
+    """ """
     if value:
         if isinstance(value, str) or isinstance(value, list) or isinstance(value, dict):
             if len(value) > 0:

@@ -5,10 +5,18 @@
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import (absolute_import, print_function)
+from __future__ import absolute_import, print_function
+
 __metaclass__ = type
 
+# filter_plugins/var_type.py
+from collections.abc import Mapping, Sequence
+from collections.abc import Set as ABCSet
+
 from ansible.utils.display import Display
+
+# optional: we vermeiden harte Abhängigkeit von Ansible, behandeln aber deren Wrapper als str
+_STR_WRAPPERS = {"AnsibleUnsafeText", "AnsibleUnicode", "AnsibleVaultEncryptedUnicode"}
 
 display = Display()
 
@@ -16,23 +24,69 @@ display = Display()
 class FilterModule(object):
     def filters(self):
         return {
-            'type': self.var_type,
-            'config_bool': self.config_bool_as_string,
-            'string_to_list': self.string_to_list,
+            "type": self.var_type,
+            "config_bool": self.config_bool_as_string,
+            "string_to_list": self.string_to_list,
         }
 
-    def var_type(self, var):
+    def var_type(self, value):
         """
-            Get the type of a variable
+        Liefert kanonische Python-Typnamen: str, int, float, bool, list, tuple, set, dict, NoneType.
+        Fällt bei fremden/Wrapper-Typen auf die jeweilige ABC-Kategorie zurück.
         """
-        if isinstance(var, str) or type(var).__name__ == "AnsibleUnsafeText":
-            return "str"
+        # None
+        if value is None:
+            return "NoneType"
 
-        return type(var).__name__
+        t = type(value)
+
+        # String-ähnliche Wrapper (z.B. AnsibleUnsafeText)
+        if isinstance(value, str) or t.__name__ in _STR_WRAPPERS:
+            return "string"
+
+        # Bytes
+        if isinstance(value, bytes):
+            return "bytes"
+        if isinstance(value, bytearray):
+            return "bytearray"
+
+        # Bool vor int (bool ist Subklasse von int)
+        if isinstance(value, bool):
+            return "bool"
+
+        # Grundtypen
+        if isinstance(value, int):
+            return "int"
+        if isinstance(value, float):
+            return "float"
+
+        # Konkrete eingebaute Container zuerst
+        if isinstance(value, list):
+            return "list"
+        if isinstance(value, tuple):
+            return "tuple"
+        if isinstance(value, set):
+            return "set"
+        if isinstance(value, dict):
+            return "dict"
+
+        # ABC-Fallbacks für Wrapper (z.B. _AnsibleLazyTemplateList, AnsibleMapping ...)
+        if isinstance(value, Mapping):
+            return "dict"
+        if isinstance(value, ABCSet):
+            return "set"
+        if isinstance(value, Sequence) and not isinstance(
+            value, (str, bytes, bytearray)
+        ):
+            # Unbekannte sequenzartige Wrapper -> als list behandeln
+            return "list"
+
+        # Letzter Ausweg: konkreter Klassenname
+        return t.__name__
 
     def config_bool_as_string(self, data, true_as="yes", false_as="no"):
         """
-            return string for boolean
+        return string for boolean
         """
         # display.v(f"config_bool({data}, {type(data)}, {true_as}, {false_as})")
 
@@ -51,8 +105,7 @@ class FilterModule(object):
         return result
 
     def string_to_list(self, data):
-        """
-        """
+        """ """
         display.v(f"string_to_list({data}, {type(data)})")
 
         result = []

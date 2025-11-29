@@ -5,7 +5,8 @@
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import (absolute_import, print_function)
+from __future__ import absolute_import, print_function
+
 __metaclass__ = type
 
 from ansible.utils.display import Display
@@ -16,12 +17,12 @@ display = Display()
 class FilterModule(object):
     def filters(self):
         return {
-            'union_by': self.union,
+            "union_by": self.union,
         }
 
     def union(self, data, defaults, union_by):
         """
-            union by ..
+        union by ..
         """
         result = []
 

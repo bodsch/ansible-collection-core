@@ -58,7 +58,7 @@ openvpn_defaults_certificate:
   req_email: openvpn@acme.inc
   req_ou: Special Forces
   req_cn_ca: 'Open VPN'
-  req_cn_server: '{{ ansible_fqdn }}'
+  req_cn_server: '{{ ansible_facts.fqdn }}'
 
 openvpn_defaults_server:
   # network interface connected to internal net

@@ -7,13 +7,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-from ansible.module_utils.basic import AnsibleModule
-
-import os
-import logging
 import collections
+import logging
+import os
 import re
+
 import dirsync
+from ansible.module_utils.basic import AnsibleModule
 
 # ---------------------------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ class TailLogger(object):
         self._log_handler = TailLogHandler(self._log_queue)
 
     def contents(self):
-        return '\n'.join(self._log_queue)
+        return "\n".join(self._log_queue)
 
     @property
     def log_handler(self):
@@ -107,12 +107,10 @@ class TailLogger(object):
 
 
 class Sync(object):
-    """
-    """
+    """ """
 
     def __init__(self, module):
-        """
-        """
+        """ """
         self.module = module
 
         self.source_directory = module.params.get("source_directory")
@@ -124,8 +122,7 @@ class Sync(object):
         self.exclude_pattern = module.params.get("exclude_pattern")
 
     def run(self):
-        """
-        """
+        """ """
         _failed = False
         _changed = False
         _msg = "The directory are synchronous."
@@ -135,8 +132,8 @@ class Sync(object):
 
         tail = TailLogger(2)
 
-        logger = logging.getLogger('dirsync')
-        formatter = logging.Formatter('%(message)s')
+        logger = logging.getLogger("dirsync")
+        formatter = logging.Formatter("%(message)s")
 
         log_handler = tail.log_handler
         log_handler.setFormatter(formatter)
@@ -155,16 +152,10 @@ class Sync(object):
         # include_pattern = ('^.*\\.json$',)
 
         if not os.path.isdir(self.source_directory):
-            return dict(
-                failed=True,
-                msg="The source directory does not exist."
-            )
+            return dict(failed=True, msg="The source directory does not exist.")
 
         if not os.path.isdir(self.destination_directory):
-            return dict(
-                failed=True,
-                msg="The destination directory does not exist."
-            )
+            return dict(failed=True, msg="The destination directory does not exist.")
 
         if self.arguments and isinstance(self.arguments, dict):
             _create = self.arguments.get("create", False)
@@ -177,26 +168,34 @@ class Sync(object):
                 purge=_purge,
             )
 
-            args.update({'logger': logger})
+            args.update({"logger": logger})
 
         else:
             args = {
-                'create': 'False',
-                'verbose': 'False',
-                'purge': 'False',
-                'logger': logger,
+                "create": "False",
+                "verbose": "False",
+                "purge": "False",
+                "logger": logger,
             }
 
         if include_pattern:
-            args.update({'include': include_pattern, })
+            args.update(
+                {
+                    "include": include_pattern,
+                }
+            )
         if exclude_pattern:
-            args.update({'exclude': exclude_pattern, })
+            args.update(
+                {
+                    "exclude": exclude_pattern,
+                }
+            )
 
-        args.update({'force': True})
+        args.update({"force": True})
 
         self.module.log(msg=f"args: {args}")
 
-        dirsync.sync(self.source_directory, self.destination_directory, 'sync', **args)
+        dirsync.sync(self.source_directory, self.destination_directory, "sync", **args)
 
         log_contents = tail.contents()
 
@@ -204,9 +203,13 @@ class Sync(object):
 
         if len(log_contents) > 0:
             if "directories were created" in log_contents:
-                pattern = re.compile(r"(?P<directories>\d+).*directories were created.$")
+                pattern = re.compile(
+                    r"(?P<directories>\d+).*directories were created.$"
+                )
             else:
-                pattern = re.compile(r"(?P<directories>\d+).*directories parsed, (?P<files_copied>\d+) files copied")
+                pattern = re.compile(
+                    r"(?P<directories>\d+).*directories parsed, (?P<files_copied>\d+) files copied"
+                )
 
             re_result = re.search(pattern, log_contents)
 
@@ -216,12 +219,12 @@ class Sync(object):
                 files_copied = None
 
                 try:
-                    directories = re_result.group('directories')
+                    directories = re_result.group("directories")
                 except Exception:
                     pass
 
                 try:
-                    files_copied = re_result.group('files_copied')
+                    files_copied = re_result.group("files_copied")
                 except Exception:
                     pass
 
@@ -240,39 +243,19 @@ class Sync(object):
                         _changed = True
                         _msg = "The directory were successfully synchronised."
 
-        result = dict(
-            changed=_changed,
-            failed=_failed,
-            msg=_msg
-        )
+        result = dict(changed=_changed, failed=_failed, msg=_msg)
 
         return result
 
 
 def main():
-    """
-    """
+    """ """
     args = dict(
-        source_directory=dict(
-            required=True,
-            type='str'
-        ),
-        destination_directory=dict(
-            required=True,
-            type='str'
-        ),
-        arguments=dict(
-            required=False,
-            type='dict'
-        ),
-        include_pattern=dict(
-            required=False,
-            type='list'
-        ),
-        exclude_pattern=dict(
-            required=False,
-            type='list'
-        ),
+        source_directory=dict(required=True, type="str"),
+        destination_directory=dict(required=True, type="str"),
+        arguments=dict(required=False, type="dict"),
+        include_pattern=dict(required=False, type="list"),
+        exclude_pattern=dict(required=False, type="list"),
     )
 
     module = AnsibleModule(
@@ -287,5 +270,5 @@ def main():
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

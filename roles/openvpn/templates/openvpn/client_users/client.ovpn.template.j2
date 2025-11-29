@@ -1,6 +1,6 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 # {{ ansible_managed }}
-{% set external_ip = ansible_default_ipv4.address %}
+{% set external_ip = ansible_facts.default_ipv4.address %}
 {% if openvpn_server.external_ip is defined and
       openvpn_server.external_ip | string | length > 0 %}
   {% set external_ip = openvpn_server.external_ip %}

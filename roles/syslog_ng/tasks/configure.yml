@@ -1,9 +1,22 @@
 ---
 
+- name: merge syslog configuration between defaults and custom
+  ansible.builtin.set_fact:
+    syslog_options: "{{ syslog_defaults_options | combine(syslog_options, recursive=True) }}"
+    syslog_sources: "{{ syslog_defaults_sources | combine(syslog_sources, recursive=True) }}"
+    syslog_message_templates: "{{ syslog_defaults_message_templates | combine(syslog_message_templates, recursive=True) }}"
+    syslog_logs: "{{ syslog_defaults_logs | combine(syslog_logs, recursive=True) }}"
+
+- name: defined log directories
+  ansible.builtin.set_fact:
+    syslog_server_log_destinations: "{{ syslog_logs | bodsch.core.log_directories('/var/log') }}"
+
 - name: detect config version
   bodsch.core.syslog_cmd:
     parameters:
       - --version
+  when:
+    - not running_in_check_mode
   register: _syslog_config_version
   tags:
     - syslog-ng
@@ -13,6 +26,7 @@
   ansible.builtin.set_fact:
     syslog_config_version: '{{ _syslog_config_version.version }}'
   when:
+    - not running_in_check_mode
     - _syslog_config_version is defined
     - _syslog_config_version.version is defined
     - _syslog_config_version.version | int != 0
@@ -24,6 +38,8 @@
   ansible.builtin.assert:
     that: syslog_config_version | length != 0
     msg: "I can't found an valid syslog-ng version :("
+  when:
+    - not running_in_check_mode
   tags:
     - syslog-ng
     - configuration
@@ -33,6 +49,8 @@
     state: directory
     name: /etc/syslog-ng/conf.d
     mode: "0750"
+  when:
+    - not running_in_check_mode
   tags:
     - syslog-ng
     - configuration
@@ -44,6 +62,7 @@
     mode: "0775"
   loop: "{{ syslog_server_log_destinations }}"
   when:
+    - not running_in_check_mode
     - syslog_server_log_destinations is defined
     - syslog_server_log_destinations | default([]) | count > 0
   tags:
@@ -55,8 +74,12 @@
     src: "conf.d/{{ item }}.j2"
     dest: "/etc/syslog-ng/conf.d/{{ item }}"
     mode: "0644"
+  when:
+    - not running_in_check_mode
   notify:
     - validate syslog-ng config
+    - reload syslog-ng
+    - restart syslog-ng
   loop:
     - sources.conf
     - destinations.conf
@@ -72,11 +95,17 @@
     dest: /etc/syslog-ng/syslog-ng.conf
     mode: "0644"
     backup: true
+  when:
+    - not running_in_check_mode
   notify:
     - validate syslog-ng config
+    - reload syslog-ng
+    - restart syslog-ng
   tags:
     - syslog-ng
     - configuration
 
 - name: flush handlers
   ansible.builtin.meta: flush_handlers
+  when:
+    - not running_in_check_mode

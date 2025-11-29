@@ -2,7 +2,7 @@
 
 - name: systemd service handling
   when:
-    - ansible_service_mgr | lower == "systemd"
+    - ansible_facts.service_mgr | lower == "systemd"
     - logroate_disable_systemd
   block:
     - name: set systemd states
@@ -17,6 +17,6 @@
         enabled: "{{ systemd_enabled }}"
       failed_when: false
       when:
-        - not ansible_distribution_major_version | int == 7
+        - not ansible_facts.distribution_major_version | int == 7
 
 ...

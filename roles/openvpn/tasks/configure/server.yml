@@ -42,7 +42,7 @@
     owner: root
     group: root
   when:
-    - ansible_distribution | lower == "ubuntu"
+    - ansible_facts.distribution | lower == "ubuntu"
 
 - name: initialize easy-rsa - (this is going to take a long time)
   bodsch.core.easyrsa:
@@ -259,9 +259,9 @@
     state: link
     force: true
   when:
-    - ansible_service_mgr | lower == "openrc"
-    - ansible_distribution | lower == "archlinux" or
-      ansible_os_family | lower | replace(' ', '') | lower == "artixlinux"
+    - ansible_facts.service_mgr | lower == "openrc"
+    - ansible_facts.distribution | lower == "archlinux" or
+      ansible_facts.os_family | lower | replace(' ', '') | lower == "artixlinux"
   notify:
     - restart openvpn-server
 

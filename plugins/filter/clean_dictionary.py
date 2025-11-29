@@ -1,5 +1,6 @@
 # python 3 headers, required if submitting to Ansible
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from ansible.utils.display import Display
@@ -22,12 +23,11 @@ Wenn der Wert 0 ist, wird er beibehalten.
 
 
 class FilterModule(object):
-    """
-    """
+    """ """
 
     def filters(self):
         return {
-            'remove_empty_values': self.remove_empty_values,
+            "remove_empty_values": self.remove_empty_values,
         }
 
     def remove_empty_values(self, data):
@@ -40,14 +40,20 @@ class FilterModule(object):
             if value == 0:
                 return False  # Zahl 0 soll erhalten bleiben
 
-            return value in [None, '', {}, [], False]
+            return value in [None, "", {}, [], False]
 
         if isinstance(data, dict):
             # Durch alle Schlüssel-Wert-Paare iterieren
-            return {key: self.remove_empty_values(value) for key, value in data.items() if not is_empty(value)}
+            return {
+                key: self.remove_empty_values(value)
+                for key, value in data.items()
+                if not is_empty(value)
+            }
         elif isinstance(data, list):
             # Leere Listen und leere Elemente entfernen
-            return [self.remove_empty_values(item) for item in data if not is_empty(item)]
+            return [
+                self.remove_empty_values(item) for item in data if not is_empty(item)
+            ]
         else:
             # Andere Typen direkt zurückgeben (einschließlich boolesche Werte)
             return data

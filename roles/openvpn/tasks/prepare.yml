@@ -8,23 +8,23 @@
         - "vars"
       files:
         # eg. debian-10 / ubuntu-20 / centos-8 / oraclelinux-8
-        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_facts.distribution | lower }}-{{ ansible_facts.distribution_major_version }}.yml"
         # eg. archlinux-systemd / archlinux-openrc
-        - "{{ ansible_distribution | lower }}-{{ ansible_service_mgr | lower }}.yml"
+        - "{{ ansible_facts.distribution | lower }}-{{ ansible_facts.service_mgr | lower }}.yml"
         # eg. debian / ubuntu / centos / oraclelinux
-        - "{{ ansible_distribution | lower }}.yml"
+        - "{{ ansible_facts.distribution | lower }}.yml"
         # eg. redhat / debian
-        - "{{ ansible_os_family | lower }}.yml"
+        - "{{ ansible_facts.os_family | lower }}.yml"
         # artixlinux
-        - "{{ ansible_os_family | lower | replace(' ', '') }}.yml"
+        - "{{ ansible_facts.os_family | lower | replace(' ', '') }}.yml"
         - default.yml
       skip: true
 
 - name: detect docker environment
   ansible.builtin.set_fact:
     is_docker_guest: "{{
-      ansible_virtualization_role | default('host') == 'guest' and
-      ansible_virtualization_type | default('none') == 'docker' }}"
+      ansible_facts.virtualization_role | default('host') == 'guest' and
+      ansible_facts.virtualization_type | default('none') == 'docker' }}"
 
 - name: install dependencies
   ansible.builtin.package:

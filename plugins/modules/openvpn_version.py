@@ -4,26 +4,26 @@
 # (c) 2023, Bodo Schulz <bodo@boone-schulz.de>
 
 from __future__ import absolute_import, division, print_function
+
 import re
 
 from ansible.module_utils.basic import AnsibleModule
 
 
 class OpenVPN(object):
-    """
-    """
+    """ """
+
     module = None
 
     def __init__(self, module):
-        """
-        """
+        """ """
         self.module = module
 
-        self._openvpn = module.get_bin_path('openvpn', True)
+        self._openvpn = module.get_bin_path("openvpn", True)
 
     def run(self):
         """
-          runner
+        runner
         """
         _failed = True
         _version = "unknown"
@@ -38,11 +38,13 @@ class OpenVPN(object):
         rc, out = self._exec(args)
 
         if "OpenVPN" in out:
-            pattern = re.compile(r"OpenVPN (?P<version>[0-9]+\.[0-9]+\.[0-9]+).*", re.MULTILINE)
+            pattern = re.compile(
+                r"OpenVPN (?P<version>[0-9]+\.[0-9]+\.[0-9]+).*", re.MULTILINE
+            )
             found = re.search(pattern, out.rstrip())
 
             if found:
-                _version = found.group('version')
+                _version = found.group("version")
                 _failed = False
         else:
             _failed = True
@@ -51,15 +53,11 @@ class OpenVPN(object):
         _stdout_lines = _stdout.split("\n")
 
         return dict(
-            stdout=_stdout,
-            stdout_lines=_stdout_lines,
-            failed=_failed,
-            version=_version
+            stdout=_stdout, stdout_lines=_stdout_lines, failed=_failed, version=_version
         )
 
     def _exec(self, commands):
-        """
-        """
+        """ """
         rc, out, err = self.module.run_command(commands, check_rc=False)
 
         if int(rc) != 0:
@@ -93,5 +91,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -45,30 +45,20 @@ check_mode:
 
 
 class CheckMode(object):
-    """
-    """
+    """ """
+
     module = None
 
     def __init__(self, module):
-        """
-        """
+        """ """
         self.module = module
 
     def run(self):
-        """
-        """
-        result = dict(
-            failed=False,
-            changed=False,
-            check_mode=False
-        )
+        """ """
+        result = dict(failed=False, changed=False, check_mode=False)
 
         if self.module.check_mode:
-            result = dict(
-                failed=False,
-                changed=False,
-                check_mode=True
-            )
+            result = dict(failed=False, changed=False, check_mode=True)
 
         return result
 
@@ -91,5 +81,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

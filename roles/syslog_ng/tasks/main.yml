@@ -12,8 +12,8 @@
 - name: configure journald
   ansible.builtin.include_tasks: configure_journald.yml
   when:
-    - ansible_service_mgr is defined
-    - ansible_service_mgr | lower == "systemd"
+    - ansible_facts.service_mgr is defined
+    - ansible_facts.service_mgr | lower == "systemd"
 
 - name: service
   ansible.builtin.include_tasks: service.yml

@@ -5,17 +5,17 @@
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import (absolute_import, print_function)
+from __future__ import absolute_import, print_function
 
-from dns.resolver import Resolver
 import dns.exception
+from dns.resolver import Resolver
 
 __metaclass__ = type
 
 
 def dns_lookup(dns_name, timeout=3, dns_resolvers=[]):
     """
-      Perform a simple DNS lookup, return results in a dictionary
+    Perform a simple DNS lookup, return results in a dictionary
     """
     resolver = Resolver()
     resolver.timeout = float(timeout)

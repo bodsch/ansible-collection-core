@@ -10,7 +10,7 @@ import os
 
 def create_link(source, destination, force=False):
     """
-        create a link ..
+    create a link ..
     """
     if force:
         os.remove(destination)
@@ -20,8 +20,7 @@ def create_link(source, destination, force=False):
 
 
 def remove_file(file_name):
-    """
-    """
+    """ """
     if os.path.exists(file_name):
         os.remove(file_name)
         return True
@@ -30,8 +29,7 @@ def remove_file(file_name):
 
 
 def chmod(file_name, mode):
-    """
-    """
+    """ """
     if os.path.exists(file_name):
         if mode is not None:
             os.chmod(file_name, int(mode, base=8))

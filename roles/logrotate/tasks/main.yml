@@ -19,7 +19,7 @@
 - name: handle systemd
   ansible.builtin.include_tasks: systemd.yaml
   when:
-    - ansible_service_mgr | lower == "systemd"
+    - ansible_facts.service_mgr | lower == "systemd"
   tags:
     - logrotate_systemd
 

@@ -4,14 +4,16 @@
 # (c) 2022-2025, Bodo Schulz <bodo@boone-schulz.de>
 
 from __future__ import absolute_import, division, print_function
+
 import os
 import shutil
-
 from pathlib import Path
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.bodsch.core.plugins.module_utils.directory import create_directory
 from ansible_collections.bodsch.core.plugins.module_utils.checksum import Checksum
+from ansible_collections.bodsch.core.plugins.module_utils.directory import (
+    create_directory,
+)
 from ansible_collections.bodsch.core.plugins.module_utils.module_results import results
 
 # ---------------------------------------------------------------------------------------
@@ -193,26 +195,28 @@ RETURN:
 
 
 class OpenVPNClientCertificate(object):
-    """
-    """
+    """ """
 
     def __init__(self, module):
-        """
-        """
+        """ """
         self.module = module
 
-        self.state = module.params.get("state")
-        self.clients = module.params.get('clients', None)
-        self.force = module.params.get("force", False)
-        self.working_dir = module.params.get('working_dir', None)
+        self.module.log("OpenVPNClientCertificate::__init__(module)")
 
-        self.bin_openvpn = module.get_bin_path('openvpn', True)
-        self.bin_easyrsa = module.get_bin_path('easyrsa', True)
+        self.state = module.params.get("state")
+        self.clients = module.params.get("clients", None)
+        self.force = module.params.get("force", False)
+        self.working_dir = module.params.get("working_dir", None)
+
+        self.bin_openvpn = module.get_bin_path("openvpn", True)
+        self.bin_easyrsa = module.get_bin_path("easyrsa", True)
 
     def run(self):
         """
-          runner
+        runner
         """
+        self.module.log("OpenVPNClientCertificate::run()")
+
         result_state = []
 
         self.checksum = Checksum(self.module)
@@ -221,6 +225,9 @@ class OpenVPNClientCertificate(object):
             os.chdir(self.working_dir)
 
         for client in self.clients:
+
+            self.module.log(f"  - client: {client}")
+
             res = {}
             username = client.get("name")
             state = client.get("state", "present")
@@ -238,19 +245,16 @@ class OpenVPNClientCertificate(object):
 
             result_state.append(res)
 
-        _state, _changed, _failed, state, changed, failed = results(self.module, result_state)
-
-        result = dict(
-            changed=_changed,
-            failed=failed,
-            state=result_state
+        _state, _changed, _failed, state, changed, failed = results(
+            self.module, result_state
         )
+
+        result = dict(changed=_changed, failed=failed, state=result_state)
 
         return result
 
     def create_vpn_user(self, username: str):
-        """
-        """
+        """ """
         self.module.log(msg=f"OpenVPNClientCertificate::create_vpn_user({username})")
 
         self.req_file = os.path.join("pki", "reqs", f"{username}.req")
@@ -262,8 +266,7 @@ class OpenVPNClientCertificate(object):
         self.crt_checksum_file = os.path.join(self.checksum_directory, "crt.sha256")
 
         if not self.vpn_user_req(username=username):
-            """
-            """
+            """ """
             create_directory(self.checksum_directory)
 
             args = []
@@ -280,22 +283,23 @@ class OpenVPNClientCertificate(object):
             rc, out, err = self._exec(args)
 
             if rc != 0:
-                """
-                """
-                return dict(
-                    failed=True,
-                    changed=False,
-                    message=f"{out.rstrip()}"
-                )
+                """ """
+                return dict(failed=True, changed=False, message=f"{out.rstrip()}")
             else:
-                self.write_checksum(file_name=self.req_file, checksum_file=self.req_checksum_file)
-                self.write_checksum(file_name=self.key_file, checksum_file=self.key_checksum_file)
-                self.write_checksum(file_name=self.crt_file, checksum_file=self.crt_checksum_file)
+                self.write_checksum(
+                    file_name=self.req_file, checksum_file=self.req_checksum_file
+                )
+                self.write_checksum(
+                    file_name=self.key_file, checksum_file=self.key_checksum_file
+                )
+                self.write_checksum(
+                    file_name=self.crt_file, checksum_file=self.crt_checksum_file
+                )
 
                 return dict(
                     failed=False,
                     changed=True,
-                    message="The client certificate has been successfully created."
+                    message="The client certificate has been successfully created.",
                 )
         else:
             valid, msg = self.validate_checksums()
@@ -304,25 +308,20 @@ class OpenVPNClientCertificate(object):
                 return dict(
                     failed=False,
                     changed=False,
-                    message="The client certificate has already been created."
+                    message="The client certificate has already been created.",
                 )
             else:
-                return dict(
-                    failed=True,
-                    changed=False,
-                    message=msg
-                )
+                return dict(failed=True, changed=False, message=msg)
 
     def revoke_vpn_user(self, username: str):
-        """
-        """
+        """ """
         self.module.log(msg=f"OpenVPNClientCertificate::revoke_vpn_user({username})")
 
         if not self.vpn_user_req():
             return dict(
                 failed=False,
                 changed=False,
-                message=f"There is no certificate request for the user {username}."
+                message=f"There is no certificate request for the user {username}.",
             )
 
         args = []
@@ -349,12 +348,11 @@ class OpenVPNClientCertificate(object):
         return dict(
             changed=True,
             failed=False,
-            message=f"The certificate for the user {username} has been revoked successfully."
+            message=f"The certificate for the user {username} has been revoked successfully.",
         )
 
     def vpn_user_req(self, username: str):
-        """
-        """
+        """ """
         self.module.log(msg=f"OpenVPNClientCertificate::vpn_user_req({username})")
 
         req_file = os.path.join("pki", "reqs", f"{username}.req")
@@ -365,8 +363,7 @@ class OpenVPNClientCertificate(object):
         return False
 
     def validate_checksums(self):
-        """
-        """
+        """ """
         self.module.log(msg="OpenVPNClientCertificate::validate_checksums()")
         msg = ""
 
@@ -393,16 +390,19 @@ class OpenVPNClientCertificate(object):
         return valid, msg
 
     def validate(self, checksum_file: str, file_name: str):
-        """
-        """
-        self.module.log(msg=f"OpenVPNClientCertificate::validate({checksum_file}, {file_name})")
+        """ """
+        self.module.log(
+            msg=f"OpenVPNClientCertificate::validate({checksum_file}, {file_name})"
+        )
         changed = False
         msg = ""
 
         checksum = None
         old_checksum = None
 
-        changed, checksum, old_checksum = self.checksum.validate_from_file(checksum_file, file_name)
+        changed, checksum, old_checksum = self.checksum.validate_from_file(
+            checksum_file, file_name
+        )
 
         if os.path.exists(file_name) and not os.path.exists(checksum_file):
             self.write_checksum(file_name=file_name, checksum_file=checksum_file)
@@ -414,24 +414,27 @@ class OpenVPNClientCertificate(object):
         return (changed, msg)
 
     def write_checksum(self, file_name: str, checksum_file: str):
-        """
-        """
-        self.module.log(msg=f"OpenVPNClientCertificate::write_checksum({file_name}, {checksum_file})")
+        """ """
+        self.module.log(
+            msg=f"OpenVPNClientCertificate::write_checksum({file_name}, {checksum_file})"
+        )
 
         checksum = self.checksum.checksum_from_file(file_name)
         self.checksum.write_checksum(checksum_file, checksum)
 
     def _exec(self, commands, check_rc=False):
         """
-          execute shell program
+        execute shell program
         """
-        self.module.log(msg=f"OpenVPNClientCertificate::_exec(commands={commands}, check_rc={check_rc}")
+        self.module.log(
+            msg=f"OpenVPNClientCertificate::_exec(commands={commands}, check_rc={check_rc}"
+        )
         rc, out, err = self.module.run_command(commands, check_rc=check_rc)
         return rc, out, err
 
     def result_values(self, out: str, err: str) -> list:
         """
-    "   """
+        " """
         _out = out.splitlines()
         _err = err.splitlines()
         _output = []
@@ -442,21 +445,11 @@ class OpenVPNClientCertificate(object):
 
 
 def main():
-    """
-    """
+    """ """
     args = dict(
-        clients=dict(
-            required=True,
-            type="list"
-        ),
-        force=dict(
-            required=False,
-            default=False,
-            type="bool"
-        ),
-        working_dir=dict(
-            required=False
-        ),
+        clients=dict(required=True, type="list"),
+        force=dict(required=False, default=False, type="bool"),
+        working_dir=dict(required=False),
     )
 
     module = AnsibleModule(
@@ -473,5 +466,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

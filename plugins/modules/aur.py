@@ -7,17 +7,17 @@
 
 from __future__ import absolute_import, print_function
 
+import json
+import os
+import os.path
+import re
+import tarfile
+import urllib.parse
+from pathlib import Path
+
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url
 
-import re
-import json
-import tarfile
-import os
-import os.path
-import urllib.parse
-
-from pathlib import Path
 __metaclass__ = type
 
 # ---------------------------------------------------------------------------------------
@@ -86,35 +86,36 @@ RETURN = """
 # ---------------------------------------------------------------------------------------
 
 
-class Aur():
+class Aur:
     """
-      Main Class
+    Main Class
     """
+
     module = None
 
     def __init__(self, module):
-        """
-
-        """
+        """ """
         self.module = module
         self.state = module.params.get("state")
         self.name = module.params.get("name")
         self.repository = module.params.get("repository")
         self.extra_args = module.params.get("extra_args")
 
-        self.pacman_binary = self.module.get_bin_path('pacman', True)
-        self.git_binary = self.module.get_bin_path('git', True)
+        self.pacman_binary = self.module.get_bin_path("pacman", True)
+        self.git_binary = self.module.get_bin_path("git", True)
 
     def run(self):
         """
-          runner
+        runner
         """
         installed, installed_version = self.package_installed(self.name)
 
-        self.module.log(msg=f"  {self.name} is installed: {installed} / version: {installed_version}")
+        self.module.log(
+            msg=f"  {self.name} is installed: {installed} / version: {installed_version}"
+        )
 
         if installed and self.state == "absent":
-            sudo_binary = self.module.get_bin_path('sudo', True)
+            sudo_binary = self.module.get_bin_path("sudo", True)
 
             args = []
             args.append(sudo_binary)
@@ -129,14 +130,13 @@ class Aur():
 
             if rc == 0:
                 return dict(
-                    changed=True,
-                    msg=f"Package {self.name} succesfull removed."
+                    changed=True, msg=f"Package {self.name} succesfull removed."
                 )
             else:
                 return dict(
                     failed=True,
                     changed=False,
-                    msg=f"An error occurred while removing the package {self.name}: {err}"
+                    msg=f"An error occurred while removing the package {self.name}: {err}",
                 )
 
         if self.state == "present":
@@ -153,26 +153,19 @@ class Aur():
                 rc, out, err, changed = self.install_from_aur()
 
             if rc == 0:
-                return dict(
-                    failed=False,
-                    changed=changed,
-                    msg=msg
-                )
+                return dict(failed=False, changed=changed, msg=msg)
             else:
-                return dict(
-                    failed=True,
-                    msg=err
-                )
+                return dict(failed=True, msg=err)
 
         return dict(
             failed=False,
             changed=False,
-            msg="It's all right. Keep moving! There is nothing to see!"
+            msg="It's all right. Keep moving! There is nothing to see!",
         )
 
     def package_installed(self, package):
         """
-          Determine if the package is already installed
+        Determine if the package is already installed
         """
         # self.module.log(msg=f"package_installed({package})")
 
@@ -185,17 +178,17 @@ class Aur():
 
         version_string = None
         if out:
-            pattern = re.compile(fr"{self.name} (?P<version>.*)-.*", re.MULTILINE)
+            pattern = re.compile(rf"{self.name} (?P<version>.*)-.*", re.MULTILINE)
 
             version = re.search(pattern, out)
             if version:
-                version_string = version.group('version')
+                version_string = version.group("version")
 
         return (rc == 0, version_string)
 
     def run_makepkg(self, directory):
         """
-          run makepkg to build and install pakage
+        run makepkg to build and install pakage
         """
         self.module.log(msg=f"run_makepkg({directory})")
         self.module.log(msg=f"  current dir : {os.getcwd()}")
@@ -207,7 +200,7 @@ class Aur():
             out = None
             err = f"no directory {directory} found"
         else:
-            makepkg_binary = self.module.get_bin_path('makepkg', required=True)
+            makepkg_binary = self.module.get_bin_path("makepkg", required=True)
 
             args = []
             args.append(makepkg_binary)
@@ -226,24 +219,24 @@ class Aur():
 
     def install_from_aur(self):
         """
-          use repository for installation
+        use repository for installation
         """
         import tempfile
 
-        _url = f'https://aur.archlinux.org/rpc/?v=5&type=info&arg={urllib.parse.quote(self.name)}'
+        _url = f"https://aur.archlinux.org/rpc/?v=5&type=info&arg={urllib.parse.quote(self.name)}"
 
         self.module.log(msg=f"  url {_url}")
 
         f = open_url(_url)
 
-        result = json.dumps(json.loads(f.read().decode('utf8')))
+        result = json.dumps(json.loads(f.read().decode("utf8")))
 
         self.module.log(msg=f"  result {result}")
 
-        if result['resultcount'] != 1:
-            return (1, '', f'package {self.name} not found')
+        if result["resultcount"] != 1:
+            return (1, "", f"package {self.name} not found")
 
-        result = result['results'][0]
+        result = result["results"][0]
 
         self.module.log(msg=f"  result {result}")
 
@@ -251,7 +244,7 @@ class Aur():
 
         with tempfile.TemporaryDirectory() as tmpdir:
 
-            tar = tarfile.open(mode='r|*', fileobj=f)
+            tar = tarfile.open(mode="r|*", fileobj=f)
             tar.extractall(tmpdir)
             tar.close()
 
@@ -261,10 +254,10 @@ class Aur():
 
     def install_from_repository(self, installed_version):
         """
-          use repository for installation
+        use repository for installation
 
-          return:
-            tupple (rc, out, err, changed)
+        return:
+          tupple (rc, out, err, changed)
         """
         os.chdir(str(Path.home()))
         # self.module.log(msg="  current dir : {}".format(os.getcwd()))
@@ -282,7 +275,7 @@ class Aur():
 
         if os.path.exists(".git"):
             """
-              we can update the current repository
+            we can update the current repository
             """
             rc, out, err = self.git_pull()
 
@@ -299,7 +292,7 @@ class Aur():
         pkgbuild_file = "PKGBUILD"
         if not os.path.exists(pkgbuild_file):
             """
-              whaaaat?
+            whaaaat?
             """
             err = "can't found PKGBUILD"
             return (1, None, err, False)
@@ -322,10 +315,15 @@ class Aur():
         version = re.search(pattern, data)
 
         if version:
-            package_version = version.group('version')
+            package_version = version.group("version")
 
         if installed_version == package_version:
-            return (99, f"Version {installed_version} is already installed.", None, False)
+            return (
+                99,
+                f"Version {installed_version} is already installed.",
+                None,
+                False,
+            )
             # return dict(
             #     changed=False,
             #     msg=f"Version {installed_version} are installed."
@@ -343,7 +341,7 @@ class Aur():
 
     def git_clone(self, repository):
         """
-          simply git clone ...
+        simply git clone ...
         """
         if not self.git_binary:
             return (1, None, "not git found")
@@ -360,7 +358,7 @@ class Aur():
 
     def git_pull(self):
         """
-          simply git clone ...
+        simply git clone ...
         """
         if not self.git_binary:
             return (1, None, "git not found")
@@ -375,7 +373,7 @@ class Aur():
 
     def _exec(self, cmd, check=False):
         """
-          execute shell commands
+        execute shell commands
         """
         rc, out, err = self.module.run_command(cmd, check_rc=check)
 
@@ -395,22 +393,10 @@ class Aur():
 def main():
 
     args = dict(
-        state=dict(
-            default="present",
-            choices=["present", "absent"]
-        ),
-        repository=dict(
-            type='str',
-            required=True
-        ),
-        name=dict(
-            type='str',
-            required=True
-        ),
-        extra_args=dict(
-            type='list',
-            required=False
-        ),
+        state=dict(default="present", choices=["present", "absent"]),
+        repository=dict(type="str", required=True),
+        name=dict(type="str", required=True),
+        extra_args=dict(type="list", required=False),
     )
     module = AnsibleModule(
         argument_spec=args,
@@ -428,5 +414,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

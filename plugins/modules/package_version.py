@@ -7,10 +7,10 @@
 
 from __future__ import print_function
 
+import re
+
 from ansible.module_utils import distro
 from ansible.module_utils.basic import AnsibleModule
-
-import re
 
 __metaclass__ = type
 
@@ -75,7 +75,7 @@ EXAMPLES = r"""
     repository: MariaDB
   register: package_version
   when:
-    - ansible_os_family | lower == 'redhat'
+    - ansible_facts.os_family | lower == 'redhat'
     - mariadb_use_external_repo
 """
 
@@ -103,8 +103,7 @@ version_string_compressed:
 
 
 class PackageVersion(object):
-    """
-    """
+    """ """
 
     def __init__(self, module):
 
@@ -119,12 +118,13 @@ class PackageVersion(object):
         self.version = distro.version()
         self.codename = distro.codename()
 
-        self.module.log(msg=f"  - pkg       : {self.distribution} - {self.version} - {self.codename}")
+        self.module.log(
+            msg=f"  - pkg       : {self.distribution} - {self.version} - {self.codename}"
+        )
 
     def run(self):
-        """
-        """
-        version = ''
+        """ """
+        version = ""
         error = True
         msg = f"unknown or unsupported distribution: '{self.distribution}'"
 
@@ -134,15 +134,18 @@ class PackageVersion(object):
         if self.distribution.lower() in ["arch", "artix"]:
             error, version, msg = self._search_pacman()
 
-        if self.distribution.lower() in ["centos", "oracle", "redhat", "fedora", "rocky", "almalinux"]:
+        if self.distribution.lower() in [
+            "centos",
+            "oracle",
+            "redhat",
+            "fedora",
+            "rocky",
+            "almalinux",
+        ]:
             error, version, msg = self._search_yum()
 
         if error:
-            return dict(
-                failed=True,
-                available_versions=version,
-                msg=msg
-            )
+            return dict(failed=True, available_versions=version, msg=msg)
 
         if version is not None:
             major_version = None
@@ -158,7 +161,7 @@ class PackageVersion(object):
                 minor_version = version_splitted[1]
 
             if minor_version:
-                platform_version = '.'.join([major_version, minor_version])
+                platform_version = ".".join([major_version, minor_version])
             else:
                 platform_version = major_version
 
@@ -166,20 +169,16 @@ class PackageVersion(object):
                 full_version=version,
                 platform_version=platform_version,
                 major_version=major_version,
-                version_string_compressed=version.replace('.', '')
+                version_string_compressed=version.replace(".", ""),
             )
 
-        result = dict(
-            failed=error,
-            available=version,
-            msg=msg
-        )
+        result = dict(failed=error, available=version, msg=msg)
 
         return result
 
     def _search_apt(self):
         """
-          support apt
+        support apt
         """
         import apt
 
@@ -238,27 +237,27 @@ class PackageVersion(object):
                 pattern = re.compile(r"(?P<version>.*?)(?=[-+])")
 
             result = re.search(pattern, version)
-            version_string = result.group('version')
+            version_string = result.group("version")
 
             # self.module.log(msg=f"  - version_string  : {version_string}")
         return False, version_string, ""
 
     def _search_yum(self):
         """
-          support dnf and - as fallback - yum
+        support dnf and - as fallback - yum
         """
-        package_mgr = self.module.get_bin_path('dnf', False)
+        package_mgr = self.module.get_bin_path("dnf", False)
 
-        if (not package_mgr):
-            package_mgr = self.module.get_bin_path('yum', True)
+        if not package_mgr:
+            package_mgr = self.module.get_bin_path("yum", True)
 
-        if (not package_mgr):
+        if not package_mgr:
             return True, "", "no valid package manager (yum or dnf) found"
 
         package_version = self.package_version
 
-        if (package_version):
-            package_version = package_version.replace('.', '')
+        if package_version:
+            package_version = package_version.replace(".", "")
 
         args = []
         args.append(package_mgr)
@@ -272,11 +271,9 @@ class PackageVersion(object):
             args.append("--enablerepo")
             args.append(self.repository)
 
-        rc, out, err = self.module.run_command(
-            args,
-            check_rc=False)
+        rc, out, err = self.module.run_command(args, check_rc=False)
 
-        version = ''
+        version = ""
 
         if rc == 0:
             versions = []
@@ -291,23 +288,23 @@ class PackageVersion(object):
                 self.module.log(msg=f"  line     : {line}")
                 for match in re.finditer(pattern, line):
                     result = re.search(pattern, line)
-                    versions.append(result.group('version'))
+                    versions.append(result.group("version"))
 
             self.module.log(msg=f"versions      : '{versions}'")
 
             if len(versions) == 0:
-                msg = 'nothing found'
+                msg = "nothing found"
                 error = True
 
             if len(versions) == 1:
-                msg = ''
+                msg = ""
                 error = False
                 version = versions[0]
 
             if len(versions) > 1:
-                msg = 'more then one result found! choose one of them!'
+                msg = "more then one result found! choose one of them!"
                 error = True
-                version = ', '.join(versions)
+                version = ", ".join(versions)
         else:
             msg = f"package {self.package_name} not found"
             error = False
@@ -317,10 +314,10 @@ class PackageVersion(object):
 
     def _search_pacman(self):
         """
-            pacman support
-            pacman --noconfirm --sync --search php7 | grep -E "^(extra|world)\\/php7 (.*)\\[installed\\]" | cut -d' ' -f2
+        pacman support
+        pacman --noconfirm --sync --search php7 | grep -E "^(extra|world)\\/php7 (.*)\\[installed\\]" | cut -d' ' -f2
         """
-        pacman_bin = self.module.get_bin_path('pacman', True)
+        pacman_bin = self.module.get_bin_path("pacman", True)
 
         version = None
         args = []
@@ -340,15 +337,17 @@ class PackageVersion(object):
         if rc == 0:
             pattern = re.compile(
                 # r'^(?P<repository>core|extra|community|world|local)\/{}[0-9\s]*(?P<version>\d\.\d).*-.*'.format(self.package_name),
-                r'^(?P<repository>core|extra|community|world|local)\/{} (?P<version>\d+(\.\d+){{0,2}}(\.\*)?)-.*'.format(self.package_name),
-                re.MULTILINE
+                r"^(?P<repository>core|extra|community|world|local)\/{} (?P<version>\d+(\.\d+){{0,2}}(\.\*)?)-.*".format(
+                    self.package_name
+                ),
+                re.MULTILINE,
             )
 
             result = re.search(pattern, out)
 
-            msg = ''
+            msg = ""
             error = False
-            version = result.group('version')
+            version = result.group("version")
 
         else:
             msg = f"package {self.package_name} not found"
@@ -359,7 +358,7 @@ class PackageVersion(object):
 
     def _pacman(self, cmd):
         """
-          support pacman
+        support pacman
         """
         rc, out, err = self.module.run_command(cmd, check_rc=False)
 
@@ -369,6 +368,7 @@ class PackageVersion(object):
             self.module.log(msg=f"  err: '{err}'")
 
         return rc, out, err
+
 
 # ---------------------------------------------------------------------------------------
 # Module execution.
@@ -383,20 +383,11 @@ def main():
                 "installed",
                 "available",
             ],
-            default="available"
+            default="available",
         ),
-        package_name=dict(
-            required=True,
-            type='str'
-        ),
-        package_version=dict(
-            required=False,
-            default=''
-        ),
-        repository=dict(
-            required=False,
-            default=""
-        )
+        package_name=dict(required=True, type="str"),
+        package_version=dict(required=False, default=""),
+        repository=dict(required=False, default=""),
     )
 
     module = AnsibleModule(
@@ -412,5 +403,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

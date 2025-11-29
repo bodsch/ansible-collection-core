@@ -6,20 +6,20 @@
     daemon_reload: true
     force: true
   when:
-    - ansible_service_mgr | lower == "systemd"
+    - ansible_facts.service_mgr | lower == "systemd"
 
 - name: restart openvpn-server
   ansible.builtin.service:
     name: "{{ openvpn_service_name }}"
     state: restarted
-  ignore_errors: "{{ 'true' if ansible_service_mgr | lower == 'openrc' else 'false' }}"
+  ignore_errors: "{{ 'true' if ansible_facts.service_mgr | lower == 'openrc' else 'false' }}"
   failed_when: false
 
 - name: restart openvpn-client
   ansible.builtin.service:
     name: "{{ openvpn_service_name }}"
     state: restarted
-  ignore_errors: "{{ 'true' if ansible_service_mgr | lower == 'openrc' else 'false' }}"
+  ignore_errors: "{{ 'true' if ansible_facts.service_mgr | lower == 'openrc' else 'false' }}"
   failed_when: false
 
 ...

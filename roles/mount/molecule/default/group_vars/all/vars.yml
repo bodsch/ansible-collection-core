@@ -2,38 +2,38 @@
 
 mount_fstab: /tmp/molecule_fstab
 
-mount_smb_share:
-  - username: "bar"
-    password: "foo"
-    passwordfile: "/tmp/zorg.pass"
-  - username: "foo"
-    password: "bar"
-    passwordfile: "/tmp/foo.pass"
+mount_smb_share: []
+#   - username: "bar"
+#     password: "foo"
+#     passwordfile: "/tmp/zorg.pass"
+#   - username: "foo"
+#     password: "bar"
+#     passwordfile: "/tmp/foo.pass"
 
-mount_devices:
-  - source: /dev/mapper/root        # NO default
-    mountpoint: /                   # NO default
-    fstype: ext4                    # NO default
-    opts: noatime,errors=remount-ro # default: "defaults"
-    state: present                  # default: "present"
-    dump: 0                         # default: "0"
-    passno: 1                       # default: "0"
-    fstab: /etc/fstab               # default: "/etc/fstab"
-
-  - source: nfs.example.org:/data
-    mountpoint: /mnt/remote
-    fstype: nfs
-    opts: vers=4,noauto,users,soft,intr,rsize=8192,wsize=8192
-
-  - source: nfs.example.org:/read-only
-    mountpoint: /mnt/readonly
-    opts: defaults,ro
-    fstype: nfs4
-
-  - source: tmpfs
-    mountpoint: /tmp
-    fstype: tmpfs
-    opts: auto,rw,noatime,size=250M,nr_inodes=800k
-    state: present
+mount_devices: []
+#   - source: /dev/mapper/root        # NO default
+#     mountpoint: /                   # NO default
+#     fstype: ext4                    # NO default
+#     opts: noatime,errors=remount-ro # default: "defaults"
+#     state: present                  # default: "present"
+#     dump: 0                         # default: "0"
+#     passno: 1                       # default: "0"
+#     fstab: /etc/fstab               # default: "/etc/fstab"
+#
+#   - source: nfs.example.org:/data
+#     mountpoint: /mnt/remote
+#     fstype: nfs
+#     opts: vers=4,noauto,users,soft,intr,rsize=8192,wsize=8192
+#
+#   - source: nfs.example.org:/read-only
+#     mountpoint: /mnt/readonly
+#     opts: defaults,ro
+#     fstype: nfs4
+#
+#   - source: tmpfs
+#     mountpoint: /tmp
+#     fstype: tmpfs
+#     opts: auto,rw,noatime,size=250M,nr_inodes=800k
+#     state: present
 
 ...

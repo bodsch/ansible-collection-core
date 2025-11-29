@@ -2,7 +2,7 @@
 namespace: bodsch
 name: core
 
-version: 2.7.0
+version: 2.7.1
 
 readme: README.md
 
@@ -29,7 +29,6 @@ dependencies:
  ansible.utils: "*"
  ansible.posix: "*"
  community.general: ">=10.5"
- community.crypto: "*"
 
 repository: https://github.com/bodsch/ansible-collection-core
 documentation: https://github.com/bodsch/ansible-collection-core/README.md

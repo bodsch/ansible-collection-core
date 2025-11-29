@@ -1,5 +1,0 @@
-
-pushd ~/.ansible/collections/ansible_collections/bodsch/core/
-
-ansible-test sanity -v --skip-test metaclass-boilerplate     --skip-test future-import-boilerplate plugins/filter/
-ansible-test sanity -v --python 3.11  --skip-test metaclass-boilerplate     --skip-test future-import-boilerplate plugins/filter/

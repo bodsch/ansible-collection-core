@@ -7,15 +7,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-from ansible.module_utils._text import to_native
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.six.moves import configparser
-from ansible.module_utils.mysql import (
-    mysql_driver, mysql_driver_fail_msg
-)
-
 import os
 import warnings
+
+from ansible.module_utils._text import to_native
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.mysql import mysql_driver, mysql_driver_fail_msg
+from ansible.module_utils.six.moves import configparser
 
 # ---------------------------------------------------------------------------------------
 
@@ -115,13 +113,12 @@ failed:
 
 
 class MysqlSchema(object):
-    """
-    """
+    """ """
+
     module = None
 
     def __init__(self, module):
-        """
-        """
+        """ """
         self.module = module
 
         self.login_user = module.params.get("login_user")
@@ -136,45 +133,33 @@ class MysqlSchema(object):
         self.db_connect_timeout = 30
 
     def run(self):
-        """
-        """
+        """ """
         if mysql_driver is None:
             self.module.fail_json(msg=mysql_driver_fail_msg)
         else:
-            warnings.filterwarnings('error', category=mysql_driver.Warning)
+            warnings.filterwarnings("error", category=mysql_driver.Warning)
 
         if not mysql_driver:
-            return dict(
-                failed=True,
-                error=mysql_driver_fail_msg
-            )
+            return dict(failed=True, error=mysql_driver_fail_msg)
 
         state, error, error_message = self._information_schema()
 
         if error:
-            res = dict(
-                failed=True,
-                changed=False,
-                msg=error_message
-            )
+            res = dict(failed=True, changed=False, msg=error_message)
         else:
-            res = dict(
-                failed=False,
-                changed=False,
-                exists=state
-            )
+            res = dict(failed=False, changed=False, exists=state)
 
         return res
 
     def _information_schema(self):
         """
-          get informations about schema
+        get informations about schema
 
-          return:
-            state: bool (exists or not)
-            count: int
-            error: boot (error or not)
-            error_message string  error message
+        return:
+          state: bool (exists or not)
+          count: int
+          error: boot (error or not)
+          error_message string  error message
         """
         cursor, conn, error, message = self.__mysql_connect()
 
@@ -205,7 +190,9 @@ class MysqlSchema(object):
                 table_names.append(e[1])
 
             if self.table_name in table_names:
-                self.module.log(msg=f"  - table name {self.table_name} exists in table schema")
+                self.module.log(
+                    msg=f"  - table name {self.table_name} exists in table schema"
+                )
 
                 return True, False, None
 
@@ -218,30 +205,29 @@ class MysqlSchema(object):
         return False, False, None
 
     def __mysql_connect(self):
-        """
-        """
+        """ """
         config = {}
 
         config_file = self.database_config_file
 
         if config_file and os.path.exists(config_file):
-            config['read_default_file'] = config_file
+            config["read_default_file"] = config_file
 
         # TODO
         # cp = self.__parse_from_mysql_config_file(config_file)
 
         if self.login_unix_socket:
-            config['unix_socket'] = self.login_unix_socket
+            config["unix_socket"] = self.login_unix_socket
         else:
-            config['host'] = self.login_host
-            config['port'] = self.login_port
+            config["host"] = self.login_host
+            config["port"] = self.login_port
 
         # If login_user or login_password are given, they should override the
         # config file
         if self.login_user is not None:
-            config['user'] = self.login_user
+            config["user"] = self.login_user
         if self.login_password is not None:
-            config['passwd'] = self.login_password
+            config["passwd"] = self.login_password
 
         if mysql_driver is None:
             self.module.fail_json(msg=mysql_driver_fail_msg)
@@ -271,39 +257,18 @@ class MysqlSchema(object):
 # Module execution.
 #
 
+
 def main():
 
     args = dict(
-        login_user=dict(
-            type='str'
-        ),
-        login_password=dict(
-            type='str',
-            no_log=True
-        ),
-        login_host=dict(
-            type='str',
-            default='127.0.0.1'
-        ),
-        login_port=dict(
-            type='int',
-            default=3306
-        ),
-        login_unix_socket=dict(
-            type='str'
-        ),
-        database_config_file=dict(
-            required=False,
-            type='path'
-        ),
-        table_schema=dict(
-            required=True,
-            type='str'
-        ),
-        table_name=dict(
-            required=False,
-            type='str'
-        )
+        login_user=dict(type="str"),
+        login_password=dict(type="str", no_log=True),
+        login_host=dict(type="str", default="127.0.0.1"),
+        login_port=dict(type="int", default=3306),
+        login_unix_socket=dict(type="str"),
+        database_config_file=dict(required=False, type="path"),
+        table_schema=dict(required=True, type="str"),
+        table_name=dict(required=False, type="str"),
     )
 
     module = AnsibleModule(
@@ -320,5 +285,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
