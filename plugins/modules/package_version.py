@@ -75,7 +75,7 @@ EXAMPLES = r"""
     repository: MariaDB
   register: package_version
   when:
-    - ansible_os_family | lower == 'redhat'
+    - ansible_facts.os_family | lower == 'redhat'
     - mariadb_use_external_repo
 """
 

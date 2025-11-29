@@ -11,7 +11,7 @@
 
 - name: systemd
   when:
-    - ansible_service_mgr == "systemd"
+    - ansible_facts.service_mgr == "systemd"
   block:
     - name: populate service facts
       ansible.builtin.service_facts:

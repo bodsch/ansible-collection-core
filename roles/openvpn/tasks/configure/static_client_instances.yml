@@ -6,7 +6,7 @@
 
 - name: systemd
   when:
-    - ansible_service_mgr | lower == "systemd"
+    - ansible_facts.service_mgr | lower == "systemd"
   block:
     - name: redefine service name
       ansible.builtin.set_fact:
@@ -35,7 +35,7 @@
 
 - name: openrc
   when:
-    - ansible_service_mgr | lower == "openrc"
+    - ansible_facts.service_mgr | lower == "openrc"
   block:
     - name: redefine service name
       ansible.builtin.set_fact:
@@ -166,9 +166,9 @@
 
 - name: openrc
   when:
-    - ansible_service_mgr | lower == "openrc"
-    - ansible_distribution | lower == "archlinux" or
-      ansible_os_family | lower | replace(' ', '') | lower == "artixlinux"
+    - ansible_facts.service_mgr | lower == "openrc"
+    - ansible_facts.distribution | lower == "archlinux" or
+      ansible_facts.os_family | lower | replace(' ', '') | lower == "artixlinux"
   notify:
     - restart openvpn-server
   block:

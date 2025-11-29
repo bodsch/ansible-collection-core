@@ -5,7 +5,7 @@
 
 - name: systemd
   when:
-    - ansible_service_mgr == "systemd"
+    - ansible_facts.service_mgr == "systemd"
     - not ansible_check_mode
   block:
     - name: enable and start {{ syslog_unit_file }}.service
@@ -18,7 +18,7 @@
 
 - name: enable and start syslog-ng (no systemd)
   when:
-    - ansible_service_mgr != "systemd"
+    - ansible_facts.service_mgr != "systemd"
     - not ansible_check_mode
   ansible.builtin.service:
     name: syslog-ng

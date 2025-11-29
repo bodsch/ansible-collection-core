@@ -58,7 +58,7 @@ EXAMPLES = """
     lines: 50
   register: journalctl
   when:
-    - ansible_service_mgr == 'systemd'
+    - ansible_facts.service_mgr == 'systemd'
 
 - name: journalctl entries from this module
   journalctl:
@@ -66,7 +66,7 @@ EXAMPLES = """
     lines: 250
   register: journalctl
   when:
-    - ansible_service_mgr == 'systemd'
+    - ansible_facts.service_mgr == 'systemd'
 """
 
 RETURN = """

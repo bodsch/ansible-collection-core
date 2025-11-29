@@ -2,7 +2,7 @@
 
 - name: deactivate journald
   when:
-    - ansible_service_mgr == 'systemd'
+    - ansible_facts.service_mgr == 'systemd'
     - (syslog_journald.config is defined and
        syslog_journald.config.items() | count != 0) or
       (syslog_journald.wipe_persistent is defined and

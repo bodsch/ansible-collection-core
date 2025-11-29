@@ -23,7 +23,7 @@
 
 - name: handle easy-rsa
   when:
-    - ansible_os_family | lower == "debian"
+    - ansible_facts.os_family | lower == "debian"
   block:
     - name: link easy-rsa into /etc
       ansible.builtin.file:
@@ -39,7 +39,7 @@
 
     - name: create pki directory structure
       when:
-        - ansible_distribution | lower == "ubuntu"
+        - ansible_facts.distribution | lower == "ubuntu"
       block:
         - name: create pki directory
           ansible.builtin.file:
@@ -65,11 +65,11 @@
             src: "{{ openvpn_easyrsa.directory }}/x509-types"
             dest: /usr/bin/x509-types
           when:
-            - ansible_distribution_major_version == "20"
+            - ansible_facts.distribution_major_version == "20"
 
 - name: openrc
   when:
-    - ansible_service_mgr | lower == "openrc"
+    - ansible_facts.service_mgr | lower == "openrc"
     - not openvpn_type == "server"
   block:
     - name: copy up.sh to system
