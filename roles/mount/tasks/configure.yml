@@ -8,6 +8,9 @@
     group: root
     mode: "0640"
     backup: true
+  when:
+    - not running_in_check_mode
+    - mount_smb_share | default([]) | count > 0
   no_log: true
   loop:
     "{{ mount_smb_share | default([]) }}"
@@ -29,6 +32,9 @@
     passno: '{{ item.passno | default("0") }}'
     fstab: '{{ item.fstab | default(mount_fstab | default("/etc/fstab")) }}'
   with_items: '{{ mount_devices }}'
+  when:
+    - not running_in_check_mode
+    - mount_devices | default([]) | count > 0
   loop_control:
     label: 'mountpoint: {{ item.mountpoint }} - from: {{ item.source }}'
   register: _mount_result
