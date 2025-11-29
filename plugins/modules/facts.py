@@ -7,13 +7,15 @@
 
 from __future__ import absolute_import, division, print_function
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.bodsch.core.plugins.module_utils.directory import create_directory
-from ansible_collections.bodsch.core.plugins.module_utils.file import (chmod, remove_file)
-from ansible_collections.bodsch.core.plugins.module_utils.checksum import Checksum
-
-import os
 import json
+import os
+
+from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.bodsch.core.plugins.module_utils.checksum import Checksum
+from ansible_collections.bodsch.core.plugins.module_utils.directory import (
+    create_directory,
+)
+from ansible_collections.bodsch.core.plugins.module_utils.file import chmod, remove_file
 
 # ---------------------------------------------------------------------------------------
 
@@ -74,13 +76,14 @@ EOF
 
 class AnsibleFacts(object):
     """
-      Main Class
+    Main Class
     """
+
     module = None
 
     def __init__(self, module):
         """
-          Initialize all needed Variables
+        Initialize all needed Variables
         """
         self.module = module
 
@@ -98,7 +101,7 @@ class AnsibleFacts(object):
 
     def run(self):
         """
-          runner
+        runner
         """
         create_directory(self.cache_directory)
         create_directory(self.facts_directory, mode="0775")
@@ -118,10 +121,7 @@ class AnsibleFacts(object):
                     _changed = True
                     _msg = "The facts have been successfully removed."
 
-            return dict(
-                changed=_changed,
-                msg=_msg
-            )
+            return dict(changed=_changed, msg=_msg)
 
         checksum = Checksum(self.module)
 
@@ -178,17 +178,15 @@ class AnsibleFacts(object):
         return dict(
             failed=_failed,
             changed=True,
-            msg="The facts have been successfully written."
+            msg="The facts have been successfully written.",
         )
 
     def __has_changed(self, data_file, checksum_file, data):
-        """
-        """
+        """ """
         old_checksum = ""
 
         if not os.path.exists(data_file) and os.path.exists(checksum_file):
-            """
-            """
+            """ """
             os.remove(checksum_file)
 
         if os.path.exists(checksum_file):
@@ -197,7 +195,7 @@ class AnsibleFacts(object):
 
         if isinstance(data, str):
             _data = sorted(data.split())
-            _data = '\n'.join(_data)
+            _data = "\n".join(_data)
 
         checksum = self.__checksum(_data)
         changed = not (old_checksum == checksum)
@@ -221,7 +219,7 @@ def main():
                 "present",
                 "absent",
             ],
-            default="present"
+            default="present",
         ),
         name=dict(
             type="str",
@@ -231,11 +229,7 @@ def main():
             type="dict",
             required=True,
         ),
-        append=dict(
-            type="bool",
-            required=False,
-            default=True
-        )
+        append=dict(type="bool", required=False, default=True),
     )
 
     module = AnsibleModule(
@@ -252,5 +246,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

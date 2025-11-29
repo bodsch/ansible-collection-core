@@ -7,8 +7,7 @@
 
 
 def find_in_list(list, value):
-    """
-    """
+    """ """
     for entry in list:
         for k, v in entry.items():
             if k == value:
@@ -19,10 +18,10 @@ def find_in_list(list, value):
 
 def compare_two_lists(list1: list, list2: list, debug=False):
     """
-        Compare two lists and logs the difference.
-        :param list1: first list.
-        :param list2: second list.
-        :return:      if there is difference between both lists.
+    Compare two lists and logs the difference.
+    :param list1: first list.
+    :param list2: second list.
+    :return:      if there is difference between both lists.
     """
     debug_msg = []
 

@@ -1,8 +1,9 @@
 # python 3 headers, required if submitting to Ansible
-from __future__ import (absolute_import, division, print_function)
-from ansible.utils.display import Display
+from __future__ import absolute_import, division, print_function
 
 import json
+
+from ansible.utils.display import Display
 
 __metaclass__ = type
 
@@ -10,24 +11,30 @@ display = Display()
 
 
 class FilterModule(object):
-    """
-    """
+    """ """
 
     def filters(self):
         return {
-            'merge_lists': self.merge_lists,
-            'sshd_values': self.sshd_values,
+            "merge_lists": self.merge_lists,
+            "sshd_values": self.sshd_values,
         }
 
     def merge_lists(self, defaults, data):
-        """
-        """
+        """ """
         count_defaults = len(defaults)
         count_data = len(data)
 
-        display.vv("defaults: ({type}) {len} - {data} entries".format(data=defaults, type=type(defaults), len=count_defaults))
+        display.vv(
+            "defaults: ({type}) {len} - {data} entries".format(
+                data=defaults, type=type(defaults), len=count_defaults
+            )
+        )
         display.vv(json.dumps(data, indent=2, sort_keys=False))
-        display.vv("data    : ({type}) {len} - {data} entries".format(data=data, type=type(data), len=count_data))
+        display.vv(
+            "data    : ({type}) {len} - {data} entries".format(
+                data=data, type=type(data), len=count_data
+            )
+        )
 
         result = []
 
@@ -40,7 +47,7 @@ class FilterModule(object):
 
         # our new list from users input
         for d in data:
-            _name = d['host']
+            _name = d["host"]
             # search the name in the default map
             _defaults_name = self.__search(defaults, _name)
             # display.vv(f"  _defaults_name    : {_defaults_name}")
@@ -50,7 +57,7 @@ class FilterModule(object):
             else:
                 # when found, remove these entry from the defaults list, its obsolete
                 for i in range(len(defaults)):
-                    if defaults[i]['host'] == _name:
+                    if defaults[i]["host"] == _name:
                         del defaults[i]
                         break
 
@@ -73,7 +80,7 @@ class FilterModule(object):
         # Hilfsfunktion zur Rekursion
         def replace_keys(obj):
             """
-                :param key_map: Dictionary, das alte Keys mit neuen Keys mappt.
+            :param key_map: Dictionary, das alte Keys mit neuen Keys mappt.
             """
             key_map = {
                 "port": "Port",
@@ -171,7 +178,7 @@ class FilterModule(object):
     def __search(self, d, name):
         res = None
         for sub in d:
-            if sub['host'] == name:
+            if sub["host"] == name:
                 res = sub
                 break
 

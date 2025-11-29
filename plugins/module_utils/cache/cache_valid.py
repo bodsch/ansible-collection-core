@@ -5,25 +5,30 @@
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-import os
 import datetime
+import os
 
 
-def cache_valid(module, cache_file_name, cache_minutes=60, cache_file_remove=True) -> bool:
+def cache_valid(
+    module, cache_file_name, cache_minutes=60, cache_file_remove=True
+) -> bool:
     """
-        read local file and check the creation time against local time
+    read local file and check the creation time against local time
 
-        returns 'False' when cache are out of sync
+    returns 'False' when cache are out of sync
     """
     out_of_cache = False
 
     if os.path.isfile(cache_file_name):
         module.debug(msg=f"read cache file '{cache_file_name}'")
         now = datetime.datetime.now()
-        creation_time = datetime.datetime.fromtimestamp(os.path.getctime(cache_file_name))
+        creation_time = datetime.datetime.fromtimestamp(
+            os.path.getctime(cache_file_name)
+        )
         diff = now - creation_time
         # define the difference from now to the creation time in minutes
         cached_time = diff.total_seconds() / 60
@@ -39,6 +44,6 @@ def cache_valid(module, cache_file_name, cache_minutes=60, cache_file_remove=Tru
     else:
         out_of_cache = True
 
-    module.debug(msg="cache is {0}valid".format('not ' if out_of_cache else ''))
+    module.debug(msg="cache is {0}valid".format("not " if out_of_cache else ""))
 
     return out_of_cache

@@ -72,19 +72,16 @@ class SyslogNgCmd(object):
 
     def __init__(self, module):
         """
-          Initialize all needed Variables
+        Initialize all needed Variables
         """
         self.module = module
 
-        self._syslog_ng_bin = module.get_bin_path('syslog-ng', False)
+        self._syslog_ng_bin = module.get_bin_path("syslog-ng", False)
         self.parameters = module.params.get("parameters")
 
     def run(self):
-        ''' ... '''
-        result = dict(
-            failed=True,
-            ansible_module_results='failed'
-        )
+        """..."""
+        result = dict(failed=True, ansible_module_results="failed")
 
         parameter_list = self._flatten_parameter()
 
@@ -92,14 +89,9 @@ class SyslogNgCmd(object):
 
         if self.module.check_mode:
             self.module.debug("In check mode.")
-            if '--version' in parameter_list:
-                return dict(
-                    rc=0,
-                    failed=False,
-                    args=None,
-                    version="1"
-                )
-            if '--syntax-only' in parameter_list:
+            if "--version" in parameter_list:
+                return dict(rc=0, failed=False, args=None, version="1")
+            if "--syntax-only" in parameter_list:
                 return dict(
                     rc=0,
                     failed=False,
@@ -109,11 +101,7 @@ class SyslogNgCmd(object):
                 )
 
         if not self._syslog_ng_bin:
-            return dict(
-                rc=1,
-                failed=True,
-                msg="no installed syslog-ng found"
-            )
+            return dict(rc=1, failed=True, msg="no installed syslog-ng found")
 
         args = []
         args.append(self._syslog_ng_bin)
@@ -126,39 +114,31 @@ class SyslogNgCmd(object):
 
         rc, out, err = self._exec(args)
 
-        if '--version' in parameter_list:
+        if "--version" in parameter_list:
             """
-              get version"
+            get version"
             """
-            pattern = re.compile(r'.*Installer-Version: (?P<version>\d\.\d+)\.', re.MULTILINE)
+            pattern = re.compile(
+                r".*Installer-Version: (?P<version>\d\.\d+)\.", re.MULTILINE
+            )
             version = re.search(pattern, out)
             version = version.group(1)
 
             self.module.log(msg=f"   version: '{version}'")
 
-            if (rc == 0):
-                return dict(
-                    rc=0,
-                    failed=False,
-                    args=args,
-                    version=version
-                )
+            if rc == 0:
+                return dict(rc=0, failed=False, args=args, version=version)
 
-        if '--syntax-only' in parameter_list:
+        if "--syntax-only" in parameter_list:
             """
-              check syntax
+            check syntax
             """
             self.module.log(msg=f"   rc : '{rc}'")
             self.module.log(msg=f"   out: '{out}'")
             self.module.log(msg=f"   err: '{err}'")
 
             if rc == 0:
-                return dict(
-                    rc=rc,
-                    failed=False,
-                    args=args,
-                    msg="syntax okay"
-                )
+                return dict(rc=rc, failed=False, args=args, msg="syntax okay")
             else:
                 return dict(
                     rc=rc,
@@ -171,8 +151,7 @@ class SyslogNgCmd(object):
         return result
 
     def _exec(self, args):
-        """
-        """
+        """ """
         rc, out, err = self.module.run_command(args, check_rc=True)
         # self.module.log(msg="  rc : '{}'".format(rc))
         # self.module.log(msg="  out: '{}' ({})".format(out, type(out)))
@@ -181,22 +160,23 @@ class SyslogNgCmd(object):
 
     def _flatten_parameter(self):
         """
-          split and flatten parameter list
+        split and flatten parameter list
 
-          input:  ['--validate', '--log-level debug']
-          output: ['--validate', '--log-level', 'debug']
+        input:  ['--validate', '--log-level debug']
+        output: ['--validate', '--log-level', 'debug']
         """
         parameters = []
 
         for _parameter in self.parameters:
-            if ' ' in _parameter:
-                _list = _parameter.split(' ')
+            if " " in _parameter:
+                _list = _parameter.split(" ")
                 for _element in _list:
                     parameters.append(_element)
             else:
                 parameters.append(_parameter)
 
         return parameters
+
 
 # ===========================================
 # Module execution.
@@ -207,10 +187,7 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            parameters=dict(
-                required=True,
-                type='list'
-            ),
+            parameters=dict(required=True, type="list"),
         ),
         supports_check_mode=True,
     )
@@ -222,5 +199,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

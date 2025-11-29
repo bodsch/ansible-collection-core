@@ -7,10 +7,10 @@
 
 from __future__ import absolute_import, division, print_function
 
-from ansible.module_utils.basic import AnsibleModule
-
-import re
 import os
+import re
+
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -60,13 +60,14 @@ removed:
 
 class RemoveAnsibleBackups(object):
     """
-      Main Class
+    Main Class
     """
+
     module = None
 
     def __init__(self, module):
         """
-          Initialize all needed Variables
+        Initialize all needed Variables
         """
         self.module = module
 
@@ -76,7 +77,7 @@ class RemoveAnsibleBackups(object):
 
     def run(self):
         """
-          runner
+        runner
         """
         _failed = False
         _changed = False
@@ -89,23 +90,17 @@ class RemoveAnsibleBackups(object):
             _changed = True
             _msg = removed
 
-        return dict(
-            failed=_failed,
-            changed=_changed,
-            removed=_msg
-        )
+        return dict(failed=_failed, changed=_changed, removed=_msg)
 
     def find_backup_files(self):
-        """
-        """
+        """ """
         _files = []
         _name = None
         backup_files = []
         backups = dict()
 
         if os.path.isdir(self.path):
-            """
-            """
+            """ """
             os.chdir(self.path)
 
             # file_pattern = re.compile(r"
@@ -123,7 +118,7 @@ class RemoveAnsibleBackups(object):
                 (?P<minute>\d+):             # Minute
                 (?P<second>\d{2})~           # Sekunde, dann Tilde
                 """,
-                re.VERBOSE | re.MULTILINE
+                re.VERBOSE | re.MULTILINE,
             )
 
             # self.module.log(msg=f"search files in {self.path}")
@@ -138,15 +133,14 @@ class RemoveAnsibleBackups(object):
             backup_files.sort()
 
             for f in backup_files:
-                """
-                """
+                """ """
                 file_name = os.path.basename(f)
                 path_name = os.path.dirname(f)
 
                 name = re.search(file_pattern, file_name)
 
                 if name:
-                    n = name.group('file_name')
+                    n = name.group("file_name")
                     _idx = os.path.join(path_name, n)
 
                     if str(n) == str(_name):
@@ -163,8 +157,7 @@ class RemoveAnsibleBackups(object):
             return None
 
     def remove_backups(self, backups):
-        """
-        """
+        """ """
         _backups = dict()
 
         for k, v in backups.items():
@@ -173,12 +166,11 @@ class RemoveAnsibleBackups(object):
             self.module.log(msg=f"  - file: {k} has  {backup_count} backup(s)")
 
             if backup_count > self.hold:
-                """
-                """
+                """ """
                 _backups[k] = []
 
                 # bck_hold = v[self.hold:]
-                bck_to_remove = v[:-self.hold]
+                bck_to_remove = v[: -self.hold]
                 # self.module.log(msg=f"  - hold backups: {bck_hold}")
                 # self.module.log(msg=f"  - remove backups: {bck_to_remove}")
 
@@ -213,11 +205,7 @@ def main():
             type="path",
             required=True,
         ),
-        hold=dict(
-            type="int",
-            required=False,
-            default=2
-        )
+        hold=dict(type="int", required=False, default=2),
     )
 
     module = AnsibleModule(
@@ -234,5 +222,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

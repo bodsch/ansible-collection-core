@@ -3,39 +3,40 @@
 
 # (c) 2022-2024, Bodo Schulz <bodo@boone-schulz.de>
 
-from __future__ import (absolute_import, print_function)
+from __future__ import absolute_import, print_function
+
 __metaclass__ = type
 
 import os
+
 from ansible.utils.display import Display
 
 display = Display()
 
 
 class FilterModule(object):
-    """
-    """
+    """ """
 
     def filters(self):
         return {
-            'support_tls': self.support_tls,
-            'tls_directory': self.tls_directory,
+            "support_tls": self.support_tls,
+            "tls_directory": self.tls_directory,
         }
 
     def support_tls(self, data):
         """
-            collabora_config:
-              ssl:
-                enabled: true
-                cert_file: /etc/coolwsd/cert.pem
-                key_file: /etc/coolwsd/key.pem
-                ca_file: /etc/coolwsd/ca-chain.cert.pem
-              storage:
-                ssl:
-                  enabled: ""
-                  cert_file: /etc/coolwsd/cert.pem
-                  key_file: /etc/coolwsd/key.pem
-                  ca_file: /etc/coolwsd/ca-chain.cert.pem
+        collabora_config:
+          ssl:
+            enabled: true
+            cert_file: /etc/coolwsd/cert.pem
+            key_file: /etc/coolwsd/key.pem
+            ca_file: /etc/coolwsd/ca-chain.cert.pem
+          storage:
+            ssl:
+              enabled: ""
+              cert_file: /etc/coolwsd/cert.pem
+              key_file: /etc/coolwsd/key.pem
+              ca_file: /etc/coolwsd/ca-chain.cert.pem
         """
         display.v(f"support_tls({data})")
 
@@ -52,8 +53,7 @@ class FilterModule(object):
             return False
 
     def tls_directory(self, data):
-        """
-        """
+        """ """
         display.v(f"tls_directory({data})")
 
         directory = []

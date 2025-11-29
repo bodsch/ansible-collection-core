@@ -5,14 +5,14 @@
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 import os
 
 
-class EasyRSA():
+class EasyRSA:
+    """ """
 
-    """
-    """
     def __init__(
         self,
         module: any,
@@ -24,9 +24,17 @@ class EasyRSA():
         dh_keysize: int = 2048,
         working_dir: str = "",
     ):
-        """
-        """
+        """ """
         self.module = module
+
+        self.module.log(
+            "EasyRSA::__init__("
+            f"force={force}, pki_dir={pki_dir}, "
+            f"req_cn_ca={req_cn_ca}, req_cn_server={req_cn_server}, "
+            f"ca_keysize={ca_keysize}, dh_keysize={dh_keysize}, "
+            f"working_dir={working_dir}"
+            ")"
+        )
 
         self.state = ""
 
@@ -38,13 +46,12 @@ class EasyRSA():
         self.dh_keysize = dh_keysize
         self.working_dir = working_dir
 
-        self.easyrsa = module.get_bin_path('easyrsa', True)
+        self.easyrsa = module.get_bin_path("easyrsa", True)
 
     # ----------------------------------------------------------------------------------------------
     # Public API - create
     def create_pki(self):
-        """
-        """
+        """ """
         self.module.log(msg="EasyRsa::create_pki()")
 
         if self.validate_pki():
@@ -62,8 +69,7 @@ class EasyRSA():
             return (1, True, "An error occurred while creating the PKI.")
 
     def build_ca(self):
-        """
-        """
+        """ """
         if self.validate_ca():
             return (0, False, "CA already created")
 
@@ -93,8 +99,9 @@ class EasyRSA():
         return (rc, True, _output)
 
     def gen_crl(self):
-        """
-        """
+        """ """
+        self.module.log("EasyRSA::gen_crl()")
+
         if self.validate_crl():
             return (0, False, "CRL already created")
 
@@ -104,6 +111,10 @@ class EasyRSA():
         args.append("gen-crl")
 
         rc, out, err = self._exec(args)
+
+        self.module.log(f" rc : {rc}")
+        self.module.log(f" out: {out}")
+        self.module.log(f" err: {err}")
 
         _output = self.result_values(out, err)
 
@@ -118,8 +129,7 @@ class EasyRSA():
         return (rc, True, _output)
 
     def gen_req(self):
-        """
-        """
+        """ """
         if self.validate_req():
             return (0, False, "keypair and request already created")
 
@@ -144,11 +154,10 @@ class EasyRSA():
         else:
             rc = 3
 
-        return (rc, True , _output)
+        return (rc, True, _output)
 
     def sign_req(self):
-        """
-        """
+        """ """
         if self.validate_sign():
             return (0, False, "certificate alread signed")
 
@@ -174,8 +183,7 @@ class EasyRSA():
         return (rc, True, _output)
 
     def gen_dh(self):
-        """
-        """
+        """ """
         if self.validate_dh():
             return (0, False, "DH already created")
 
@@ -203,8 +211,7 @@ class EasyRSA():
     # ----------------------------------------------------------------------------------------------
     # PRIVATE API - validate
     def validate_pki(self):
-        """
-        """
+        """ """
         self.module.log(msg="EasyRsa::validate_pki()")
 
         if os.path.exists(self.pki_dir):
@@ -213,8 +220,7 @@ class EasyRSA():
             return False
 
     def validate_ca(self):
-        """
-        """
+        """ """
         self.module.log(msg="EasyRsa::validate__ca()")
 
         ca_crt_file = f"{self.pki_dir}/ca.crt"
@@ -226,8 +232,7 @@ class EasyRSA():
             return False
 
     def validate_crl(self):
-        """
-        """
+        """ """
         self.module.log(msg="EasyRsa::validate__crl()")
 
         crl_pem_file = f"{self.pki_dir}/crl.pem"
@@ -238,8 +243,7 @@ class EasyRSA():
             return False
 
     def validate_dh(self):
-        """
-        """
+        """ """
         self.module.log(msg="EasyRsa::validate__dh()")
 
         dh_pem_file = f"{self.pki_dir}/dh.pem"
@@ -250,8 +254,7 @@ class EasyRSA():
             return False
 
     def validate_req(self):
-        """
-        """
+        """ """
         self.module.log(msg="EasyRsa::validate__req()")
 
         req_file = f"{self.pki_dir}/reqs/{self.req_cn_server}.req"
@@ -262,8 +265,7 @@ class EasyRSA():
             return False
 
     def validate_sign(self):
-        """
-        """
+        """ """
         self.module.log(msg="EasyRsa::validate__sign()")
 
         crt_file = f"{self.pki_dir}/issued/{self.req_cn_server}.crt"
@@ -277,7 +279,7 @@ class EasyRSA():
 
     def _exec(self, commands, check_rc=False):
         """
-          execute shell program
+        execute shell program
         """
         self.module.log(msg=f"_exec(commands={commands}, check_rc={check_rc}")
 
@@ -292,7 +294,7 @@ class EasyRSA():
 
     def result_values(self, out: str, err: str) -> list:
         """
-    "   """
+        " """
         _out = out.splitlines()
         _err = err.splitlines()
         _output = []

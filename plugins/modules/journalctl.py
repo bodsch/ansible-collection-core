@@ -92,13 +92,12 @@ stderr:
 
 
 class JournalCtl(object):
-    """
-    """
+    """ """
+
     module = None
 
     def __init__(self, module):
-        """
-        """
+        """ """
         self.module = module
 
         self._journalctl = module.get_bin_path("journalctl", True)
@@ -134,10 +133,10 @@ class JournalCtl(object):
 
     def journalctl_lines(self):
         """
-            journalctl --help
-            journalctl [OPTIONS...] [MATCHES...]
+        journalctl --help
+        journalctl [OPTIONS...] [MATCHES...]
 
-            Query the journal.
+        Query the journal.
         """
         args = []
         args.append(self._journalctl)
@@ -190,31 +189,13 @@ class JournalCtl(object):
 
 
 def main():
-    """
-    """
+    """ """
     args = dict(
-        identifier=dict(
-            required=False,
-            type="str"
-        ),
-        unit=dict(
-            required=False,
-            type="str"
-        ),
-        lines=dict(
-            required=False,
-            type="int"
-        ),
-        reverse=dict(
-            required=False,
-            default=False,
-            type="bool"
-        ),
-        arguments=dict(
-            required=False,
-            default=[],
-            type=list
-        ),
+        identifier=dict(required=False, type="str"),
+        unit=dict(required=False, type="str"),
+        lines=dict(required=False, type="int"),
+        reverse=dict(required=False, default=False, type="bool"),
+        arguments=dict(required=False, default=[], type=list),
     )
 
     module = AnsibleModule(

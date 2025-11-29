@@ -6,34 +6,35 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import absolute_import, print_function
+
 import os
 import re
 
 from ansible.module_utils.basic import AnsibleModule
 
-
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
-    'metadata_version': '0.1',
-    'status': ['preview'],
-    'supported_by': 'community'
+    "metadata_version": "0.1",
+    "status": ["preview"],
+    "supported_by": "community",
 }
 
 
 class SnakeoilOpenssl(object):
     """
-      Main Class
+    Main Class
     """
+
     module = None
 
     def __init__(self, module):
         """
-          Initialize all needed Variables
+        Initialize all needed Variables
         """
         self.module = module
 
-        self._openssl = module.get_bin_path('openssl', True)
+        self._openssl = module.get_bin_path("openssl", True)
         self.state = module.params.get("state")
         self.directory = module.params.get("directory")
         self.domain = module.params.get("domain")
@@ -42,13 +43,8 @@ class SnakeoilOpenssl(object):
         self.openssl_config = module.params.get("openssl_config")
 
     def run(self):
-        """
-        """
-        result = dict(
-            failed=True,
-            changed=False,
-            msg="failed"
-        )
+        """ """
+        result = dict(failed=True, changed=False, msg="failed")
 
         # base_directory = os.path.join(self.directory, self.domain)
         #
@@ -86,19 +82,11 @@ class SnakeoilOpenssl(object):
             error, msg = self._base_directory()
 
             if error:
-                return dict(
-                    failed=True,
-                    changed=False,
-                    msg=msg
-                )
+                return dict(failed=True, changed=False, msg=msg)
 
             rc, out, err = self._exec(_ssl_args)
 
-            result = dict(
-                failed=False,
-                changed=True,
-                msg="success"
-            )
+            result = dict(failed=False, changed=True, msg="success")
 
         if self.state == "crt":
             _ssl_args.append(self._openssl)
@@ -120,27 +108,19 @@ class SnakeoilOpenssl(object):
             error, msg = self._base_directory()
 
             if error:
-                return dict(
-                    failed=True,
-                    changed=False,
-                    msg=msg
-                )
+                return dict(failed=True, changed=False, msg=msg)
 
             rc, out, err = self._exec(_ssl_args)
 
             # cat {{ domain }}.crt {{ domain }}.key >> {{ domain }}.pem
             if rc == 0:
                 filenames = [crt_file, key_file]
-                with open(pem_file, 'w') as outfile:
+                with open(pem_file, "w") as outfile:
                     for fname in filenames:
                         with open(fname) as infile:
                             outfile.write(infile.read())
 
-            result = dict(
-                failed=False,
-                changed=True,
-                msg="success"
-            )
+            result = dict(failed=False, changed=True, msg="success")
 
         if self.state == "dhparam":
             _ssl_args.append(self._openssl)
@@ -153,19 +133,11 @@ class SnakeoilOpenssl(object):
             error, msg = self._base_directory()
 
             if error:
-                return dict(
-                    failed=True,
-                    changed=False,
-                    msg=msg
-                )
+                return dict(failed=True, changed=False, msg=msg)
 
             rc, out, err = self._exec(_ssl_args)
 
-            result = dict(
-                failed=False,
-                changed=True,
-                msg="success"
-            )
+            result = dict(failed=False, changed=True, msg="success")
 
         if self.state == "dhparam_size":
             _ssl_args.append(self._openssl)
@@ -177,35 +149,25 @@ class SnakeoilOpenssl(object):
             error, msg = self._base_directory()
 
             if error:
-                return dict(
-                    failed=False,
-                    changed=False,
-                    size=int(0)
-                )
+                return dict(failed=False, changed=False, size=int(0))
 
             rc, out, err = self._exec(_ssl_args)
 
             if rc == 0:
-                """
-                """
+                """ """
                 output_string = 0
                 pattern = re.compile(r".*DH Parameters: \((?P<size>\d+) bit\).*")
 
                 result = re.search(pattern, out)
                 if result:
-                    output_string = result.group('size')
+                    output_string = result.group("size")
 
-            result = dict(
-                failed=False,
-                changed=False,
-                size=int(output_string)
-            )
+            result = dict(failed=False, changed=False, size=int(output_string))
 
         return result
 
     def _base_directory(self):
-        """
-        """
+        """ """
         error = False
         msg = ""
 
@@ -220,8 +182,7 @@ class SnakeoilOpenssl(object):
         return (error, msg)
 
     def _exec(self, args):
-        """
-        """
+        """ """
         self.module.log(msg="args: {}".format(args))
 
         rc, out, err = self.module.run_command(args, check_rc=True)
@@ -239,38 +200,14 @@ class SnakeoilOpenssl(object):
 
 
 def main():
-    """
-    """
+    """ """
     args = dict(
-        state=dict(
-            required=True,
-            choose=[
-                'crt',
-                'csr',
-                'dhparam'
-                'dhparam_size'
-            ]
-        ),
-        directory=dict(
-            required=True,
-            type="path"
-        ),
-        domain=dict(
-            required=True,
-            type="path"
-        ),
-        dhparam=dict(
-            default=2048,
-            type="int"
-        ),
-        cert_life_time=dict(
-            default=10,
-            type="int"
-        ),
-        openssl_config=dict(
-            required=False,
-            type="str"
-        ),
+        state=dict(required=True, choose=["crt", "csr", "dhparam" "dhparam_size"]),
+        directory=dict(required=True, type="path"),
+        domain=dict(required=True, type="path"),
+        dhparam=dict(default=2048, type="int"),
+        cert_life_time=dict(default=10, type="int"),
+        openssl_config=dict(required=False, type="str"),
         # openssl_params=dict(required=True, type="path"),
     )
 
@@ -288,5 +225,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

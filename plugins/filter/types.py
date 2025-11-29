@@ -5,12 +5,15 @@
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import (absolute_import, print_function)
+from __future__ import absolute_import, print_function
+
 __metaclass__ = type
 
-from ansible.utils.display import Display
 # filter_plugins/var_type.py
-from collections.abc import Mapping, Sequence, Set as ABCSet
+from collections.abc import Mapping, Sequence
+from collections.abc import Set as ABCSet
+
+from ansible.utils.display import Display
 
 # optional: we vermeiden harte Abhängigkeit von Ansible, behandeln aber deren Wrapper als str
 _STR_WRAPPERS = {"AnsibleUnsafeText", "AnsibleUnicode", "AnsibleVaultEncryptedUnicode"}
@@ -21,9 +24,9 @@ display = Display()
 class FilterModule(object):
     def filters(self):
         return {
-            'type': self.var_type,
-            'config_bool': self.config_bool_as_string,
-            'string_to_list': self.string_to_list,
+            "type": self.var_type,
+            "config_bool": self.config_bool_as_string,
+            "string_to_list": self.string_to_list,
         }
 
     def var_type(self, value):
@@ -72,7 +75,9 @@ class FilterModule(object):
             return "dict"
         if isinstance(value, ABCSet):
             return "set"
-        if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        if isinstance(value, Sequence) and not isinstance(
+            value, (str, bytes, bytearray)
+        ):
             # Unbekannte sequenzartige Wrapper -> als list behandeln
             return "list"
 
@@ -81,7 +86,7 @@ class FilterModule(object):
 
     def config_bool_as_string(self, data, true_as="yes", false_as="no"):
         """
-            return string for boolean
+        return string for boolean
         """
         # display.v(f"config_bool({data}, {type(data)}, {true_as}, {false_as})")
 
@@ -100,8 +105,7 @@ class FilterModule(object):
         return result
 
     def string_to_list(self, data):
-        """
-        """
+        """ """
         display.v(f"string_to_list({data}, {type(data)})")
 
         result = []

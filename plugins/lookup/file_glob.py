@@ -7,13 +7,14 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 # "MODIFED WITH https://github.com/philfry/ansible/blob/37c616dc76d9ebc3cbf0285a22e55f0e4db4185e/lib/ansible/plugins/lookup/fileglob.py"
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
 
-from ansible.utils.display import Display
-# from ansible.utils.listify import listify_lookup_plugin_terms as listify
-from ansible.plugins.lookup import LookupBase
 import os
 import re
+
+# from ansible.utils.listify import listify_lookup_plugin_terms as listify
+from ansible.plugins.lookup import LookupBase
+from ansible.utils.display import Display
 
 __metaclass__ = type
 
@@ -95,16 +96,15 @@ class LookupModule(LookupBase):
         self.basedir = basedir
 
     def run(self, terms, variables=None, **kwargs):
-        """
-        """
+        """ """
         display.vv(f"run({terms}, variables, {kwargs})")
         self.set_options(direct=kwargs)
 
         paths = []
-        ansible_search_path = variables.get('ansible_search_path', None)
-        role_path = variables.get('role_path')
-        lookup_search_path = variables.get('search_path', None)
-        lookup_search_regex = variables.get('search_regex', None)
+        ansible_search_path = variables.get("ansible_search_path", None)
+        role_path = variables.get("role_path")
+        lookup_search_path = variables.get("search_path", None)
+        lookup_search_regex = variables.get("search_regex", None)
 
         if ansible_search_path:
             paths = ansible_search_path
@@ -116,19 +116,20 @@ class LookupModule(LookupBase):
                 for p in lookup_search_path:
                     paths.append(os.path.join(role_path, p))
 
-        search_path = ['templates', 'files']
+        search_path = ["templates", "files"]
 
         ret = []
         found_files = []
 
         for term in terms:
-            """
-            """
+            """ """
             for p in paths:
                 for sp in search_path:
                     path = os.path.join(p, sp)
                     display.vv(f" - lookup in directory: {path}")
-                    r = self._find_recursive(folder=path, extension=term, search_regex=lookup_search_regex)
+                    r = self._find_recursive(
+                        folder=path, extension=term, search_regex=lookup_search_regex
+                    )
                     # display.vv(f"   found: {r}")
                     if len(r) > 0:
                         found_files.append(r)
@@ -138,8 +139,7 @@ class LookupModule(LookupBase):
         return ret
 
     def _find_recursive(self, folder, extension, search_regex=None):
-        """
-        """
+        """ """
         # display.vv(f"_find_recursive({folder}, {extension}, {search_regex})")
         matches = []
 

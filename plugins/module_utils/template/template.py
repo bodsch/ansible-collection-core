@@ -5,25 +5,24 @@
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from jinja2 import Template
 import json
+
+from jinja2 import Template
 
 # from ansible_collections.bodsch.core.plugins.module_utils.checksum import Checksum
 
 
 class TemplateHandler:
-    """
-    """
+    """ """
 
     def __init__(self, module):
         self.module = module
 
     def write_template(self, file_name, template, data):
-        """
-        """
+        """ """
         if isinstance(data, dict):
             """
-                sort data
+            sort data
             """
             data = json.dumps(data, sort_keys=True)
             if isinstance(data, str):
@@ -39,8 +38,7 @@ class TemplateHandler:
             f.write(d)
 
     def write_when_changed(self, tmp_file, data_file, **kwargs):
-        """
-        """
+        """ """
         self.module.log(f"write_when_changed(self, {tmp_file}, {data_file}, {kwargs})")
 
         # checksum = Checksum(self.module)
@@ -50,11 +48,10 @@ class TemplateHandler:
 
 # OBSOLETE, BUT STILL SUPPORTED FOR COMPATIBILITY REASONS
 def write_template(file_name, template, data):
-    """
-    """
+    """ """
     if isinstance(data, dict):
         """
-            sort data
+        sort data
         """
         data = json.dumps(data, sort_keys=True)
         if isinstance(data, str):

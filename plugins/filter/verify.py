@@ -5,7 +5,8 @@
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from ansible.utils.display import Display
@@ -16,13 +17,13 @@ display = Display()
 class FilterModule(object):
     def filters(self):
         return {
-            'compare_list': self.compare_list,
-            'upgrade': self.upgrade,
+            "compare_list": self.compare_list,
+            "upgrade": self.upgrade,
         }
 
     def compare_list(self, data_list, compare_to_list):
         """
-            compare two lists
+        compare two lists
         """
         display.vvv(f"compare_list({data_list}, {compare_to_list})")
 
@@ -37,7 +38,7 @@ class FilterModule(object):
 
     def upgrade(self, install_path, bin_path):
         """
-            upgrade ...
+        upgrade ...
         """
         directory = None
         link_to_bin = None

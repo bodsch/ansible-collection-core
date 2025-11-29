@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import json
 import difflib
 import itertools
+import json
 import textwrap
 import typing
 from pathlib import Path
@@ -33,7 +33,7 @@ class SideBySide:
 
     @staticmethod
     def _normalize_input(
-        data: typing.Union[str, dict, typing.List[str]]
+        data: typing.Union[str, dict, typing.List[str]],
     ) -> typing.List[str]:
         """
         Konvertiert dict → JSON‐String, String → Liste von Zeilen (splitlines),
@@ -48,9 +48,7 @@ class SideBySide:
         raise TypeError(f"Erwartet dict, str oder List[str], nicht {type(data)}")
 
     @staticmethod
-    def _wrap_and_flatten(
-        lines: typing.List[str], width: int
-    ) -> typing.List[str]:
+    def _wrap_and_flatten(lines: typing.List[str], width: int) -> typing.List[str]:
         """
         Wrappt jede Zeile auf maximal `width` Zeichen und flacht verschachtelte Listen ab.
         Leere Zeilen bleiben als [""] erhalten.
@@ -174,7 +172,7 @@ class SideBySide:
 
         # 4) Durchlaufe alle Diff‐Einträge
         for entry in diffed:
-            code = entry[:2]   # "  ", "- ", "+ " oder "? "
+            code = entry[:2]  # "  ", "- ", "+ " oder "? "
             content = entry[2:]  # Der eigentliche Text
 
             if code == "  ":
