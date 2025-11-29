@@ -4,6 +4,8 @@
   ansible.builtin.package:
     name: "{{ syslog_packages }}"
     state: present
+  when:
+    - not running_in_check_mode
   register: install_syslog
   tags:
     - syslog-ng
@@ -11,6 +13,7 @@
 
 - name: systemd
   when:
+    - not running_in_check_mode
     - ansible_facts.service_mgr == "systemd"
   block:
     - name: populate service facts
@@ -67,6 +70,8 @@
     facts:
       version: "{{ syslog_config_version }}"
       service_unit: "{{ syslog_unit_file | default('') }}"
+  when:
+    - not running_in_check_mode
   tags:
     - syslog-ng
     - install

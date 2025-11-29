@@ -19,20 +19,18 @@
         - "{{ ansible_facts.os_family | lower | replace(' ', '') }}.yml"
       skip: true
 
+- name: detect ansible check_mode
+  bodsch.core.check_mode:
+  register: _check_mode
+
+- name: define running_in_check_mode
+  ansible.builtin.set_fact:
+    running_in_check_mode: '{{ _check_mode.check_mode }}'
+
 - name: install requirements
   ansible.builtin.package:
     name: "{{ syslog_dependencies }}"
     state: present
   when:
     - syslog_dependencies | default([]) | count > 0
-
-- name: merge syslog configuration between defaults and custom
-  ansible.builtin.set_fact:
-    syslog_options: "{{ syslog_defaults_options | combine(syslog_options, recursive=True) }}"
-    syslog_sources: "{{ syslog_defaults_sources | combine(syslog_sources, recursive=True) }}"
-    syslog_message_templates: "{{ syslog_defaults_message_templates | combine(syslog_message_templates, recursive=True) }}"
-    syslog_logs: "{{ syslog_defaults_logs | combine(syslog_logs, recursive=True) }}"
-
-- name: defined log directories
-  ansible.builtin.set_fact:
-    syslog_server_log_destinations: "{{ syslog_logs | bodsch.core.log_directories('/var/log') }}"
+    - not running_in_check_mode

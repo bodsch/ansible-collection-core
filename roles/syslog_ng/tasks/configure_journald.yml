@@ -2,6 +2,7 @@
 
 - name: deactivate journald
   when:
+    - not running_in_check_mode
     - ansible_facts.service_mgr == 'systemd'
     - (syslog_journald.config is defined and
        syslog_journald.config.items() | count != 0) or
