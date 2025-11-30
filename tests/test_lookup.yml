@@ -1,0 +1,71 @@
+---
+
+- name: Test rbw_structured Lookup Plugin
+  hosts: localhost
+  gather_facts: false
+  vars:
+    json_entry: "37588485-5149-42e8-af98-1876f1e472cd"            # Note mit JSON
+    login_entry: "4e1f183d-6983-44d9-ba5c-9c64ecdff482"           # Login mit username/password
+    raw_note: "expressschnitte.org"                                   # Note mit einfachem Text
+    broken_json_entry: ""     # Note mit ungültigem JSON
+  tasks:
+    - name: "Test: String lesen"
+      debug:
+        msg: "Raw note: {{ lookup('bodsch.core.rbw', raw_note) }}"
+
+    - name: "Test: Login-Feld (username)"
+      debug:
+        msg: "Username: {{ lookup('bodsch.core.rbw', login_entry, field='username') }}"
+
+    - name: "Test: Login-Feld (password)"
+      debug:
+        msg: "Password: {{ lookup('bodsch.core.rbw', login_entry, field='password') }}"
+
+    - name: "Test: JSON parsen"
+      set_fact:
+        json_data: "{{ lookup('bodsch.core.rbw', json_entry, parse_json=True) }}"
+
+    - name: "Test: Multi fetch"
+      set_fact:
+        multi_data: "{{ lookup('bodsch.core.rbw', raw_note, login_entry) }}"
+
+    - name: "Test: Lookup mit Index-Daten (name, folder, user)"
+      set_fact:
+        indexed_entry: "{{ lookup('bodsch.core.rbw',
+          {'name': 'expresszuschnitt.de', 'folder': '', 'user': ''},
+          field='password',
+          use_index=True) }}"
+
+    - name: "Ausgabe: Indexed Entry"
+      debug:
+        msg: "Indexed Entry: {{ indexed_entry }}"
+
+    - name: "Ausgabe: JSON-Felder"
+      debug:
+        msg:
+          - "Token: {{ json_data.token | default('nicht gesetzt') }}"
+          - "URL: {{ json_data.url | default('nicht gesetzt') }}"
+
+    - name: "Ausgabe: Multi fetch"
+      debug:
+        msg:
+          - "Multi Data: {{ multi_data | default('nicht gesetzt') }}"
+
+    - name: "Test: Defektes JSON → Fallback zu leerem Dict"
+      set_fact:
+        broken: "{{ lookup('bodsch.core.rbw', broken_json_entry, parse_json=True) }}"
+
+    - name: "Ausgabe: Fallback-JSON"
+      debug:
+        var: broken
+
+    - name: "Test: Striktes JSON → Fehler"
+      block:
+        - set_fact:
+            broken_strict: "{{ lookup('bodsch.core.rbw', broken_json_entry, parse_json=True, strict_json=True) }}"
+        - debug:
+            var: broken_strict
+      rescue:
+        - debug:
+            msg: "Wie erwartet: JSON ungültig – Fehler behandelt."
+

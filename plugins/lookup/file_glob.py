@@ -11,6 +11,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import re
+from typing import Any, Dict, List, Optional
 
 # from ansible.utils.listify import listify_lookup_plugin_terms as listify
 from ansible.plugins.lookup import LookupBase
@@ -91,16 +92,63 @@ display = Display()
 
 
 class LookupModule(LookupBase):
+    """
+    Ansible lookup plugin that finds files matching an extension in role
+    or playbook search paths.
 
-    def __init__(self, basedir=None, **kwargs):
+    The plugin:
+      * Resolves search locations based on Ansible's search paths and optional
+        user-specified paths.
+      * Recursively walks the "templates" and "files" directories.
+      * Returns a flat list of matching file paths.
+    """
+
+    def __init__(self, basedir: Optional[str] = None, **kwargs: Any) -> None:
+        """
+        Initialize the lookup module.
+
+        The base directory is stored for potential use by Ansible's lookup base
+        mechanisms.
+
+        Args:
+            basedir: Optional base directory for lookups, usually supplied by Ansible.
+            **kwargs: Additional keyword arguments passed from Ansible.
+
+        Returns:
+            None
+        """
         self.basedir = basedir
 
-    def run(self, terms, variables=None, **kwargs):
-        """ """
+    def run(
+        self,
+        terms: List[str],
+        variables: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> List[str]:
+        """
+        Execute the fileglob lookup.
+
+        For each term (interpreted as a file extension), this method searches
+        recursively under all derived search paths and returns a flattened list
+        of matching file paths.
+
+        Args:
+            terms: A list of file extensions or patterns (e.g. ['.tpl']).
+            variables: The Ansible variable context, used to determine
+                - ansible_search_path
+                - role_path
+                - search_path (custom additional paths)
+                - search_regex (optional filename regex filter)
+            **kwargs: Additional lookup options, passed through to set_options().
+
+        Returns:
+            list[str]: A list containing the full paths of all files matching
+            the provided extensions within the resolved search directories.
+        """
         display.vv(f"run({terms}, variables, {kwargs})")
         self.set_options(direct=kwargs)
 
-        paths = []
+        paths: List[str] = []
         ansible_search_path = variables.get("ansible_search_path", None)
         role_path = variables.get("role_path")
         lookup_search_path = variables.get("search_path", None)
@@ -118,8 +166,8 @@ class LookupModule(LookupBase):
 
         search_path = ["templates", "files"]
 
-        ret = []
-        found_files = []
+        ret: List[str] = []
+        found_files: List[List[str]] = []
 
         for term in terms:
             """ """
@@ -138,10 +186,28 @@ class LookupModule(LookupBase):
 
         return ret
 
-    def _find_recursive(self, folder, extension, search_regex=None):
-        """ """
+    def _find_recursive(
+        self,
+        folder: str,
+        extension: str,
+        search_regex: Optional[str] = None,
+    ) -> List[str]:
+        """
+        Recursively search for files in the given folder that match an extension
+        and an optional regular expression.
+
+        Args:
+            folder: The root directory to walk recursively.
+            extension: The file extension to match (e.g. ".tpl").
+            search_regex: Optional regular expression string. If provided, only
+                filenames matching this regex are included.
+
+        Returns:
+            list[str]: A list containing the full paths of matching files found
+            under the given folder. If no files match, an empty list is returned.
+        """
         # display.vv(f"_find_recursive({folder}, {extension}, {search_regex})")
-        matches = []
+        matches: List[str] = []
 
         for root, dirnames, filenames in os.walk(folder):
             for filename in filenames:
