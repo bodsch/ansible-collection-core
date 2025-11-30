@@ -1,19 +1,19 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import json
+import os
+
+import pytest
+import testinfra.utils.ansible_runner
 from ansible.parsing.dataloader import DataLoader
 from ansible.template import Templar
 
-import json
-import pytest
-import os
-
-import testinfra.utils.ansible_runner
-
-HOST = 'all'
+HOST = "all"
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(HOST)
+    os.environ["MOLECULE_INVENTORY_FILE"]
+).get_hosts(HOST)
 
 
 def pp_json(json_thing, sort=True, indents=2):
@@ -25,15 +25,17 @@ def pp_json(json_thing, sort=True, indents=2):
 
 
 def base_directory():
-    """ ... """
+    """..."""
     cwd = os.getcwd()
 
-    if ('group_vars' in os.listdir(cwd)):
+    if "group_vars" in os.listdir(cwd):
         directory = "../.."
         molecule_directory = "."
     else:
         directory = "."
-        molecule_directory = "molecule/{}".format(os.environ.get('MOLECULE_SCENARIO_NAME'))
+        molecule_directory = "molecule/{}".format(
+            os.environ.get("MOLECULE_SCENARIO_NAME")
+        )
 
     return directory, molecule_directory
 
@@ -55,33 +57,49 @@ def read_ansible_yaml(file_name, role_name):
 @pytest.fixture()
 def get_vars(host):
     """
-        parse ansible variables
-        - defaults/main.yml
-        - vars/main.yml
-        - vars/${DISTRIBUTION}.yaml
-        - molecule/${MOLECULE_SCENARIO_NAME}/group_vars/all/vars.yml
+    parse ansible variables
+    - defaults/main.yml
+    - vars/main.yml
+    - vars/${DISTRIBUTION}.yaml
+    - molecule/${MOLECULE_SCENARIO_NAME}/group_vars/all/vars.yml
     """
     base_dir, molecule_dir = base_directory()
     distribution = host.system_info.distribution
     operation_system = None
 
-    if distribution in ['debian', 'ubuntu']:
+    if distribution in ["debian", "ubuntu"]:
         operation_system = "debian"
-    elif distribution in ['redhat', 'ol', 'centos', 'rocky', 'almalinux']:
+    elif distribution in ["redhat", "ol", "centos", "rocky", "almalinux"]:
         operation_system = "redhat"
-    elif distribution in ['arch', 'artix']:
+    elif distribution in ["arch", "artix"]:
         operation_system = f"{distribution}linux"
 
     file_defaults = f"file={base_dir}/defaults/main.yml name=role_defaults"
     file_vars = f"file={base_dir}/vars/main.yml name=role_vars"
     file_molecule = f"file={molecule_dir}/group_vars/all/vars.yml name=test_vars"
-    file_distibution = f"file={base_dir}/vars/{operation_system}.yml name=role_distibution"
+    file_distibution = (
+        f"file={base_dir}/vars/{operation_system}.yml name=role_distibution"
+    )
     # file_host_molecule = read_ansible_yaml("{}/host_vars/{}/vars".format(base_dir, HOST), "host_vars")
 
-    defaults_vars = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
-    vars_vars = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
-    distribution_vars = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
-    molecule_vars = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
+    defaults_vars = (
+        host.ansible("include_vars", file_defaults)
+        .get("ansible_facts")
+        .get("role_defaults")
+    )
+    vars_vars = (
+        host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
+    )
+    distribution_vars = (
+        host.ansible("include_vars", file_distibution)
+        .get("ansible_facts")
+        .get("role_distibution")
+    )
+    molecule_vars = (
+        host.ansible("include_vars", file_molecule)
+        .get("ansible_facts")
+        .get("test_vars")
+    )
 
     ansible_vars = defaults_vars
     ansible_vars.update(vars_vars)
@@ -95,11 +113,8 @@ def get_vars(host):
 
 
 def test_files(host, get_vars):
-    """
-    """
-    files = [
-        "/bin/easyrsa"
-    ]
+    """ """
+    files = ["/bin/easyrsa"]
 
     for file in files:
         f = host.file(file)

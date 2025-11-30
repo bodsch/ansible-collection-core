@@ -1,15 +1,15 @@
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
 
-import subprocess
+import hashlib
 import json
 import os
+import subprocess
 import time
-import hashlib
-
 from pathlib import Path
-from ansible.utils.display import Display
-from ansible.plugins.lookup import LookupBase
+
 from ansible.errors import AnsibleError
+from ansible.plugins.lookup import LookupBase
+from ansible.utils.display import Display
 
 display = Display()
 
@@ -130,17 +130,22 @@ class LookupModule(LookupBase):
 
             if index_data:
                 matches = [
-                    e for e in index_data["entries"]
-                    if e["name"] == name and
-                    (not folder or e["folder"] == folder) and
-                    (not user or e["user"] == user)
+                    e
+                    for e in index_data["entries"]
+                    if e["name"] == name
+                    and (not folder or e["folder"] == folder)
+                    and (not user or e["user"] == user)
                 ]
 
                 if not matches:
-                    raise AnsibleError(f"No matching entry found in index for: {raw_entry}")
+                    raise AnsibleError(
+                        f"No matching entry found in index for: {raw_entry}"
+                    )
 
                 if len(matches) > 1:
-                    raise AnsibleError(f"Multiple matches found in index for: {raw_entry}")
+                    raise AnsibleError(
+                        f"Multiple matches found in index for: {raw_entry}"
+                    )
 
                 entry_id = matches[0]["id"]
                 display.v(f"Resolved {raw_entry} → id={entry_id}")
@@ -165,7 +170,9 @@ class LookupModule(LookupBase):
                             f"JSON parsing failed for entry '{entry_id}': {e}"
                         )
                     else:
-                        display.v(f"Warning: Content of '{entry_id}' is not valid JSON.")
+                        display.v(
+                            f"Warning: Content of '{entry_id}' is not valid JSON."
+                        )
                         results.append({})
                 except Exception as e:
                     raise AnsibleError(f"Unexpected error parsing '{entry_id}': {e}")
@@ -204,7 +211,9 @@ class LookupModule(LookupBase):
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+            lines = [
+                line.strip() for line in result.stdout.splitlines() if line.strip()
+            ]
 
             headers = ["id", "user", "name", "folder"]
 
@@ -216,10 +225,7 @@ class LookupModule(LookupBase):
                 entry = dict(zip(headers, parts))
                 entries.append(entry)
 
-            index_payload = {
-                "timestamp": time.time(),
-                "entries": entries
-            }
+            index_payload = {"timestamp": time.time(), "entries": entries}
 
             self._write_index(index_payload)
             return index_payload
