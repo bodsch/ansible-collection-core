@@ -15,25 +15,35 @@ from ansible.module_utils.basic import AnsibleModule
 DOCUMENTATION = r"""
 ---
 module: syslog_cmd
-version_added: 1.1.3
-author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
-
-short_description: Accepts CLI commandos for syslog-ng.
+version_added: "1.1.3"
+short_description: Run syslog-ng with arbitrary command-line parameters
+author:
+  - "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
 
 description:
-    - Accepts CLI commandos for syslog-ng.
+  - Executes the C(syslog-ng) binary with the given list of parameters.
+  - Typical use cases are configuration syntax validation and querying the installed version.
+
+requirements:
+  - syslog-ng
 
 options:
-  source_directory:
-    parameters:
-      - A list of parameters.
+  parameters:
+    description:
+      - List of command-line parameters to pass to C(syslog-ng).
+      - Each list item may contain a single parameter or a parameter with a value.
+      - Items containing spaces are split into multiple arguments before execution.
     type: list
-    default: []
+    elements: str
     required: true
+
+notes:
+  - The module supports check mode.
+  - When used with C(--version) or C(--syntax-only) in check mode, no external command is executed and simulated results are returned.
 """
 
 EXAMPLES = r"""
-- name: validate syslog-ng config
+- name: Validate syslog-ng configuration
   bodsch.core.syslog_cmd:
     parameters:
       - --syntax-only
@@ -41,28 +51,72 @@ EXAMPLES = r"""
   when:
     - not ansible_check_mode
 
-- name: detect config version
+- name: Detect syslog-ng config version
   bodsch.core.syslog_cmd:
     parameters:
       - --version
   register: _syslog_config_version
+
+- name: Run syslog-ng with custom parameters
+  bodsch.core.syslog_cmd:
+    parameters:
+      - --control
+      - show-config
+  register: _syslog_custom_cmd
 """
 
 RETURN = r"""
-failed:
+rc:
   description:
-    - changed or not
+    - Return code from the C(syslog-ng) command.
+  returned: always
   type: int
+
 failed:
   description:
-    - Failed, or not.
+    - Indicates if the module execution failed.
+  returned: always
   type: bool
+
 args:
   description:
-    - Arguments with which syslog-ng is called.
+    - Full command list used to invoke C(syslog-ng).
+    - Will be C(None) when running in check mode.
+  returned: when a supported command is executed or simulated
+  type: list
+
+version:
+  description:
+    - Detected C(syslog-ng) version string (for example C(3.38)).
+  returned: when C(--version) is present in I(parameters)
   type: str
 
+msg:
+  description:
+    - Human readable message, for example C("syntax okay") for successful syntax checks or an error description.
+  returned: when available
+  type: str
+
+stdout:
+  description:
+    - Standard output from the C(syslog-ng) command.
+    - In check mode with C(--syntax-only), contains a simulated message.
+  returned: when C(--syntax-only) is used or on error
+  type: str
+
+stderr:
+  description:
+    - Standard error from the C(syslog-ng) command.
+  returned: when C(--syntax-only) is used and the command fails
+  type: str
+
+ansible_module_results:
+  description:
+    - Internal result marker, set to C("failed") when no supported action was executed.
+  returned: when no supported parameters were processed
+  type: str
 """
+
 
 # ---------------------------------------------------------------------------------------
 
@@ -133,9 +187,9 @@ class SyslogNgCmd(object):
             """
             check syntax
             """
-            self.module.log(msg=f"   rc : '{rc}'")
-            self.module.log(msg=f"   out: '{out}'")
-            self.module.log(msg=f"   err: '{err}'")
+            # self.module.log(msg=f"   rc : '{rc}'")
+            # self.module.log(msg=f"   out: '{out}'")
+            # self.module.log(msg=f"   err: '{err}'")
 
             if rc == 0:
                 return dict(rc=rc, failed=False, args=args, msg="syntax okay")

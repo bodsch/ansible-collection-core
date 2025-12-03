@@ -31,6 +31,7 @@ class FilterModule(object):
         }
 
     def remove_empty_values(self, data):
+        """ """
         display.vv(f"remove_empty_values(self, {data})")
 
         def is_empty(value):
