@@ -75,7 +75,7 @@ class FilterModule(object):
         :param data: Ansible Datenkonstrukt
         :return: Ansible Datenkonstrukt mit den ersetzten Keys.
         """
-        display.v(f"sshd_values({data})")
+        display.vv(f"bodsch.core.sshd_values({data})")
 
         # Hilfsfunktion zur Rekursion
         def replace_keys(obj):

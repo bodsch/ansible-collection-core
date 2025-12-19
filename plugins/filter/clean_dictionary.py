@@ -32,7 +32,7 @@ class FilterModule(object):
 
     def remove_empty_values(self, data):
         """ """
-        display.vv(f"remove_empty_values(self, {data})")
+        display.vv(f"bodsch.core.remove_empty_values(self, {data})")
 
         def is_empty(value):
             """Überprüfen, ob der Wert leer ist (ignoriere boolesche Werte)."""

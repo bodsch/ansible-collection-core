@@ -88,7 +88,7 @@ class FilterModule(object):
         """
         return string for boolean
         """
-        # display.v(f"config_bool({data}, {type(data)}, {true_as}, {false_as})")
+        # display.vv(f"bodsch.core.config_bool({data}, {type(data)}, {true_as}, {false_as})")
 
         result = false_as
 
@@ -106,7 +106,7 @@ class FilterModule(object):
 
     def string_to_list(self, data):
         """ """
-        display.v(f"string_to_list({data}, {type(data)})")
+        display.vv(f"bodsch.core.string_to_list({data})")
 
         result = []
         if isinstance(data, str):
@@ -116,6 +116,6 @@ class FilterModule(object):
         elif isinstance(data, list):
             result = data
 
-        display.v(f"= result: {result}")
+        display.vv(f"= result: {result}")
 
         return result

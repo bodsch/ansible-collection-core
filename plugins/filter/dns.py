@@ -25,7 +25,7 @@ class FilterModule(object):
         similar to
         {'addrs': [], 'error': True, 'error_msg': 'No such domain instance', 'name': 'instance'}
         """
-        display.vvv(f"lookup({dns_name}, {timeout}, {dns_resolvers})")
+        display.vv(f"bodsch.core.dns_lookup({dns_name}, {timeout}, {dns_resolvers})")
 
         result = dns_lookup(dns_name, timeout, dns_resolvers)
 

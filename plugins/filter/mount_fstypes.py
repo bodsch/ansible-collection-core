@@ -21,7 +21,7 @@ class FilterModule(object):
         """ """
         result = []
 
-        display.v("- data {} {}".format(data, type(data)))
+        display.vv(f"bodsch.core.fstypes({data}")
 
         result = [d["fstype"] for d in data]
 

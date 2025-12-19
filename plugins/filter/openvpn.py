@@ -20,7 +20,8 @@ class FilterModule(object):
         """
         combined_list: "{{ combined_list | default([]) + hostvars[item].openvpn_mobile_clients }}"
         """
-        # display.v(f"openvpn_clients({data}, {hostvars})")
+        display.vv(f"bodsch.core.openvpn_clients({data}, {hostvars})")
+
         client = hostvars.get("openvpn_mobile_clients", None)
         if client and isinstance(client, list):
             data += client

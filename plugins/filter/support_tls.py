@@ -38,7 +38,7 @@ class FilterModule(object):
               key_file: /etc/coolwsd/key.pem
               ca_file: /etc/coolwsd/ca-chain.cert.pem
         """
-        display.v(f"support_tls({data})")
+        display.vv(f"bodsch.core.support_tls({data})")
 
         ssl_data = data.get("ssl", {})
 
@@ -54,7 +54,7 @@ class FilterModule(object):
 
     def tls_directory(self, data):
         """ """
-        display.v(f"tls_directory({data})")
+        display.vv(f"bodsch.core.tls_directory({data})")
 
         directory = []
 
@@ -74,6 +74,6 @@ class FilterModule(object):
         if len(directory) == 1:
             result = directory[0]
 
-        display.v(f" = {result}")
+        display.vv(f" = {result}")
 
         return result

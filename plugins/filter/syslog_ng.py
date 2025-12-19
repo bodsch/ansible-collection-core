@@ -25,6 +25,8 @@ class FilterModule(object):
 
     def get_service(self, data, search_for):
         """ """
+        display.vv(f"bodsch.core.get_service(self, {data}, {search_for})")
+
         name = None
         regex_list_compiled = re.compile(f"^{search_for}.*")
 
@@ -43,7 +45,8 @@ class FilterModule(object):
         """
         return a list of directories
         """
-        # display.v(f"log_directories(self, {data}, {base_directory})")
+        display.vv(f"bodsch.core.log_directories(self, {data}, {base_directory})")
+
         log_dirs = []
         log_files = sorted(
             [v.get("file_name") for k, v in data.items() if v.get("file_name")]
@@ -71,7 +74,7 @@ class FilterModule(object):
 
     def syslog_network_definition(self, data, conf_type="source"):
         """ """
-        # display.v(f"syslog_network_definition({data}, {conf_type})")
+        display.vv(f"bodsch.core.syslog_network_definition({data}, {conf_type})")
 
         def as_boolean(value):
             return "yes" if value else "no"
@@ -113,7 +116,7 @@ class FilterModule(object):
 
     def verify_syslog_options(self, data, version):
         """ """
-        # display.v(f"verify_syslog_options({data}, {version})")
+        display.vv(f"bodsch.core.verify_syslog_options({data}, {version})")
 
         if version_compare(str(version), "4.1", ">="):
             if data.get("stats_freq") is not None:
