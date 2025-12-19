@@ -25,7 +25,7 @@ class FilterModule(object):
         """
         compare two lists
         """
-        display.vvv(f"compare_list({data_list}, {compare_to_list})")
+        display.vv(f"bodsch.core.compare_list({data_list}, {compare_to_list})")
 
         result = []
 
@@ -40,6 +40,8 @@ class FilterModule(object):
         """
         upgrade ...
         """
+        display.vv(f"bodsch.core.upgrade({install_path}, {bin_path})")
+
         directory = None
         link_to_bin = None
 

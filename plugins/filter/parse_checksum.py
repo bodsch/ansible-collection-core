@@ -26,7 +26,9 @@ class FilterModule(object):
         """
         parse version string
         """
-        display.vvv(f"parse_checksum(self, data, {application}, {os}, {arch})")
+        display.vv(
+            f"bodsch.core.parse_checksum(self, data, {application}, {os}, {arch})"
+        )
 
         checksum = None
         os = os.lower()

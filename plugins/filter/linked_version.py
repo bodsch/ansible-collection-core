@@ -26,7 +26,9 @@ class FilterModule(object):
         """
         check for linked version in `install_path`
         """
-        display.vvv(f"linked_version(self, {data}, {install_path}, {version})")
+        display.vv(
+            f"bodsch.core.linked_version(self, {data}, {install_path}, {version})"
+        )
 
         _exists = data.get("exists", False)
 
