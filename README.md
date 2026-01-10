@@ -37,7 +37,6 @@ pip install netaddr
 |:---------------------------------------------------------------------------| :---------: | :----       |
 | [bodsch.core.pacman](./roles/pacman/README.md)                             | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/pacman.yml?branch=main)][pacman] | Ansible role to configure pacman. |
 | [bodsch.core.fail2ban](./roles/fail2ban/README.md)                         | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/fail2ban.yml?branch=main)][fail2ban] | Installs and configure fail2ban |
-| ~~[bodsch.core.snakeoil](./roles/snakeoil/README.md)~~                     | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/snakeoil.yml?branch=main)][snakeoil] | moved to (https://github.com/bodsch/ansible-collection-certs/tree/main/roles/snakeoil)[bodsch.certs] |
 | [bodsch.core.syslog_ng](./roles/syslog_ng/README.md)                       | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/syslog_ng.yml?branch=main)][syslog_ng] | Installs and configures a classic syslog-ng service for processing log files away from journald. |
 | [bodsch.core.logrotate](./roles/logrotate/README.md)                       | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/logrotate.yml?branch=main)][logrotate] | Installs logrotate and provides an easy way to setup additional logrotate scripts |
 | [bodsch.core.mount](./roles/mount/README.md)                               | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/mount.yml?branch=main)][mount] | Manage generic mountpoints |
@@ -59,15 +58,27 @@ pip install netaddr
 
 | Name                      | Description |
 |:--------------------------|:----|
-| [bodsch.core.remove_ansible_backups](./plugins/modules/remove_ansible_backups.py) | Remove older backup files created by ansible |
-| [bodsch.core.package_version](./plugins/modules/package_version.py)               | Attempts to determine the version of a package to be installed or already installed. |
-| [bodsch.core.aur](./plugins/modules/aur.py)                                       | Installing packages for ArchLinux with aur |
-| [bodsch.core.journalctl](./plugins/modules/journalctl.py)                         | Query the systemd journal with a very limited number of possible parameters |
-| [bodsch.core.facts](./plugins/modules/facts.py)                                   | Write ansible facts |
-| [bodsch.core.sync_directory](./plugins/modules/sync_directory.py)                 | Syncronises directories similar to rsync |
-| [bodsch.core.check_mode](./plugins/modules/check_mode.py)                         | Replacement for `ansible_check_mode`. |
-| [bodsch.core.facts](./plugins/modules/facts.py)                                   | Creates a facts file for ansible. |
+| [bodsch.core.aur](./plugins/modules/aur.py)                                         | Installing packages for ArchLinux with aur |
+| [bodsch.core.check_mode](./plugins/modules/check_mode.py)                           | Replacement for `ansible_check_mode`. |
+| [bodsch.core.facts](./plugins/modules/facts.py)                                     | Creates a facts file for ansible. |
+| [bodsch.core.remove_ansible_backups](./plugins/modules/remove_ansible_backups.py)   | Remove older backup files created by ansible |
+| [bodsch.core.package_version](./plugins/modules/package_version.py)                 | Attempts to determine the version of a package to be installed or already installed. |
+| [bodsch.core.sync_directory](./plugins/modules/sync_directory.py)                   | Syncronises directories similar to rsync |
+| [bodsch.core.easyrsa](.plugins/modules/easyrsa.py)                                  | Manage a Public Key Infrastructure (PKI) using EasyRSA. |
+| [bodsch.core.openvpn_client_certificate](.plugins/modules/openvpn_client_certificate.py) | Manage OpenVPN client certificates using EasyRSA. |
+| [bodsch.core.openvpn_crl](.plugins/modules/openvpn_crl.py)                          |  |
+| [bodsch.core.openvpn_ovpn](.plugins/modules/openvpn_ovpn.py)                        |  |
+| [bodsch.core.openvpn](.plugins/modules/openvpn.py)                                  |  |
+| [bodsch.core.openvpn_version](.plugins/modules/openvpn_version.py)                  |  |
+| [bodsch.core.pip_requirements](.plugins/modules/pip_requirements.py)                | This modules creates an requirement file to install python modules via pip. |
+| [bodsch.core.syslog_cmd](.plugins/modules/syslog_cmd.py)                            | Run syslog-ng with arbitrary command-line parameters |
 
+
+### Module utils
+
+| Name                      | Description |
+|:--------------------------|:----|
+| [bodsch.core.passlib_bcrypt5_compat](./plugins/module_utils/passlib_bcrypt5_compat.py) | Compatibility helpers for using `passlib` 1.7.4 with `bcrypt` 5.x |
 
 
 ## Installing this collection
@@ -91,6 +102,7 @@ You can also include it in a `requirements.yml` file and install it with `ansibl
 ---
 collections:
   - name: bodsch.core
+    # version: ">=2.8.x"
 ```
 
 The python module dependencies are not installed by `ansible-galaxy`.  They can

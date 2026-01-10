@@ -8,12 +8,20 @@ platforms:
     versions:
       - bullseye
       - bookworm
+      - trixie
   - name: Ubuntu
     versions:
+      # 20.04
       - focal
+      # 22.04
       - jammy
+      # 24.04
+      - noble
+      # 26.04
+      # - resolute
 
 python_versions:
   - "3.10"
   - "3.11"
   - "3.12"
+  - "3.13"
