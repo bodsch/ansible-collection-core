@@ -20,8 +20,4 @@
         - default.yml
       skip: true
 
-- name: update package cache
-  ansible.builtin.package:
-    update_cache: true
-
 ...

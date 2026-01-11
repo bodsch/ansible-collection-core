@@ -1,7 +1,23 @@
 ---
 
+- name: create /etc/sysctl.d
+  ansible.builtin.file:
+    state: directory
+    name: /etc/sysctl.d
+    mode: "0755"
+  tags:
+    - sysctl
+
+- name: create /etc/sysctl.d
+  ansible.builtin.template:
+    src: etc/sysctl.conf.j2
+    dest: /etc/sysctl.conf
+    mode: "0644"
+  tags:
+    - sysctl
+
 - name:  create sysctl setting file
-  include_tasks: sysctl.yml
+  ansible.builtin.include_tasks: sysctl.yml
   loop:
     "{{ sysctl_rules }}"
   loop_control:
