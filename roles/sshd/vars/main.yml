@@ -183,4 +183,6 @@ ssh_defaults_config:
       - "LANG LC_*"
     hash_known_hosts: false
 
+sshd_host_keys: []
+
 ...

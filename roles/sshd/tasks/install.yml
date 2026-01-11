@@ -5,4 +5,38 @@
     name: "{{ sshd_packages }}"
     state: present
 
+- name: ensure host keys are created
+  block:
+    # find sshd host keys:
+    #   - /etc/ssh/ssh_host_ecdsa_key.pub
+    #   - /etc/ssh/ssh_host_ed25519_key.pub
+    #   - /etc/ssh/ssh_host_rsa_key.pub
+    - name: find ssh host keys
+      ansible.builtin.find:
+        paths: "/etc/ssh"
+        file_type: file
+        patterns:
+          - "ssh_host_*key"
+        recurse: true
+      register: found_host_keys
+
+    - name: define sshd_host_keys
+      ansible.builtin.set_fact:
+        sshd_host_keys: "{{
+            found_host_keys.files |
+            sort(attribute='path', reverse=True) |
+            map(attribute='path') | list }}"
+      when:
+        - found_host_keys.files is defined
+        - found_host_keys.files | count > 0
+
+- name: create sshd host keys
+  when:
+    - sshd_host_keys | count == 0
+  ansible.builtin.command:
+    cmd: /usr/bin/ssh-keygen -A
+  register: ssh_keygen
+  changed_when: ssh_keygen.rc != 0
+  failed_when: ssh_keygen.rc != 0
+
 ...
