@@ -48,6 +48,8 @@ class EasyRSA:
 
         self.easyrsa = module.get_bin_path("easyrsa", True)
 
+        self.easyrsa_directory = "/etc/easy-rsa"
+
     # ----------------------------------------------------------------------------------------------
     # Public API - create
     def create_pki(self):
@@ -87,8 +89,8 @@ class EasyRSA:
         rc, out, err = self._exec(args)
         _output = self.result_values(out, err)
 
-        ca_crt_file = "/usr/share/easy-rsa/pki/ca.crt"
-        ca_key_file = "/usr/share/easy-rsa/pki/private/ca.key"
+        ca_crt_file = os.path.join(self.easyrsa_directory, "pki", "ca.crt")
+        ca_key_file = os.path.join(self.easyrsa_directory, "pki", "private", "ca.key")
 
         if os.path.exists(ca_crt_file) and os.path.exists(ca_key_file):
             rc = 0
@@ -118,7 +120,7 @@ class EasyRSA:
 
         _output = self.result_values(out, err)
 
-        crl_pem_file = "/usr/share/easy-rsa/pki/crl.pem"
+        crl_pem_file = os.path.join(self.easyrsa_directory, "pki", "crl.pem")
 
         if os.path.exists(crl_pem_file):
             rc = 0
@@ -146,7 +148,7 @@ class EasyRSA:
         rc, out, err = self._exec(args)
         _output = self.result_values(out, err)
 
-        req_file = f"/usr/share/easy-rsa/pki/reqs/{self.req_cn_server}.req"
+        req_file = os.path.join(self.easyrsa_directory, "pki", "reqs", f"{self.req_cn_server}.req")
 
         if os.path.exists(req_file):
             rc = 0
@@ -172,7 +174,7 @@ class EasyRSA:
         rc, out, err = self._exec(args)
         _output = self.result_values(out, err)
 
-        crt_file = f"/usr/share/easy-rsa/pki/issued/{self.req_cn_server}.crt"
+        crt_file = os.path.join(self.easyrsa_directory, "pki", "issued", f"{self.req_cn_server}.crt")
 
         if os.path.exists(crt_file):
             rc = 0
@@ -198,7 +200,7 @@ class EasyRSA:
         rc, out, err = self._exec(args)
         _output = self.result_values(out, err)
 
-        dh_pem_file = "/usr/share/easy-rsa/pki/dh.pem"
+        dh_pem_file = os.path.join(self.easyrsa_directory, "pki", "dh.pem")
 
         if os.path.exists(dh_pem_file):
             rc = 0
