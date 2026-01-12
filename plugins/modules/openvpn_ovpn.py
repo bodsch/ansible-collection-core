@@ -11,6 +11,141 @@ import sys
 
 from ansible.module_utils.basic import AnsibleModule
 
+# ---------------------------------------------------------------------------------------
+
+DOCUMENTATION = r"""
+---
+module: openvpn_ovpn
+short_description: Create or remove an inline OpenVPN client configuration (.ovpn) from Easy-RSA client credentials
+version_added: "1.1.3"
+author:
+  - Bodo Schulz (@bodsch) <bodo@boone-schulz.de>
+
+description:
+  - Creates an inline OpenVPN client configuration file (C(.ovpn)) containing embedded client key and certificate.
+  - The client key and certificate are read from an Easy-RSA PKI structure (C(pki/private/<user>.key) and C(pki/issued/<user>.crt)).
+  - Uses a Jinja2 template file (C(/etc/openvpn/client.ovpn.template)) to render the final config.
+  - Writes a SHA256 checksum sidecar file (C(.<user>.ovpn.sha256)) to support basic change detection.
+  - Can remove both the generated C(.ovpn) and checksum file.
+
+options:
+  state:
+    description:
+      - Whether the OVPN configuration should be present or absent.
+    type: str
+    default: present
+    choices:
+      - present
+      - absent
+
+  force:
+    description:
+      - If enabled, removes existing destination files before (re)creating the configuration.
+      - This also removes the checksum file.
+    type: bool
+    default: false
+
+  username:
+    description:
+      - Client name/user to build the configuration for.
+      - Used to locate Easy-RSA key/certificate and to name the output files.
+    type: str
+    required: true
+
+  destination_directory:
+    description:
+      - Directory where the generated C(<username>.ovpn) and checksum file are written.
+      - The directory must exist.
+    type: str
+    required: true
+
+  chdir:
+    description:
+      - Change into this directory before processing.
+      - Useful if Easy-RSA PKI paths are relative to a working directory.
+    type: path
+    required: false
+
+  creates:
+    description:
+      - If this path exists, the module returns early with no changes.
+      - When C(state=present) and C(creates) exists, the message will indicate the configuration is already created.
+    type: path
+    required: false
+
+notes:
+  - Check mode is not supported.
+  - The template path is currently fixed to C(/etc/openvpn/client.ovpn.template).
+  - The module expects an Easy-RSA PKI layout under the (optional) C(chdir) working directory.
+  - File permissions for the generated C(.ovpn) are set to C(0600).
+
+requirements:
+  - Python Jinja2 must be available on the target node for C(state=present).
+"""
+
+EXAMPLES = r"""
+- name: Create an inline client configuration for user 'alice'
+  bodsch.core.openvpn_ovpn:
+    state: present
+    username: alice
+    destination_directory: /etc/openvpn/clients
+
+- name: Create config with PKI relative to a working directory
+  bodsch.core.openvpn_ovpn:
+    state: present
+    username: bob
+    destination_directory: /etc/openvpn/clients
+    chdir: /etc/easy-rsa
+
+- name: Force recreation of an existing .ovpn file
+  bodsch.core.openvpn_ovpn:
+    state: present
+    username: carol
+    destination_directory: /etc/openvpn/clients
+    force: true
+
+- name: Skip if a marker file already exists
+  bodsch.core.openvpn_ovpn:
+    state: present
+    username: dave
+    destination_directory: /etc/openvpn/clients
+    creates: /var/lib/openvpn/clients/dave.created
+
+- name: Remove client configuration and checksum file
+  bodsch.core.openvpn_ovpn:
+    state: absent
+    username: alice
+    destination_directory: /etc/openvpn/clients
+"""
+
+RETURN = r"""
+changed:
+  description:
+    - Whether the module changed anything.
+  returned: always
+  type: bool
+
+failed:
+  description:
+    - Indicates failure.
+  returned: always
+  type: bool
+
+message:
+  description:
+    - Human readable status message.
+  returned: always
+  type: str
+  sample:
+    - "ovpn file /etc/openvpn/clients/alice.ovpn exists."
+    - "ovpn file successful written as /etc/openvpn/clients/alice.ovpn."
+    - "ovpn file /etc/openvpn/clients/alice.ovpn successful removed."
+    - "can not find key or certfile for user alice."
+    - "user req already created"
+"""
+
+# ---------------------------------------------------------------------------------------
+
 
 class OpenVPNOvpn(object):
     """

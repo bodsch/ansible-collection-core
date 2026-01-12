@@ -9,6 +9,75 @@ import re
 
 from ansible.module_utils.basic import AnsibleModule
 
+# ---------------------------------------------------------------------------------------
+
+DOCUMENTATION = r"""
+---
+module: openvpn_version
+short_description: Read the installed OpenVPN version
+version_added: "1.1.3"
+author:
+  - Bodo Schulz (@bodsch) <bodo@boone-schulz.de>
+
+description:
+  - Executes C(openvpn --version) on the target host.
+  - Parses the semantic version (C(X.Y.Z)) from the output.
+  - Returns the full stdout and stdout_lines for troubleshooting.
+
+options: {}
+
+notes:
+  - Check mode is not supported.
+  - The module fails if the C(openvpn) binary cannot be found on the target host.
+
+requirements:
+  - OpenVPN installed on the target host.
+"""
+
+EXAMPLES = r"""
+- name: Get OpenVPN version
+  bodsch.core.openvpn_version:
+  register: openvpn
+
+- name: Print parsed version
+  ansible.builtin.debug:
+    msg: "OpenVPN version: {{ openvpn.version }}"
+
+- name: Print raw stdout for troubleshooting
+  ansible.builtin.debug:
+    var: openvpn.stdout_lines
+"""
+
+RETURN = r"""
+version:
+  description:
+    - Parsed OpenVPN version (C(X.Y.Z)) if found, otherwise C(unknown).
+  returned: always
+  type: str
+  sample: "2.6.8"
+
+stdout:
+  description:
+    - Raw stdout from C(openvpn --version).
+  returned: always
+  type: str
+
+stdout_lines:
+  description:
+    - Stdout split into lines.
+  returned: always
+  type: list
+  elements: str
+
+failed:
+  description:
+    - Indicates whether parsing the version failed.
+  returned: always
+  type: bool
+"""
+
+# ---------------------------------------------------------------------------------------
+
 
 class OpenVPN(object):
     """ """

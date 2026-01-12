@@ -11,6 +11,164 @@ import sys
 from ansible.module_utils import distro
 from ansible.module_utils.basic import AnsibleModule
 
+# ---------------------------------------------------------------------------------------
+
+DOCUMENTATION = r"""
+---
+module: openvpn
+short_description: Generate OpenVPN tls-auth key or create an Easy-RSA client and inline .ovpn configuration
+version_added: "1.1.3"
+author:
+  - Bodo Schulz (@bodsch) <bodsch@boone-schulz.de>
+
+description:
+  - Generates an OpenVPN static key (tls-auth / ta.key) using C(openvpn --genkey).
+  - Creates an Easy-RSA client certificate (C(build-client-full <user> nopass)) and renders an inline client configuration
+    from C(/etc/openvpn/client.ovpn.template) into C(<destination_directory>/<username>.ovpn).
+  - Supports a marker file via C(creates) to make the operation idempotent.
+
+options:
+  state:
+    description:
+      - Operation mode.
+      - C(genkey) generates a static key file using the OpenVPN binary.
+      - C(create_user) creates an Easy-RSA client (key/cert) and generates an inline C(.ovpn) file using a template.
+    type: str
+    default: genkey
+    choices:
+      - genkey
+      - create_user
+
+  secret:
+    description:
+      - Destination path for the generated OpenVPN static key when C(state=genkey).
+      - Required by the module interface even if C(state=create_user).
+    type: str
+    required: true
+
+  username:
+    description:
+      - Client username to create when C(state=create_user).
+    type: str
+    required: false
+
+  destination_directory:
+    description:
+      - Target directory where the generated client configuration C(<username>.ovpn) is written when C(state=create_user).
+    type: str
+    required: false
+
+  chdir:
+    description:
+      - Change into this directory before executing commands and accessing the PKI structure.
+      - For C(state=create_user), paths are expected relative to this working directory (e.g. C(pki/private), C(pki/issued), C(pki/reqs)).
+    type: path
+    required: false
+
+  creates:
+    description:
+      - If this path exists, the module returns early with no changes.
+      - With C(state=genkey), the early-return message is C(tls-auth key already created).
+      - With C(force=true) and C(creates) set, the marker file is removed before the check.
+    type: path
+    required: false
+
+  force:
+    description:
+      - If enabled and C(creates) is set, removes the marker file before checking C(creates).
+    type: bool
+    default: false
+
+  easyrsa_directory:
+    description:
+      - Reserved for future use (currently not used by the module implementation).
+    type: str
+    required: false
+
+notes:
+  - Check mode is not supported.
+  - For Ubuntu 20.04, the module uses the legacy C(--genkey --secret <file>) variant; other systems use C(--genkey secret <file>).
+
+requirements:
+  - C(openvpn) binary available on the target for C(state=genkey).
+  - C(easyrsa) binary and a working Easy-RSA PKI for C(state=create_user).
+  - Python Jinja2 installed on the target for C(state=create_user) (template rendering).
+"""
+
+EXAMPLES = r"""
+- name: Generate tls-auth key (ta.key)
+  bodsch.core.openvpn:
+    state: genkey
+    secret: /etc/openvpn/ta.key
+
+- name: Generate tls-auth key only if marker does not exist
+  bodsch.core.openvpn:
+    state: genkey
+    secret: /etc/openvpn/ta.key
+    creates: /var/lib/openvpn/ta.key.created
+
+- name: Force regeneration by removing marker first
+  bodsch.core.openvpn:
+    state: genkey
+    secret: /etc/openvpn/ta.key
+    creates: /var/lib/openvpn/ta.key.created
+    force: true
+
+- name: Create Easy-RSA client and write inline .ovpn
+  bodsch.core.openvpn:
+    state: create_user
+    secret: /dev/null              # required by module interface, not used here
+    username: alice
+    destination_directory: /etc/openvpn/clients
+    chdir: /etc/easy-rsa
+
+- name: Create user only if marker does not exist
+  bodsch.core.openvpn:
+    state: create_user
+    secret: /dev/null
+    username: bob
+    destination_directory: /etc/openvpn/clients
+    chdir: /etc/easy-rsa
+    creates: /var/lib/openvpn/clients/bob.created
+"""
+
+RETURN = r"""
+changed:
+  description:
+    - Whether the module changed anything.
+  returned: always
+  type: bool
+
+failed:
+  description:
+    - Indicates failure.
+  returned: always
+  type: bool
+
+result:
+  description:
+    - For C(state=genkey), contains stdout from the OpenVPN command.
+    - For C(state=create_user), contains a status message (or an Easy-RSA output-derived message).
+  returned: sometimes
+  type: str
+  sample:
+    - "OpenVPN 2.x.x ...\n..."   # command output example
+    - "ovpn file successful written as /etc/openvpn/clients/alice.ovpn"
+    - "can not find key or certfile for user alice"
+
+message:
+  description:
+    - Status message returned by some early-exit paths (e.g. existing request file or marker file).
+  returned: sometimes
+  type: str
+  sample:
+    - "tls-auth key already created"
+    - "nothing to do."
+    - "cert req for user alice exists"
+"""
+
+# ---------------------------------------------------------------------------------------
+
 
 class OpenVPN(object):
     """

@@ -166,29 +166,28 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-RETURN:
-  changed:
-    description: Indicates whether any changes were made during module execution.
-    type: bool
-    returned: always
-  failed:
-    description: Indicates whether the module failed.
-    type: bool
-    returned: always
-  state:
-    description: List of results per client certificate operation.
-    type: list
-    elements: dict
-    returned: always
-    sample:
-      - molecule:
-          failed: false
-          changed: true
-          message: The client certificate has been successfully created.
-      - roadrunner_one:
-          failed: false
-          changed: false
-          message: The client certificate has already been created.
+changed:
+  description: Indicates whether any changes were made during module execution.
+  type: bool
+  returned: always
+failed:
+  description: Indicates whether the module failed.
+  type: bool
+  returned: always
+state:
+  description: List of results per client certificate operation.
+  type: list
+  elements: dict
+  returned: always
+  sample:
+    - molecule:
+        failed: false
+        changed: true
+        message: The client certificate has been successfully created.
+    - roadrunner_one:
+        failed: false
+        changed: false
+        message: The client certificate has already been created.
 """
 
 # ---------------------------------------------------------------------------------------

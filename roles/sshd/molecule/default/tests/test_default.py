@@ -254,12 +254,7 @@ def local_facts(host):
     """
     return local facts
     """
-    return (
-        host.ansible("setup")
-        .get("ansible_facts")
-        .get("ansible_local")
-        .get("sshd")
-    )
+    return host.ansible("setup").get("ansible_facts").get("ansible_local").get("sshd")
 
 
 @pytest.mark.parametrize(
