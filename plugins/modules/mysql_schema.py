@@ -172,7 +172,7 @@ class MysqlSchema(object):
             cursor.execute(query)
 
         except mysql_driver.ProgrammingError as e:
-            (errcode, message) = e.args
+            errcode, message = e.args
 
             message = f"Cannot execute SQL '{query}' : {to_native(e)}"
             self.module.log(msg=f"ERROR: {message}")

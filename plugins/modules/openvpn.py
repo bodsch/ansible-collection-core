@@ -195,7 +195,7 @@ class OpenVPN(object):
         self._openvpn = module.get_bin_path("openvpn", True)
         self._easyrsa = module.get_bin_path("easyrsa", True)
 
-        (self.distribution, self.version, self.codename) = distro.linux_distribution(
+        self.distribution, self.version, self.codename = distro.linux_distribution(
             full_distribution_name=False
         )
 
