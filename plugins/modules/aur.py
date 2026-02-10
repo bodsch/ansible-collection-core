@@ -158,16 +158,13 @@ class AnsibleModuleLike(Protocol):
 
     params: Mapping[str, Any]
 
-    def get_bin_path(self, arg: str, required: bool = False) -> Optional[str]:
-        ...
+    def get_bin_path(self, arg: str, required: bool = False) -> Optional[str]: ...
 
     def run_command(
         self, args: Sequence[str], check_rc: bool = True
-    ) -> Tuple[int, str, str]:
-        ...
+    ) -> Tuple[int, str, str]: ...
 
-    def log(self, msg: str = "", **kwargs: Any) -> None:
-        ...
+    def log(self, msg: str = "", **kwargs: Any) -> None: ...
 
 
 _PACMAN_Q_RE = re.compile(r"^(?P<name>\S+)\s+(?P<ver>\S+)\s*$", re.MULTILINE)

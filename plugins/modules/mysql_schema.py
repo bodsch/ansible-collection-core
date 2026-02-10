@@ -10,7 +10,11 @@ from __future__ import absolute_import, division, print_function
 import os
 import warnings
 
-from ansible.module_utils._text import to_native
+try:
+    from ansible.module_utils.common.text.converters import to_native
+except ImportError:  # pragma: no cover
+    from ansible.module_utils._text import to_native
+
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.mysql import mysql_driver, mysql_driver_fail_msg
 from ansible.module_utils.six.moves import configparser

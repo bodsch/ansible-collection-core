@@ -72,6 +72,7 @@ pip install netaddr
 | [bodsch.core.openvpn_version](.plugins/modules/openvpn_version.py)                  |  |
 | [bodsch.core.pip_requirements](.plugins/modules/pip_requirements.py)                | This modules creates an requirement file to install python modules via pip. |
 | [bodsch.core.syslog_cmd](.plugins/modules/syslog_cmd.py)                            | Run syslog-ng with arbitrary command-line parameters |
+| [bodsch.core.apt_sources](.plugins/modules/apt_sources.py)                          | Manage APT deb822 (.sources) repositories with repo-specific keyrings. |
 
 
 ### Module utils
