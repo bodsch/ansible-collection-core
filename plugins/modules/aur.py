@@ -158,13 +158,43 @@ class AnsibleModuleLike(Protocol):
 
     params: Mapping[str, Any]
 
-    def get_bin_path(self, arg: str, required: bool = False) -> Optional[str]: ...
+    def get_bin_path(self, arg: str, required: bool = False) -> Optional[str]:
+        """
+        Return the absolute path to an executable.
+
+        Args:
+            arg: Program name to look up in PATH.
+            required: If True, the module typically fails when the binary is not found.
+
+        Returns:
+            Absolute path to the executable, or None if not found and not required.
+        """
+        ...
 
     def run_command(
         self, args: Sequence[str], check_rc: bool = True
-    ) -> Tuple[int, str, str]: ...
+    ) -> Tuple[int, str, str]:
+        """
+        Execute a command on the target host.
 
-    def log(self, msg: str = "", **kwargs: Any) -> None: ...
+        Args:
+            args: Argument vector (already split).
+            check_rc: If True, non-zero return codes should be treated as errors.
+
+        Returns:
+            Tuple ``(rc, stdout, stderr)``.
+        """
+        ...
+
+    def log(self, msg: str = "", **kwargs: Any) -> None:
+        """
+        Write a log/debug message via the Ansible module.
+
+        Args:
+            msg: Message text.
+            **kwargs: Additional structured log fields (module dependent).
+        """
+        ...
 
 
 _PACMAN_Q_RE = re.compile(r"^(?P<name>\S+)\s+(?P<ver>\S+)\s*$", re.MULTILINE)
