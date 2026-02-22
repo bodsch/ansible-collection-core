@@ -53,7 +53,7 @@ class FilterModule:
             Resolved host identifier as string.
         """
         display.vv(
-            f"bodsch.core.hostname(self, facts, {inventory_hostname}, {prefer}, {default})"
+            f"bodsch.core.hostname(self, facts, inventory_hostname: '{inventory_hostname}', prefer: '{prefer}', default: '{default}')"
         )
 
         facts_dict = self._as_dict(facts)
@@ -64,10 +64,14 @@ class FilterModule:
         for key in keys:
             val = facts_dict.get(key)
             if val not in (None, ""):
+                display.vv(f"= result: {str(val)}")
                 return str(val)
 
         if inventory_hostname not in (None, ""):
+            display.vv(f"= result: {str(inventory_hostname)}")
             return str(inventory_hostname)
+
+        display.vv(f"= result: {str(default)}")
 
         return str(default)
 

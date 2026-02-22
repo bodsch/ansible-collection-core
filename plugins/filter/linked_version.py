@@ -22,33 +22,58 @@ class FilterModule(object):
             "linked_version": self.linked_version,
         }
 
-    def linked_version(self, data, install_path, version):
+    def linked_version(self, data: dict, install_path: str, version: str):
         """
         check for linked version in `install_path`
+
+            `data` are dictionary:
+                {
+                    'exists': True,
+                    ''path': '/usr/bin/influxd', ...,
+                    'islnk': True, ...,
+                    'lnk_source': '/opt/influxd/2.8.0/influxd',
+                    'lnk_target': '/opt/influxd/2.8.0/influxd', ...
+                }
+            `install_path`are string and NOT the filename!
+                /opt/influxd/2.8.0
+
+
+            result: TRUE, when destination is a link and the base path equal with install path
+                    otherwise FALSE
         """
         display.vv(
-            f"bodsch.core.linked_version(self, {data}, {install_path}, {version})"
+            f"bodsch.core.linked_version(self, data: {data}, install_path: {install_path}, version: {version})"
         )
 
-        _exists = data.get("exists", False)
+        _is_activated = False
 
-        if _exists:
-            _islink = data.get("islnk", False)
-            _lnk_source = data.get("lnk_source", None)
-            _path = data.get("path", None)
+        _destination_exists = data.get("exists", False)
 
-            if _lnk_source:
-                _path = os.path.dirname(_lnk_source)
+        display.vvv(f" - destination exists  : {_destination_exists}")
 
-            display.vvv(f" - exists  : {_exists}")
-            display.vvv(f" - is link : {_islink}")
-            display.vvv(f" - link src: {_lnk_source}")
-            display.vvv(f" - path    : {_path}")
+        if _destination_exists:
+            _destination_islink = data.get("islnk", False)
+            _destination_lnk_source = data.get("lnk_source", None)
+            _destination_path = data.get("path", None)
 
-            state = install_path == _path
+            if _destination_lnk_source:
+                _destination_path = os.path.dirname(_destination_lnk_source)
 
-            display.vv(f" - state    : {state}")
+            display.vvv(f"        - is link   : {_destination_islink}")
+            display.vvv(f"        - link src  : {_destination_lnk_source}")
+            display.vvv(f"        - base path : {_destination_path}")
 
-            return state
-        else:
-            return True
+            _is_activated = install_path == _destination_path
+
+            # if not _is_activated:
+            # display.vv(" - destination- and installation path are not qual.")
+
+        #     display.vv(f" - state    : {state}")
+        #
+        #     return state
+        # else:
+        #     return True
+
+        display.vv(f"= is activated: {_is_activated}")
+
+        return _is_activated
