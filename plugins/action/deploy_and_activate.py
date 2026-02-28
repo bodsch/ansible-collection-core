@@ -182,7 +182,7 @@ class ActionModule(ActionBase):
 
     def _get_items(self, args: Mapping[str, Any]) -> List[ItemSpec]:
         """Validate and normalize the 'items' argument."""
-        display.v(f"ActionModule::_get_items(args: {dict(args)})")
+        display.vv(f"ActionModule::_get_items(args: {dict(args)})")
 
         raw_items = args.get("items") or []
         if not isinstance(raw_items, list) or not raw_items:
@@ -213,7 +213,7 @@ class ActionModule(ActionBase):
         self, controller_src_dir: str, items: Sequence[ItemSpec]
     ) -> List[_LocalItem]:
         """Build controller-local absolute paths for each item."""
-        display.v(
+        display.vv(
             f"ActionModule::_normalize_local_items(controller_src_dir: {controller_src_dir}, items: {list(items)})"
         )
 
@@ -229,12 +229,12 @@ class ActionModule(ActionBase):
         self, controller_src_dir: str, items: Sequence[ItemSpec]
     ) -> None:
         """Fail early if any controller-local binary is missing."""
-        display.v(
+        display.vv(
             f"ActionModule::_ensure_local_files_exist(controller_src_dir: {controller_src_dir}, items: {list(items)})"
         )
 
         for it in self._normalize_local_items(controller_src_dir, items):
-            display.v(f"= local_src: {it.local_src}, src_rel: {it.src_rel}")
+            display.vv(f"= local_src: {it.local_src}, src_rel: {it.src_rel}")
             if not os.path.isfile(it.local_src):
                 raise AnsibleError(
                     f"deploy_and_activate: missing extracted binary on controller: {it.local_src}"
@@ -248,7 +248,7 @@ class ActionModule(ActionBase):
         module_args: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Execute the remote worker module and return its result."""
-        display.v(
+        display.vv(
             f"ActionModule::_probe_remote(tmp: {tmp}, task_vars, module_args: {module_args})"
         )
 
@@ -258,7 +258,7 @@ class ActionModule(ActionBase):
             task_vars=dict(task_vars),
             tmp=tmp,
         )
-        display.v(f"= result: {remote}")
+        display.vv(f"= result: {remote}")
         return remote
 
     def _ensure_remote_dir(
@@ -270,7 +270,7 @@ class ActionModule(ActionBase):
         mode: str = "0700",
     ) -> None:
         """Ensure a directory exists on the remote host."""
-        display.v(
+        display.vv(
             f"ActionModule::_ensure_remote_dir(tmp: {tmp}, task_vars, path: {path}, mode: {mode})"
         )
 
@@ -289,7 +289,7 @@ class ActionModule(ActionBase):
 
         This avoids using ActionBase._make_tmp_path(), which is not available in all Ansible versions.
         """
-        display.v(f"ActionModule::_create_remote_temp_dir(tmp: {tmp}, task_vars)")
+        display.vv(f"ActionModule::_create_remote_temp_dir(tmp: {tmp}, task_vars)")
 
         res = self._execute_module(
             module_name="ansible.builtin.tempfile",
@@ -329,7 +329,7 @@ class ActionModule(ActionBase):
             )
             created_by_us = True
 
-        display.v(
+        display.vv(
             f"ActionModule::_stage_files_to_remote(remote_stage_dir: {remote_stage_dir}, created_by_us: {created_by_us})"
         )
 
@@ -350,7 +350,7 @@ class ActionModule(ActionBase):
         # Transfer files.
         for it in normalized:
             remote_dst = os.path.join(remote_stage_dir, it.src_rel)
-            display.v(f"ActionModule::_transfer_file({it.local_src} -> {remote_dst})")
+            display.vv(f"ActionModule::_transfer_file({it.local_src} -> {remote_dst})")
             self._transfer_file(it.local_src, remote_dst)
 
         return remote_stage_dir, created_by_us
@@ -368,7 +368,7 @@ class ActionModule(ActionBase):
         Returns:
             Result dict compatible with Ansible task output.
         """
-        display.v(f"ActionModule::run(tmp: {tmp}, task_vars)")
+        display.vv(f"ActionModule::run(tmp: {tmp}, task_vars)")
 
         if task_vars is None:
             task_vars = {}
@@ -388,14 +388,14 @@ class ActionModule(ActionBase):
 
         items = self._get_items(args)
 
-        display.v(f" - remote_src         : {remote_src}")
-        display.v(f" - install_dir        : {install_dir}")
-        display.v(f" - src_dir            : {src_dir}")
-        display.v(f" - link_dir           : {link_dir}")
-        display.v(f" - owner              : {owner}")
-        display.v(f" - group              : {group}")
-        display.v(f" - cleanup_on_failure : {cleanup_on_failure}")
-        display.v(f" - activation_name    : {activation_name}")
+        display.vv(f" - remote_src         : {remote_src}")
+        display.vv(f" - install_dir        : {install_dir}")
+        display.vv(f" - src_dir            : {src_dir}")
+        display.vv(f" - link_dir           : {link_dir}")
+        display.vv(f" - owner              : {owner}")
+        display.vv(f" - group              : {group}")
+        display.vv(f" - cleanup_on_failure : {cleanup_on_failure}")
+        display.vv(f" - activation_name    : {activation_name}")
 
         # --- Probe (remote) ---
         probe_args: Dict[str, Any] = {
@@ -418,7 +418,7 @@ class ActionModule(ActionBase):
                 )
             probe_args["src_dir"] = str(src_dir)
 
-        display.v(f" - probe_args         : {probe_args}")
+        display.vv(f" - probe_args         : {probe_args}")
         probe = self._probe_remote(tmp=tmp, task_vars=task_vars, module_args=probe_args)
 
         # Check mode: never change.
