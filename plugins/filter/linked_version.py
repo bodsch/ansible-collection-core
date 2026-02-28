@@ -37,7 +37,6 @@ class FilterModule(object):
             `install_path`are string and NOT the filename!
                 /opt/influxd/2.8.0
 
-
             result: TRUE, when destination is a link and the base path equal with install path
                     otherwise FALSE
         """
@@ -64,15 +63,6 @@ class FilterModule(object):
             display.vvv(f"        - base path : {_destination_path}")
 
             _is_activated = install_path == _destination_path
-
-            # if not _is_activated:
-            # display.vv(" - destination- and installation path are not qual.")
-
-        #     display.vv(f" - state    : {state}")
-        #
-        #     return state
-        # else:
-        #     return True
 
         display.vv(f"= is activated: {_is_activated}")
 
