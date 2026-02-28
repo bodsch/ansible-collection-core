@@ -1,0 +1,430 @@
+"""
+binary_deploy.py (action plugin)
+
+Controller-aware wrapper that supports:
+- remote_src=true: src_dir is on the remote host -> use activate_version_remote to do everything in one remote call.
+- remote_src=false: src_dir is on the controller -> verify local files, create install_dir remotely, transfer files,
+  then let activate_version_remote enforce caps and symlinks.
+
+This collapses the common "stat + fail + stat + stat + copy + file + capabilities + link" pattern into one task.
+"""
+
+from __future__ import annotations
+
+import os
+from typing import Any, Dict, List
+
+from ansible.errors import AnsibleError
+from ansible.plugins.action import ActionBase
+from ansible.utils.display import Display
+
+
+display = Display()
+
+
+class ActionModule(ActionBase):
+    """Deploy binaries to install_dir and activate them via symlinks."""
+
+    TRANSFERS_FILES = True
+
+    def _get_items(self, args: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """ """
+        display.v(f"ActionModule::_get_items(args: {args})")
+
+        items = args.get("items") or []
+        if not isinstance(items, list) or not items:
+            raise AnsibleError("binary_deploy: 'items' must be a non-empty list")
+        return items
+
+    def _local_item_path(self, src_dir: str, item: Dict[str, Any]) -> Tuple[str, str]:
+        """
+        Returns (local_src_path, dest_filename).
+        dest_filename is always item['name'].
+        local source filename is item.get('src') or item['name'].
+        """
+        display.v(f"ActionModule::_local_item_path(src_dir: {src_dir}, item: {item})")
+
+        name = str(item["name"])
+        src_name = str(item.get("src") or name)
+        return os.path.join(src_dir, src_name), name
+
+    def _ensure_local_files_exist(self, src_dir: str, items: List[Dict[str, Any]]) -> None:
+        """ """
+        display.v(f"ActionModule::_ensure_local_files_exist(src_dir: {src_dir}, items: {items})")
+
+        for it in items:
+            local_src, _ = self._local_item_path(src_dir, it)
+            if not os.path.isfile(local_src):
+                raise AnsibleError(f"binary_deploy: missing extracted binary on controller: {local_src}")
+
+    def _probe_remote(
+        self,
+        *,
+        tmp: Optional[str],
+        task_vars: Dict[str, Any],
+        module_args: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """ """
+        display.v(f"ActionModule::_probe_remote(tmp: {tmp}, task_vars, module_args: {module_args})")
+
+        return self._execute_module(
+            module_name="bodsch.core.activate_version_remote",
+            module_args=module_args,
+            task_vars=task_vars,
+            tmp=tmp,
+        )
+
+    def _remote_copy_from_controller(
+        self,
+        *,
+        tmp: Optional[str],
+        task_vars: Dict[str, Any],
+        src_dir: str,
+        install_dir: str,
+        items: List[Dict[str, Any]],
+        mode: str,
+        owner: Optional[str],
+        group: Optional[str],
+    ) -> bool:
+        """
+        Transfer controller-local binaries to remote install_dir using ansible.builtin.copy.
+        Returns True if any file changed.
+        """
+        display.v(f"ActionModule::_remote_copy_from_controller(tmp: {tmp}, task_vars, src_dir: {src_dir}, install_dir: {install_dir}, items: {items}, owner: {owner}, group: {group}, mode: {mode})")
+
+        changed_any = False
+
+        for it in items:
+            local_src, dest_name = self._local_item_path(src_dir, it)
+            dest_path = os.path.join(install_dir, dest_name)
+
+            module_args: Dict[str, Any] = {
+                "src": local_src,
+                "dest": dest_path,
+                "remote_src": False,
+                "mode": mode,
+            }
+            if owner:
+                module_args["owner"] = owner
+            if group:
+                module_args["group"] = group
+
+            res = self._execute_module(
+                module_name="ansible.builtin.copy",
+                module_args=module_args,
+                task_vars=task_vars,
+                tmp=tmp,
+            )
+            changed_any = changed_any or bool(res.get("changed", False))
+
+        return changed_any
+
+    def run(self, tmp: str | None = None, task_vars: Dict[str, Any] | None = None) -> Dict[str, Any]:
+        """ """
+        display.v(f"ActionModule::run(tmp: {tmp}, task_vars)")
+
+        if task_vars is None:
+            task_vars = {}
+
+        result: Dict[str, Any] = super().run(tmp, task_vars)
+        args = self._task.args.copy()
+
+        remote_src = bool(args.get("remote_src", False))
+        install_dir = str(args["install_dir"])
+        link_dir = str(args.get("link_dir", "/usr/bin"))
+        src_dir = args.get("src_dir")
+        mode = str(args.get("mode", "0755"))
+        owner = args.get("owner")
+        group = args.get("group")
+        cleanup_on_failure = bool(args.get("cleanup_on_failure", True))
+        activation_name = args.get("activation_name")
+
+        items = self._get_items(args)
+
+        display.v(f" - remote_src         : {remote_src}")
+        display.v(f" - install_dir        : {install_dir}")
+        display.v(f" - src_dir            : {src_dir}")
+        display.v(f" - link_dir           : {link_dir}")
+        display.v(f" - owner              : {owner}")
+        display.v(f" - group              : {group}")
+        display.v(f" - cleanup_on_failure : {cleanup_on_failure}")
+        display.v(f" - activation_name    : {activation_name}")
+
+        # --- Probe ---
+        probe_args: Dict[str, Any] = {
+            "install_dir": install_dir,
+            "link_dir": link_dir,
+            "items": items,
+            "activation_name": activation_name,
+            "owner": owner,
+            "group": group,
+            "mode": mode,
+            "cleanup_on_failure": cleanup_on_failure,
+            "check_only": True,
+            "copy": remote_src,
+        }
+
+        display.v(f" - probe_args    : {probe_args}")
+
+        # IMPORTANT: when remote_src=True (copy=True), src_dir must be passed and must be remote path
+        if remote_src:
+            if not src_dir:
+                raise AnsibleError("binary_deploy: 'src_dir' is required when remote_src=true (remote path)")
+            probe_args["src_dir"] = str(src_dir)
+
+        probe = self._probe_remote(tmp=tmp, task_vars=task_vars, module_args=probe_args)
+
+        display.v(f"   - probe    : {probe}")
+
+        # Check mode: never change
+        if bool(task_vars.get("ansible_check_mode", False)):
+            probe["changed"] = False
+            return probe
+
+        if not probe.get("needs_update", False):
+            probe["changed"] = False
+            return probe
+
+        # --- Apply ---
+        try:
+            # Ensure install_dir exists on remote
+            self._execute_module(
+                module_name="ansible.builtin.file",
+                module_args={"path": install_dir, "state": "directory"},
+                task_vars=task_vars,
+                tmp=tmp,
+            )
+
+            if remote_src:
+                # Remote -> Remote copy + perms/caps/links in one remote call
+                apply_args = dict(probe_args)
+                apply_args["check_only"] = False
+                apply_args["copy"] = True
+                apply_args["src_dir"] = str(src_dir)
+
+                return self._probe_remote(tmp=tmp, task_vars=task_vars, module_args=apply_args)
+
+            # Controller -> Remote transfer
+            if not src_dir:
+                raise AnsibleError("binary_deploy: 'src_dir' is required when remote_src=false (controller path)")
+            src_dir = str(src_dir)
+
+            self._ensure_local_files_exist(src_dir, items)
+
+            copied_any = self._remote_copy_from_controller(
+                tmp=tmp,
+                task_vars=task_vars,
+                src_dir=src_dir,
+                install_dir=install_dir,
+                items=items,
+                mode=mode,
+                owner=owner,
+                group=group,
+            )
+
+            # Enforce perms/caps/links in one remote call (no remote copy)
+            apply_args = {
+                "install_dir": install_dir,
+                "link_dir": link_dir,
+                "items": items,
+                "activation_name": activation_name,
+                "owner": owner,
+                "group": group,
+                "mode": mode,
+                "cleanup_on_failure": cleanup_on_failure,
+                "check_only": False,
+                "copy": False,
+            }
+            applied = self._probe_remote(tmp=tmp, task_vars=task_vars, module_args=apply_args)
+            applied["changed"] = bool(applied.get("changed", False)) or copied_any
+            return applied
+
+        except Exception:
+            if cleanup_on_failure:
+                try:
+                    self._execute_module(
+                        module_name="ansible.builtin.file",
+                        module_args={"path": install_dir, "state": "absent"},
+                        task_vars=task_vars,
+                        tmp=tmp,
+                    )
+                except Exception:
+                    pass
+            raise
+
+
+    # -- FRIEDHOF ---
+
+    def run_OLD(
+        self, tmp: str | None = None, task_vars: Dict[str, Any] | None = None
+    ) -> Dict[str, Any]:
+        """ """
+        display.v(f"ActionModule::run(tmp: {tmp}, task_vars: {task_vars})")
+
+        if task_vars is None:
+            task_vars = {}
+
+        result: Dict[str, Any] = super().run(tmp, task_vars)
+        args = self._task.args.copy()
+
+        remote_src = bool(args.pop("remote_src", False))
+        install_dir = str(args["install_dir"])
+        items: List[Dict[str, Any]] = args.get("items") or []
+        if not items:
+            raise AnsibleError("binary_deploy: items must not be empty")
+
+        src_dir = args.get("src_dir")
+        link_dir = args.get("link_dir", "/usr/bin")
+        owner = args.get("owner")
+        group = args.get("group")
+        mode = args.get("mode", "0755")
+        cleanup_on_failure = bool(args.get("cleanup_on_failure", True))
+        activation_name = args.get("activation_name")
+
+        display.v(f" - remote_src         : {remote_src}")
+        display.v(f" - install_dir        : {install_dir}")
+        display.v(f" - src_dir            : {src_dir}")
+        display.v(f" - link_dir           : {link_dir}")
+        display.v(f" - owner              : {owner}")
+        display.v(f" - group              : {group}")
+        display.v(f" - cleanup_on_failure : {cleanup_on_failure}")
+        display.v(f" - activation_name    : {activation_name}")
+
+        # 1) Check-only probe (remote): decide whether we need to do anything.
+        probe_args: Dict[str, Any] = {
+            "install_dir": install_dir,
+            "link_dir": link_dir,
+            "items": items,
+            "activation_name": activation_name,
+            "owner": owner,
+            "group": group,
+            "mode": mode,
+            "cleanup_on_failure": cleanup_on_failure,
+            "check_only": True,
+            "copy": remote_src,
+        }
+
+        display.v(f" - probe_args    : {probe_args}")
+
+        if remote_src:
+            if not src_dir:
+                raise AnsibleError(
+                    "binary_deploy: src_dir is required when remote_src=true"
+                )
+            probe_args["src_dir"] = src_dir
+
+        probe = self._execute_module(
+            module_name="bodsch.core.activate_version_remote",
+            module_args=probe_args,
+            task_vars=task_vars,
+            tmp=tmp,
+        )
+
+        # In check mode: return probe result as-is (no changes).
+        if bool(task_vars.get("ansible_check_mode", False)):
+            probe["changed"] = False
+            return probe
+
+        if not probe.get("needs_update", False):
+            probe["changed"] = False
+            return probe
+
+        # 2) Apply
+        try:
+            if remote_src:
+                apply_args = dict(probe_args)
+                apply_args["check_only"] = False
+                apply_args["copy"] = True
+                apply_args["src_dir"] = src_dir
+
+                applied = self._execute_module(
+                    module_name="bodsch.core.activate_version_remote",
+                    module_args=apply_args,
+                    task_vars=task_vars,
+                    tmp=tmp,
+                )
+                return applied
+
+            # Controller-local source: verify local files exist first.
+            if not src_dir:
+                raise AnsibleError(
+                    "binary_deploy: src_dir is required when remote_src=false"
+                )
+
+            for it in items:
+                name = str(it["name"])
+                src_name = str(it.get("src") or name)
+                local_path = os.path.join(src_dir, src_name)
+                if not os.path.isfile(local_path):
+                    raise AnsibleError(
+                        f"binary_deploy: missing extracted binary on controller: {local_path}"
+                    )
+
+            # Ensure install_dir exists remotely
+            dir_res = self._execute_module(
+                module_name="ansible.builtin.file",
+                module_args={"path": install_dir, "state": "directory"},
+                task_vars=task_vars,
+                tmp=tmp,
+            )
+
+            # Transfer binaries controller -> remote
+            copied_any = False
+            for it in items:
+                name = str(it["name"])
+                src_name = str(it.get("src") or name)
+
+                copy_res = self._execute_module(
+                    module_name="ansible.builtin.copy",
+                    module_args={
+                        "src": os.path.join(src_dir, src_name),
+                        "dest": os.path.join(install_dir, name),
+                        "mode": mode,
+                        "owner": owner,
+                        "group": group,
+                        "remote_src": False,
+                    },
+                    task_vars=task_vars,
+                    tmp=tmp,
+                )
+                copied_any = copied_any or bool(copy_res.get("changed", False))
+
+            # Enforce caps + symlinks (no remote copy; files already in install_dir)
+            apply_args = {
+                "install_dir": install_dir,
+                "link_dir": link_dir,
+                "items": items,
+                "activation_name": activation_name,
+                "owner": owner,
+                "group": group,
+                "mode": mode,
+                "cleanup_on_failure": cleanup_on_failure,
+                "check_only": False,
+                "copy": False,
+            }
+            applied = self._execute_module(
+                module_name="bodsch.core.activate_version_remote",
+                module_args=apply_args,
+                task_vars=task_vars,
+                tmp=tmp,
+            )
+
+            applied["changed"] = (
+                bool(applied.get("changed", False))
+                or bool(dir_res.get("changed", False))
+                or copied_any
+            )
+            return applied
+
+        except Exception as exc:
+            if cleanup_on_failure:
+                try:
+                    self._execute_module(
+                        module_name="ansible.builtin.file",
+                        module_args={"path": install_dir, "state": "absent"},
+                        task_vars=task_vars,
+                        tmp=tmp,
+                    )
+                except Exception:
+                    pass
+            raise
