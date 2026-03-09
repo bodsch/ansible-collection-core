@@ -120,7 +120,7 @@ options:
 
 EXAMPLES = r"""
 - name: Add Sury repo via keyring deb package (Debian)
-  deb822_repo:
+  bodsch.core.apt_sources:
     name: debsuryorg
     uris: ["https://packages.sury.org/php/"]
     suites: ["{{ ansible_facts.distribution_release }}"]
@@ -135,7 +135,7 @@ EXAMPLES = r"""
   become: true
 
 - name: Add CZ.NIC repo via key download (bookworm)
-  deb822_repo:
+  bodsch.core.apt_sources:
     name: cznic-labs-knot-resolver
     uris: ["https://pkg.labs.nic.cz/knot-resolver"]
     suites: ["bookworm"]
@@ -285,6 +285,10 @@ class AptSources:
         Note:
             When ``state=absent`` this method exits the module early via ``module.exit_json()``.
         """
+        self.module.log("AptSources::run()")
+
+        # self.module.log(f"  - update_cache: {self.update_cache}")
+
         mng = Deb822RepoManager(self.module)
 
         repo_path = self._ensure_sources_path(
@@ -322,8 +326,12 @@ class AptSources:
         # present
         key_cfg: Dict[str, Any] = self.keys or {"method": "none"}
         key_res = mng.ensure_key(key_cfg=key_cfg, check_mode=self.module.check_mode)
+
+        # self.module.log(f"  - key_res     : {key_res}")
+
         if key_res.messages:
             messages.extend(list(key_res.messages))
+
         if key_res.changed:
             changed = True
 
@@ -346,10 +354,14 @@ class AptSources:
             mode=repo_mode,
             check_mode=self.module.check_mode,
         )
+
+        # self.module.log(f"  - repo_res    : {repo_res}")
+
         if repo_res.changed:
             changed = True
             messages.append(f"updated repo file: {repo_path}")
 
+        # --------------------------------------------------------------------------
         # Optionally update cache only if something changed
         if self.update_cache and (key_res.changed or repo_res.changed):
             _, out = mng.apt_update(check_mode=self.module.check_mode)

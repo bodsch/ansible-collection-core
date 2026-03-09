@@ -12,7 +12,7 @@ import re
 import tempfile
 from dataclasses import dataclass
 from hashlib import sha256
-from typing import Any, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from ansible.module_utils.urls import fetch_url
 
@@ -163,6 +163,7 @@ class Deb822RepoManager:
                 and (optionally) ``tmpdir``.
         """
         self._m = module
+        self._m.log("Deb822RepoManager::__init__()")
 
     # -------------------------
     # Public orchestration API
@@ -182,6 +183,10 @@ class Deb822RepoManager:
         Raises:
             The module will call ``fail_json`` if the configuration is invalid or required tooling fails.
         """
+        self._m.log(
+            f"Deb822RepoManager::ensure_key(key_cfg: {key_cfg}, check_mode: {check_mode})"
+        )
+
         method = (key_cfg.get("method") or "none").lower()
         if method == "none":
             return KeyResult(
@@ -222,6 +227,10 @@ class Deb822RepoManager:
         Returns:
             A :class:`RepoResult` including the rendered content.
         """
+        self._m.log(
+            f"Deb822RepoManager::ensure_repo_file(repo_path: {repo_path}, spec: {spec}, mode: {mode}, check_mode: {check_mode})"
+        )
+
         rendered = spec.render()
         changed = self._ensure_file_contents(
             dest=repo_path,
@@ -242,6 +251,10 @@ class Deb822RepoManager:
         Returns:
             True if the file was removed (or would be removed in check mode), otherwise False.
         """
+        self._m.log(
+            f"Deb822RepoManager::remove_file(path: {path}, check_mode: {check_mode})"
+        )
+
         if not os.path.exists(path):
             return False
         if check_mode:
@@ -262,6 +275,8 @@ class Deb822RepoManager:
         Returns:
             Tuple ``(changed, output)`` where ``changed`` is True when the command would run/ran.
         """
+        self._m.log(f"Deb822RepoManager::apt_update(check_mode: {check_mode})")
+
         if check_mode:
             return True, "check_mode: would run apt-get update"
         rc, out, err = self._m.run_command(
@@ -296,6 +311,10 @@ class Deb822RepoManager:
         Returns:
             A :class:`KeyResult` with ``changed=True`` if anything was removed (or would be removed).
         """
+        self._m.log(
+            f"Deb822RepoManager::remove_key(key_cfg: {key_cfg}, signed_by: {signed_by}, check_mode: {check_mode})"
+        )
+
         method = (key_cfg.get("method") or "none").lower()
 
         if method == "none":
@@ -414,6 +433,8 @@ class Deb822RepoManager:
         Returns:
             The owning package name (including optional architecture suffix) or None if not owned.
         """
+        self._m.log(f"Deb822RepoManager::_dpkg_owns_path(path: {path})")
+
         rc, out, _ = self._m.run_command(["dpkg-query", "-S", path], check_rc=False)
         if rc != 0:
             return None
@@ -437,6 +458,8 @@ class Deb822RepoManager:
         Raises:
             The module will call ``fail_json`` if removal fails.
         """
+        self._m.log(f"Deb822RepoManager::_apt_remove_package(pkg_name: {pkg_name})")
+
         rc, out, err = self._m.run_command(
             ["apt-get", "-y", "remove", pkg_name],
             check_rc=False,
@@ -470,6 +493,10 @@ class Deb822RepoManager:
         Returns:
             A :class:`KeyResult`.
         """
+        self._m.log(
+            f"Deb822RepoManager::_ensure_key_download(key_cfg: {key_cfg}, check_mode: {check_mode})"
+        )
+
         url = key_cfg.get("url")
         if not url:
             self._m.fail_json(msg="key.method=download requires key.url")
@@ -567,6 +594,10 @@ class Deb822RepoManager:
         Returns:
             A :class:`KeyResult` describing downloads/installs and detected keyring path.
         """
+        self._m.log(
+            f"Deb822RepoManager::_ensure_key_deb(key_cfg: {key_cfg}, check_mode: {check_mode})"
+        )
+
         url = key_cfg.get("url")
         if not url:
             self._m.fail_json(msg="key.method=deb requires key.url")
@@ -661,6 +692,8 @@ class Deb822RepoManager:
         Raises:
             ValueError: If the filename contains invalid characters or does not end with ``.sources``.
         """
+        self._m.log(f"Deb822RepoManager::validate_filename(filename: {filename})")
+
         if not _FILENAME_RE.match(filename):
             raise ValueError(
                 "filename may only contain letters, digits, underscore, hyphen, and period"
@@ -693,6 +726,10 @@ class Deb822RepoManager:
         Returns:
             True if the destination would change/changed, otherwise False.
         """
+        self._m.log(
+            f"Deb822RepoManager::_ensure_downloaded_file(url: {url}, dest: {dest}, mode: {mode}, checksum: {checksum}, check_mode: {check_mode})"
+        )
+
         tmp, _ = self._download_to_temp(url=url, checksum=checksum)
         # Compare hash to dest
         tmp_sha = self._sha256_file(tmp)
@@ -721,6 +758,10 @@ class Deb822RepoManager:
         Returns:
             Tuple ``(tmp_path, sha256_hex)``.
         """
+        self._m.log(
+            f"Deb822RepoManager::_download_to_temp(url: {url}, checksum: {checksum})"
+        )
+
         tmp = self._temp_path()
         resp, info = fetch_url(self._m, url, method="GET")
         status = int(info.get("status", 0))
@@ -769,6 +810,10 @@ class Deb822RepoManager:
         Returns:
             True if the file would change/changed, otherwise False.
         """
+        self._m.log(
+            f"Deb822RepoManager::_ensure_file_contents(dest: {dest}, data, mode: {mode}, check_mode: {check_mode})"
+        )
+
         current = None
         if os.path.exists(dest):
             try:
@@ -793,6 +838,7 @@ class Deb822RepoManager:
             self._m.fail_json(msg=f"Failed to write temp file for {dest}: {exc!s}")
 
         self._atomic_move(tmp, dest, mode=mode)
+
         return True
 
     def _atomic_move(self, src: str, dest: str, *, mode: int) -> None:
@@ -807,6 +853,10 @@ class Deb822RepoManager:
         Raises:
             The module will call ``fail_json`` on failure.
         """
+        self._m.log(
+            f"Deb822RepoManager::_atomic_move(src: {src}, dest: {dest}, mode: {mode})"
+        )
+
         dest_dir = os.path.dirname(dest)
         if dest_dir and not os.path.isdir(dest_dir):
             os.makedirs(dest_dir, exist_ok=True)
@@ -829,6 +879,10 @@ class Deb822RepoManager:
             mode: File permissions mode (octal int).
             check_mode: If True, do not chmod, only evaluate.
         """
+        self._m.log(
+            f"Deb822RepoManager::_ensure_mode(path: {path}, mode: {mode}, check_mode: {check_mode})"
+        )
+
         if not os.path.exists(path):
             return
         try:
@@ -967,18 +1021,33 @@ class Deb822RepoManager:
         Raises:
             The module will call ``fail_json`` on unexpected output.
         """
+        self._m.log(f"Deb822RepoManager::_dpkg_deb_fields(deb_path: {deb_path})")
+
+        _cmd: List[str]
+        _cmd = ["dpkg-deb", "--field", deb_path, "Package", "Version"]
+
         rc, out, err = self._m.run_command(
-            ["dpkg-deb", "--field", deb_path, "Package", "Version"],
+            _cmd,
             check_rc=False,
         )
+
         if rc != 0:
             self._m.fail_json(
                 msg=f"dpkg-deb --field failed for {deb_path}: {err or out}"
             )
+
         lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
+
         if len(lines) < 2:
             self._m.fail_json(msg=f"Unexpected dpkg-deb output for {deb_path}: {out!r}")
-        return lines[0], lines[1]
+
+        data: Dict = {}
+
+        for match in re.finditer(r"^(\w+):\s+(.+)$", out, re.MULTILINE):
+            key, value = match.groups()
+            data[key.lower()] = value
+
+        return (data.get("package", ""), data.get("version", None))
 
     def _dpkg_query_version(self, pkg_name: str) -> Optional[str]:
         """
@@ -990,12 +1059,19 @@ class Deb822RepoManager:
         Returns:
             The installed version string, or None if the package is not installed.
         """
-        rc, out, _ = self._m.run_command(
-            ["dpkg-query", "-W", "-f=${Version}", pkg_name],
+        self._m.log(f"Deb822RepoManager::_dpkg_query_version(pkg_name: {pkg_name})")
+
+        _cmd: List[str]
+        _cmd = ["dpkg-query", "--show", "-f=${Version}", pkg_name]
+
+        rc, out, err = self._m.run_command(
+            _cmd,
             check_rc=False,
         )
+
         if rc != 0:
             return None
+
         ver = out.strip()
         return ver or None
 

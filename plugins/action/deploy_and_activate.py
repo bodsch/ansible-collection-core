@@ -373,6 +373,8 @@ class ActionModule(ActionBase):
         if task_vars is None:
             task_vars = {}
 
+        display.vv(f" - task_vars               : {task_vars}")
+
         _ = super().run(tmp, task_vars)
         args: Dict[str, Any] = self._task.args.copy()
 
@@ -387,6 +389,8 @@ class ActionModule(ActionBase):
         activation_name = args.get("activation_name")
 
         items = self._get_items(args)
+
+        display.vv(f" - args               : {args}")
 
         display.vv(f" - remote_src         : {remote_src}")
         display.vv(f" - install_dir        : {install_dir}")
