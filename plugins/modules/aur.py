@@ -34,120 +34,138 @@ __metaclass__ = type
 # ---------------------------------------------------------------------------------------
 
 DOCUMENTATION = r"""
----
 module: aur
-short_description: Install or remove Arch Linux packages from the AUR
 version_added: "0.9.0"
-author:
-  - Bodo Schulz (@bodsch) <bodo@boone-schulz.de>
+author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
 
+short_description: Install or remove Arch Linux packages from the AUR
 description:
-  - Installs packages from the Arch User Repository (AUR) by building them with C(makepkg).
-  - Recommended: install from a Git repository URL (cloned into C($HOME/<name>), then updated via C(git pull)).
-  - Fallback: if C(repository) is omitted, the module queries the AUR RPC API and downloads/extracts the source tarball to build it.
-  - Ensures idempotency by comparing the currently installed package version with the upstream version (prefers C(.SRCINFO),
-  - falls back to parsing C(PKGBUILD)); pkgrel-only updates trigger a rebuild.
+  - Manage packages from the Arch User Repository (AUR).
+  - Packages can be installed either from a Git repository containing a C(PKGBUILD)
+    or, if no repository is provided, by resolving package metadata through the
+    AUR RPC API and downloading the source tarball.
+  - The module builds and installs packages with C(makepkg).
+  - Idempotency is implemented by comparing the currently installed package version
+    with the upstream version from C(.SRCINFO) or C(PKGBUILD).
+  - Package removal is performed with C(pacman).
 
 options:
   state:
     description:
-      - Whether the package should be installed or removed.
+      - Define whether the package should be installed or removed.
     type: str
+    choices:
+      - present
+      - absent
     default: present
-    choices: [present, absent]
 
   name:
     description:
-      - Package name to manage (pacman package name / AUR package name).
+      - Name of the package to manage.
+      - This value is also used as the local directory name when a Git repository
+        is cloned into the current build user's home directory.
     type: str
     required: true
 
   repository:
     description:
-      - Git repository URL that contains the PKGBUILD (usually under U(https://aur.archlinux.org)).
-      - If omitted, the module uses the AUR RPC API to download the source tarball.
+      - Git repository URL containing the package sources and C(PKGBUILD).
+      - When omitted, the module queries the AUR RPC API and downloads the package
+        source tarball instead.
+      - Repository-based installation is the preferred mode.
     type: str
     required: false
 
   extra_args:
     description:
-      - Additional arguments passed to C(makepkg) (for example C(--skippgpcheck), C(--nocheck)).
+      - Additional arguments passed to C(makepkg).
+      - Useful for flags such as C(--skippgpcheck) or C(--nocheck).
     type: list
     elements: str
     required: false
     version_added: "2.2.4"
 
 notes:
-  - Check mode is not supported.
-  - The module is expected to run as a non-root build user (e.g. via C(become_user: aur_builder)).
-  - The build user must be able to install packages non-interactively (makepkg/pacman), and to remove
-  - packages this module uses C(sudo pacman -R...) when C(state=absent).
-  - Network access to AUR is required for repository cloning/pulling or tarball download.
+  - This module does not support check mode.
+  - The install path is intended to run as a non-root build user, for example via
+    C(become_user).
+  - The build user must have the required tooling available, including permission
+    to build and install packages with C(makepkg).
+  - Package removal internally uses C(sudo pacman --remove --cascade --recursive --noconfirm).
+  - When C(repository) is used, the repository is cloned into C($HOME/<name>) of
+    the effective remote user and updated using C(git pull).
+  - The module compares installed and upstream versions to avoid unnecessary rebuilds.
+    Full versions including C(pkgrel) are preferred when available.
 
 requirements:
   - pacman
-  - git (when C(repository) is used)
-  - makepkg (base-devel)
-  - sudo (for C(state=absent) removal path)
+  - makepkg
+  - sudo
+  - git
+
+attributes:
+  check_mode:
+    support: none
 """
 
 EXAMPLES = r"""
-- name: Install package via AUR repository (recommended)
+- name: Install package from an AUR Git repository
   become: true
   become_user: aur_builder
   bodsch.core.aur:
+    name: yay
     state: present
-    name: icinga2
-    repository: https://aur.archlinux.org/icinga2.git
+    repository: https://aur.archlinux.org/yay.git
 
-- name: Install package via AUR repository with makepkg extra arguments
+- name: Install package from an AUR Git repository with additional makepkg flags
   become: true
   become_user: aur_builder
   bodsch.core.aur:
-    state: present
     name: php-pear
+    state: present
     repository: https://aur.archlinux.org/php-pear.git
     extra_args:
       - --skippgpcheck
+      - --nocheck
 
-- name: Install package via AUR tarball download (repository omitted)
+- name: Install package from the AUR tarball fallback
   become: true
   become_user: aur_builder
   bodsch.core.aur:
-    state: present
     name: yay
+    state: present
 
-- name: Remove package
+- name: Remove an installed AUR package
   become: true
   bodsch.core.aur:
-    state: absent
     name: yay
+    state: absent
 """
 
 RETURN = r"""
 changed:
   description:
-    - Whether the module made changes.
-    - C(true) when a package was installed/rebuilt/removed, otherwise C(false).
+    - Indicates whether the module changed the target system.
+    - Returned as C(true) when a package was installed, rebuilt, or removed.
+    - Returned as C(false) when the requested state was already satisfied.
   returned: always
   type: bool
+  sample: false
 
 failed:
   description:
-    - Indicates whether the module failed.
+    - Indicates whether the module execution failed.
   returned: always
   type: bool
+  sample: false
 
 msg:
   description:
-    - Human readable status or error message.
-    - For idempotent runs, typically reports that the version is already installed.
+    - Human-readable result message.
+    - Contains either a success message, an idempotency message, or an error description.
   returned: always
   type: str
-  sample:
-    - "Package yay successfully installed."
-    - "Package yay successfully removed."
-    - "Version 1.2.3-1 is already installed."
+  sample: Version 1.2.3-1 is already installed.
 """
 
 # ---------------------------------------------------------------------------------------

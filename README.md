@@ -73,6 +73,7 @@ pip install netaddr
 | [bodsch.core.pip_requirements](.plugins/modules/pip_requirements.py)                | This modules creates an requirement file to install python modules via pip. |
 | [bodsch.core.syslog_cmd](.plugins/modules/syslog_cmd.py)                            | Run syslog-ng with arbitrary command-line parameters |
 | [bodsch.core.apt_sources](.plugins/modules/apt_sources.py)                          | Manage APT deb822 (.sources) repositories with repo-specific keyrings. |
+| [bodsch.core.account_defaults](.plugins/modules/account_defaults.py)                | Resolve account defaults and primary group information. |
 
 
 ### Module utils

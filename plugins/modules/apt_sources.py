@@ -22,98 +22,98 @@ module: apt_sources
 version_added: '2.9.0'
 author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
 
-short_description: Manage APT deb822 (.sources) repositories with repo-specific keyrings.
+short_description: "Manage APT deb822 (.sources) repositories with repo-specific keyrings."
 description:
-  - Creates/removes deb822 formatted APT repository files in /etc/apt/sources.list.d.
-  - Supports importing repo-specific signing keys either via downloading a key file (with optional dearmor/validation)
-    or by installing a keyring .deb package (e.g. Sury keyring).
-  - Optionally runs apt-get update when changes occur.
+  - "Creates/removes deb822 formatted APT repository files in /etc/apt/sources.list.d."
+  - "Supports importing repo-specific signing keys either via downloading a key file (with optional
+    dearmor/validation) or by installing a keyring .deb package (e.g. Sury keyring)."
+  - "Optionally runs apt-get update when changes occur."
 options:
   name:
-    description: Logical name of the repository (used for defaults like filename).
+    description: "Logical name of the repository (used for defaults like filename)."
     type: str
     required: true
   state:
-    description: Whether the repository should be present or absent.
+    description: "Whether the repository should be present or absent."
     type: str
     choices: [present, absent]
     default: present
   dest:
-    description: Full path of the .sources file. If omitted, computed from filename/name.
+    description: "Full path of the .sources file. If omitted, computed from filename/name."
     type: str
   filename:
-    description: Filename under /etc/apt/sources.list.d/ (must end with .sources).
+    description: "Filename under /etc/apt/sources.list.d/ (must end with .sources)."
     type: str
   types:
-    description: Repository types (deb, deb-src).
+    description: "Repository types (deb, deb-src)."
     type: list
     elements: str
     default: ["deb"]
   uris:
-    description: Base URIs of the repository.
+    description: "Base URIs of the repository."
     type: list
     elements: str
     required: true
   suites:
-    description: Suites / distributions (e.g. bookworm). If suite ends with '/', Components must be omitted.
+    description: "Suites / distributions (e.g. bookworm). If suite ends with '/', Components must be omitted."
     type: list
     elements: str
     required: true
   components:
-    description: Components (e.g. main, contrib). Required unless suite is a path ending in '/'.
+    description: "Components (e.g. main, contrib). Required unless suite is a path ending in '/'."
     type: list
     elements: str
     default: []
   architectures:
-    description: Restrict repository to architectures (e.g. amd64).
+    description: "Restrict repository to architectures (e.g. amd64)."
     type: list
     elements: str
     default: []
   enabled:
-    description: Whether the source is enabled (Enabled: yes/no).
+    description: "Whether the source is enabled (Enabled: yes/no)."
     type: bool
     default: true
   signed_by:
-    description: Absolute path to a keyring file used as Signed-By. If omitted and key.method is download/deb, derived from key config.
+    description: "Absolute path to a keyring file used as Signed-By. If omitted and key.method is download/deb, derived from key config."
     type: str
   key:
-    description: Key import configuration.
+    description: "Key import configuration."
     type: dict
     suboptions:
       method:
-        description: How to manage keys.
+        description: "How to manage keys."
         type: str
         choices: [none, download, deb]
         default: none
       url:
-        description: URL to download the key (download) or keyring .deb (deb).
+        description: "URL to download the key (download) or keyring .deb (deb)."
         type: str
       dest:
-        description: Destination keyring path for method=download.
+        description: "Destination keyring path for method=download."
         type: str
       checksum:
-        description: Optional SHA256 checksum of downloaded content (raw download). Enables strict idempotence and integrity checks.
+        description: "Optional SHA256 checksum of downloaded content (raw download). Enables strict idempotence and integrity checks."
         type: str
       dearmor:
-        description: If true and downloaded key is ASCII armored, dearmor via gpg to a binary keyring.
+        description: "If true and downloaded key is ASCII armored, dearmor via gpg to a binary keyring."
         type: bool
         default: true
       validate:
-        description: If true, validate the final key file via gpg --show-keys.
+        description: "If true, validate the final key file via gpg --show-keys."
         type: bool
         default: true
       mode:
-        description: File mode for key files / deb cache files.
+        description: "File mode for key files / deb cache files."
         type: str
         default: "0644"
       deb_cache_path:
-        description: Destination path for downloaded .deb when method=deb.
+        description: "Destination path for downloaded .deb when method=deb."
         type: str
       deb_keyring_path:
-        description: Explicit keyring path provided by that .deb (if auto-detection is not possible).
+        description: "Explicit keyring path provided by that .deb (if auto-detection is not possible)."
         type: str
   update_cache:
-    description: Run apt-get update if repo/key changed.
+    description: "Run apt-get update if repo/key changed."
     type: bool
     default: false
 """

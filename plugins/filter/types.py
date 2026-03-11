@@ -106,7 +106,7 @@ class FilterModule(object):
 
     def string_to_list(self, data):
         """ """
-        display.vv(f"bodsch.core.string_to_list({data})")
+        # display.vv(f"bodsch.core.string_to_list({data})")
 
         result = []
         if isinstance(data, str):
@@ -116,6 +116,6 @@ class FilterModule(object):
         elif isinstance(data, list):
             result = data
 
-        display.vv(f"= result: {result}")
+        # display.vv(f"= result: {result}")
 
         return result
