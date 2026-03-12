@@ -3,6 +3,10 @@
 bash_alias_common_aliases:
   - alias: ll
     command: "ls -lah"
+  - alias: "myip"
+    command: "curl --silent ifconfig.me"
+  - alias: scs
+    command: "systemctl status"
 
 bash_alias_users:
   - name: alice

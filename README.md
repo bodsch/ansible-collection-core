@@ -43,6 +43,7 @@ pip install netaddr
 | [bodsch.core.openvpn](./roles/openvpn/README.md)                           | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/openvpn.yml?branch=main)][openvpn] | Ansible role to install and configure openvpn server. |
 | [bodsch.core.sysctl](./roles/sysctl/README.md)                             | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/sysctl.yml?branch=main)][sysctl] | Ansible role to configure sysctl. |
 | [bodsch.core.sshd](./roles/sshd/README.md)                                 | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/sshd.yml?branch=main)][sshd] | Ansible role to configure sshd. |
+| [bodsch.core.bash_aliases](./roles/bash_aliases/README.md)                 | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-core/bash_aliases.yml?branch=main)][bash_aliases] | Ansible role to manage bash aliases and functions. |
 
 [pacman]: https://github.com/bodsch/ansible-collection-core/actions/workflows/pacman.yml
 [fail2ban]: https://github.com/bodsch/ansible-collection-core/actions/workflows/fail2ban.yml
@@ -53,6 +54,7 @@ pip install netaddr
 [openvpn]: https://github.com/bodsch/ansible-collection-core/actions/workflows/openvpn.yml
 [sysctl]: https://github.com/bodsch/ansible-collection-core/actions/workflows/sysctl.yml
 [sshd]: https://github.com/bodsch/ansible-collection-core/actions/workflows/sshd.yml
+[bash_aliases]: https://github.com/bodsch/ansible-collection-core/actions/workflows/bash_aliases.yml
 
 ### Modules
 
@@ -74,6 +76,7 @@ pip install netaddr
 | [bodsch.core.syslog_cmd](.plugins/modules/syslog_cmd.py)                            | Run syslog-ng with arbitrary command-line parameters |
 | [bodsch.core.apt_sources](.plugins/modules/apt_sources.py)                          | Manage APT deb822 (.sources) repositories with repo-specific keyrings. |
 | [bodsch.core.account_defaults](.plugins/modules/account_defaults.py)                | Resolve account defaults and primary group information. |
+| [bodsch.core.bash_aliases](.plugins/modules/bash_aliases.py)                        | Ansible module to manage bash aliases and functions for many users efficiently. |
 
 
 ### Module utils
@@ -397,6 +400,32 @@ or you can call modules by their short name if you list the `bodsch.core` collec
 ```
 
 
+### `bodsch.core.bash_aliases`
+
+```yaml
+- name: Manage bash aliases/functions for many users in one task
+  become: true
+  bodsch.core.bash_aliases:
+    state: present
+    backup: true
+    fail_on_error: true
+    common_aliases:
+      - alias: ll
+        command: "ls -lah"
+    users:
+      - name: alice
+        aliases:
+          - alias: foo
+            command: "echo 'foo'"
+        functions:
+          - name: mkcd
+            content: |
+              mkdir -p "$1" && cd "$1"
+      - name: bob
+        manage_bashrc: true
+        aliases: []
+        functions: []
+```
 
 
 ## Contribution
