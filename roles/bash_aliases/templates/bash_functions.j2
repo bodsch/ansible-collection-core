@@ -1,0 +1,11 @@
+# Managed by Ansible role "bash_alias". Do not edit manually.
+
+{% for f in (bash_alias_functions | default([])) %}
+{% if f.comment is defined and (f.comment | trim) %}
+# {{ f.comment | trim }}
+{% endif %}
+{{ f.name }}() {
+{{ (f.content | default("") | trim) | indent(2, true) }}
+}
+
+{% endfor %}

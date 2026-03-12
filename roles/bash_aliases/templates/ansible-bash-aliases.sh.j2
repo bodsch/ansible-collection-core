@@ -1,0 +1,78 @@
+# Managed by Ansible role "bash_alias". Do not edit manually.
+
+# Must be bash
+if [ -z "${BASH_VERSION-}" ]; then
+  return 0 2>/dev/null || exit 0
+fi
+
+# Only interactive shells
+case "$-" in
+  *i*) ;;
+  *) return 0 ;;
+esac
+
+# ----- common functions -----
+{% for f in (bash_alias_common_functions | default([])) %}
+{% if f.comment is defined and (f.comment | trim) %}
+# {{ f.comment | trim }}
+{% endif %}
+{{ f.name }}() {
+{{ (f.content | default("") | trim) | indent(2, true) }}
+}
+
+{% endfor %}
+
+# ----- common aliases -----
+{% for a in (bash_alias_common_aliases | default([])) %}
+{% if a.comment is defined and (a.comment | trim) %}
+# {{ a.comment | trim }}
+{% endif %}
+alias {{ a.alias }}='{{ (a.command | default("") ) | replace("'", "'\"'\"'") }}'
+{% endfor %}
+
+# ----- per-user -----
+__ansible_user="${USER:-$(id -un 2>/dev/null)}"
+case "$__ansible_user" in
+{% for u in (bash_alias_users | default([])) %}
+  {{ u.name }})
+{% for f in (u.functions | default([])) %}
+{% if f.comment is defined and (f.comment | trim) %}    # {{ f.comment | trim }}{% endif %}
+    {{ f.name }}() {
+{{ (f.content | default("") | trim) | indent(6, true) }}
+    }
+
+{% endfor %}
+{% for a in (u.aliases | default([])) %}
+{% if a.comment is defined and (a.comment | trim) %}    # {{ a.comment | trim }}{% endif %}
+    alias {{ a.alias }}='{{ (a.command | default("") ) | replace("'", "'\"'\"'") }}'
+{% endfor %}
+    ;;
+{% endfor %}
+  *)
+    ;;
+esac
+
+{% if bash_alias_enable_groups | default(false) %}
+# ----- per-group (optional, costs an `id -nG`) -----
+__ansible_groups="$(id -nG 2>/dev/null || true)"
+{% for g in (bash_alias_groups | default([])) %}
+case " $__ansible_groups " in
+  *" {{ g.name }} "*)
+{% for f in (g.functions | default([])) %}
+{% if f.comment is defined and (f.comment | trim) %}    # {{ f.comment | trim }}{% endif %}
+    {{ f.name }}() {
+{{ (f.content | default("") | trim) | indent(6, true) }}
+    }
+
+{% endfor %}
+{% for a in (g.aliases | default([])) %}
+{% if a.comment is defined and (a.comment | trim) %}    # {{ a.comment | trim }}{% endif %}
+    alias {{ a.alias }}='{{ (a.command | default("") ) | replace("'", "'\"'\"'") }}'
+{% endfor %}
+    ;;
+esac
+{% endfor %}
+unset __ansible_groups
+{% endif %}
+
+unset __ansible_user

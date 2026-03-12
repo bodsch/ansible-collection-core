@@ -54,7 +54,7 @@ jobs:
         image:
           - archlinux:latest
         ansible-version:
-          - '8.5'
+          - '13.0'
         python_version:
           - "3.10"
           - "3.11"
@@ -69,6 +69,7 @@ jobs:
           - openvpn
           - sysctl
           - sshd
+          - bash_aliases
 
     steps:
       - name: check out the codebase.
