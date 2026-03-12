@@ -16,13 +16,13 @@ bash_alias_users:
   - name: bob
     aliases: []
     functions: []
-  - name: carol
-  - name: dave
-  - name: erin
-  - name: frank
-  - name: grace
-  - name: heidi
-  - name: ivan
-  - name: judy
+  # - name: carol
+  # - name: dave
+  # - name: erin
+  # - name: frank
+  # - name: grace
+  # - name: heidi
+  # - name: ivan
+  # - name: judy
 
 ...
