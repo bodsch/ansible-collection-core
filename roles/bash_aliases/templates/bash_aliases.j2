@@ -1,0 +1,8 @@
+# Managed by Ansible role "bash_alias". Do not edit manually.
+
+{% for a in (bash_alias_aliases | default([])) %}
+{% if a.comment is defined and (a.comment | trim) %}
+# {{ a.comment | trim }}
+{% endif %}
+alias {{ a.alias }}='{{ (a.command | default("") ) | replace("'", "'\"'\"'") }}'
+{% endfor %}

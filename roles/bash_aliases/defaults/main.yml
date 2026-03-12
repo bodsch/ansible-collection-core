@@ -1,0 +1,41 @@
+---
+
+bash_alias_profiled_path: "/etc/profile.d/99-ansible-bash-aliases.sh"
+bash_alias_mode: "0644"
+
+# Common (für alle User) – wird pro User mit dessen eigenen Listen zusammengeführt
+bash_alias_common_aliases: []
+bash_alias_common_functions: []
+
+bash_alias_enable_groups: false
+bash_alias_groups: []
+
+# Multi-User Definition
+# Beispiel:
+# bash_alias_users:
+#   - name: alice
+#     aliases: [...]
+#     functions: [...]
+#   - name: bob
+#     aliases: [...]
+#     functions: [...]
+bash_alias_users: []
+
+# Defaults pro User (können pro User überschrieben werden)
+bash_alias_user_defaults:
+  manage_aliases: true
+  manage_functions: true
+  manage_bashrc: true
+
+  aliases_path: ""     # optional override
+  functions_path: ""   # optional override
+  bashrc_path: ""      # optional override
+
+  aliases_filename: ".bash_aliases"
+  functions_filename: ".bash_functions"
+  bashrc_filename: ".bashrc"
+
+  mode: "0644"
+  bashrc_mode: "0644"
+
+...

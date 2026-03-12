@@ -1,0 +1,102 @@
+---
+- name: "Validate user object"
+  ansible.builtin.assert:
+    that:
+      - bash_alias_user is mapping
+      - bash_alias_user.name is defined
+      - bash_alias_user.name | length > 0
+    fail_msg: "Jeder Eintrag in bash_alias_users benötigt mindestens: { name: <username> }"
+
+- name: "Merge per-user config with defaults"
+  ansible.builtin.set_fact:
+    _bash_alias_u: "{{ bash_alias_user_defaults | combine(bash_alias_user, recursive=True) }}"
+
+- name: "Load passwd entry for user (home & gid)"
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ _bash_alias_u.name }}"
+
+- name: "Fail if user does not exist on target"
+  ansible.builtin.assert:
+    that:
+      - getent_passwd[_bash_alias_u.name] is defined
+    fail_msg: "User '{{ _bash_alias_u.name }}' existiert nicht auf dem Zielsystem (getent passwd)."
+
+- name: "Derive resolved paths"
+  ansible.builtin.set_fact:
+    _bash_alias_home: "{{ getent_passwd[_bash_alias_u.name][4] }}"
+    _bash_alias_gid: "{{ getent_passwd[_bash_alias_u.name][2] }}"
+    _bash_alias_aliases_path: >-
+      {{
+        (_bash_alias_u.aliases_path | length > 0)
+        | ternary(_bash_alias_u.aliases_path, _bash_alias_home ~ '/' ~ _bash_alias_u.aliases_filename)
+      }}
+    _bash_alias_functions_path: >-
+      {{
+        (_bash_alias_u.functions_path | length > 0)
+        | ternary(_bash_alias_u.functions_path, _bash_alias_home ~ '/' ~ _bash_alias_u.functions_filename)
+      }}
+    _bash_alias_bashrc_path: >-
+      {{
+        (_bash_alias_u.bashrc_path | length > 0)
+        | ternary(_bash_alias_u.bashrc_path, _bash_alias_home ~ '/' ~ _bash_alias_u.bashrc_filename)
+      }}
+    _bash_alias_render_aliases: "{{ (bash_alias_common_aliases | default([])) + (_bash_alias_u.aliases | default([])) }}"
+    _bash_alias_render_functions: "{{ (bash_alias_common_functions | default([])) + (_bash_alias_u.functions | default([])) }}"
+
+- name: "Ensure parent dir for aliases exists (custom paths)"
+  ansible.builtin.file:
+    path: "{{ _bash_alias_aliases_path | dirname }}"
+    state: directory
+    mode: "0755"
+  when: _bash_alias_u.manage_aliases
+
+- name: "Ensure parent dir for functions exists (custom paths)"
+  ansible.builtin.file:
+    path: "{{ _bash_alias_functions_path | dirname }}"
+    state: directory
+    mode: "0755"
+  when: _bash_alias_u.manage_functions
+
+- name: "Render aliases file (idempotent) with backup on change"
+  ansible.builtin.template:
+    src: bash_aliases.j2
+    dest: "{{ _bash_alias_aliases_path }}"
+    owner: "{{ _bash_alias_u.name }}"
+    group: "{{ _bash_alias_gid }}"
+    mode: "{{ _bash_alias_u.mode }}"
+    backup: true
+  vars:
+    bash_alias_aliases: "{{ _bash_alias_render_aliases }}"
+  when: _bash_alias_u.manage_aliases
+
+- name: "Render functions file (idempotent) with backup on change"
+  ansible.builtin.template:
+    src: bash_functions.j2
+    dest: "{{ _bash_alias_functions_path }}"
+    owner: "{{ _bash_alias_u.name }}"
+    group: "{{ _bash_alias_gid }}"
+    mode: "{{ _bash_alias_u.mode }}"
+    backup: true
+  vars:
+    bash_alias_functions: "{{ _bash_alias_render_functions }}"
+  when: _bash_alias_u.manage_functions
+
+- name: "Ensure .bashrc sources managed files (idempotent) with backup on change"
+  ansible.builtin.blockinfile:
+    path: "{{ _bash_alias_bashrc_path }}"
+    create: true
+    owner: "{{ _bash_alias_u.name }}"
+    group: "{{ _bash_alias_gid }}"
+    mode: "{{ _bash_alias_u.bashrc_mode }}"
+    marker: "# {mark} ANSIBLE MANAGED BASH ALIASES"
+    block: |
+      # bash aliases / functions managed by Ansible (role: bash_alias)
+      if [ -f "{{ _bash_alias_aliases_path }}" ]; then
+        . "{{ _bash_alias_aliases_path }}"
+      fi
+      if [ -f "{{ _bash_alias_functions_path }}" ]; then
+        . "{{ _bash_alias_functions_path }}"
+      fi
+    backup: true
+  when: _bash_alias_u.manage_bashrc

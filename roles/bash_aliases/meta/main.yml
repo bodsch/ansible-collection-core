@@ -1,0 +1,33 @@
+---
+
+galaxy_info:
+  role_name: bash_alias
+
+  author: Bodo Schulz
+  description: manage bash aliases
+
+  license: Apache
+  min_ansible_version: "2.13"
+
+  platforms:
+    - name: ArchLinux
+    - name: Debian
+      versions:
+        # 10
+        - buster
+        # 11
+        - bullseye
+        - bookworm
+    - name: Ubuntu
+      versions:
+        # 20.04
+        - focal
+
+  galaxy_tags:
+    - system
+    - bash
+    - aliases
+
+dependencies: []
+
+...

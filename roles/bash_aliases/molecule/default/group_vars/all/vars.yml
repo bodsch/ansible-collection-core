@@ -1,0 +1,28 @@
+---
+
+bash_alias_common_aliases:
+  - alias: ll
+    command: "ls -lah"
+
+bash_alias_users:
+  - name: alice
+    aliases:
+      - alias: foo
+        command: "echo 'foo'"
+    functions:
+      - name: mkcd
+        content: |
+          mkdir -p "$1" && cd "$1"
+  - name: bob
+    aliases: []
+    functions: []
+  - name: carol
+  - name: dave
+  - name: erin
+  - name: frank
+  - name: grace
+  - name: heidi
+  - name: ivan
+  - name: judy
+
+...
