@@ -54,11 +54,10 @@ jobs:
         image:
           - archlinux:latest
         ansible-version:
-          - '13.0'
+          - '10.7'
         python_version:
-          - "3.10"
-          - "3.11"
           - "3.12"
+          - "3.13"
         scenario:
           - default
         collection_role:
