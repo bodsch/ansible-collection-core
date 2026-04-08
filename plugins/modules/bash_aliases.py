@@ -30,7 +30,6 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from ansible.module_utils.basic import AnsibleModule
 
-
 DOCUMENTATION = r"""
 ---
 module: bash_aliases
@@ -294,12 +293,12 @@ class BashAliasManager:
         self._check_mode: bool = bool(module.check_mode)
 
         self._users_param: Sequence[Mapping[str, Any]] = module.params["users"] or []
-        self._common_aliases_param: Sequence[Mapping[str, Any]] = module.params[
-            "common_aliases"
-        ] or []
-        self._common_functions_param: Sequence[Mapping[str, Any]] = module.params[
-            "common_functions"
-        ] or []
+        self._common_aliases_param: Sequence[Mapping[str, Any]] = (
+            module.params["common_aliases"] or []
+        )
+        self._common_functions_param: Sequence[Mapping[str, Any]] = (
+            module.params["common_functions"] or []
+        )
 
     def run(self) -> Dict[str, Any]:
         """
@@ -309,8 +308,12 @@ class BashAliasManager:
             A dict containing changed/results/summary. If failures occurred and
             fail_on_error is true, the returned dict includes failed=True and msg.
         """
-        common_aliases = self._validate_aliases(self._common_aliases_param, scope="common_aliases")
-        common_functions = self._validate_functions(self._common_functions_param, scope="common_functions")
+        common_aliases = self._validate_aliases(
+            self._common_aliases_param, scope="common_aliases"
+        )
+        common_functions = self._validate_functions(
+            self._common_functions_param, scope="common_functions"
+        )
 
         overall_changed = False
         results: List[Dict[str, Any]] = []
@@ -398,8 +401,12 @@ class BashAliasManager:
         bashrc_path = os.path.join(user.home, user.bashrc_filename)
 
         if state == "present":
-            aliases_content = self._render_aliases(tuple(common_aliases) + tuple(user.aliases))
-            functions_content = self._render_functions(tuple(common_functions) + tuple(user.functions))
+            aliases_content = self._render_aliases(
+                tuple(common_aliases) + tuple(user.aliases)
+            )
+            functions_content = self._render_functions(
+                tuple(common_functions) + tuple(user.functions)
+            )
 
             changed |= self._ensure_file(aliases_path, aliases_content, user, files)
             changed |= self._ensure_file(functions_path, functions_content, user, files)
@@ -426,7 +433,9 @@ class BashAliasManager:
                         check_executemode=self._check_mode,
                     )
                     changed = True
-                    files.append(FileChange(path=bashrc_path, action="updated", backup=bkp))
+                    files.append(
+                        FileChange(path=bashrc_path, action="updated", backup=bkp)
+                    )
                 else:
                     files.append(FileChange(path=bashrc_path, action="unchanged"))
             else:
@@ -452,7 +461,9 @@ class BashAliasManager:
             return None
         return self._module.backup_local(path)
 
-    def _ensure_file(self, path: str, content: str, user: UserSpec, files: List[FileChange]) -> bool:
+    def _ensure_file(
+        self, path: str, content: str, user: UserSpec, files: List[FileChange]
+    ) -> bool:
         """
         Ensure file exists with exact content.
 
@@ -464,13 +475,27 @@ class BashAliasManager:
 
         if not exists or current is None:
             bkp = self._maybe_backup(path)
-            self._atomic_write_text(path, desired, mode=0o644, uid=user.uid, gid=user.gid, check_mode=self._check_mode)
+            self._atomic_write_text(
+                path,
+                desired,
+                mode=0o644,
+                uid=user.uid,
+                gid=user.gid,
+                check_mode=self._check_mode,
+            )
             files.append(FileChange(path=path, action="created", backup=bkp))
             return True
 
         if current != desired:
             bkp = self._maybe_backup(path)
-            self._atomic_write_text(path, desired, mode=0o644, uid=user.uid, gid=user.gid, check_mode=self._check_mode)
+            self._atomic_write_text(
+                path,
+                desired,
+                mode=0o644,
+                uid=user.uid,
+                gid=user.gid,
+                check_mode=self._check_mode,
+            )
             files.append(FileChange(path=path, action="updated", backup=bkp))
             return True
 
@@ -514,7 +539,9 @@ class BashAliasManager:
             ]
         )
 
-    def _ensure_bashrc_block(self, bashrc_path: str, block: str, user: UserSpec, files: List[FileChange]) -> bool:
+    def _ensure_bashrc_block(
+        self, bashrc_path: str, block: str, user: UserSpec, files: List[FileChange]
+    ) -> bool:
         """
         Ensure .bashrc contains the desired marker block (replace or append).
 
@@ -537,7 +564,9 @@ class BashAliasManager:
             post = existing_text[end + len(_MARKER_END) :].lstrip("\n")
             merged = (pre + "\n" + desired_block + "\n" + post).rstrip("\n") + "\n"
         else:
-            merged = (existing_text.rstrip("\n") + "\n\n" + desired_block + "\n").lstrip("\n")
+            merged = (
+                existing_text.rstrip("\n") + "\n\n" + desired_block + "\n"
+            ).lstrip("\n")
 
         if merged == existing_text:
             files.append(FileChange(path=bashrc_path, action="unchanged"))
@@ -552,7 +581,13 @@ class BashAliasManager:
             gid=user.gid,
             check_mode=self._check_mode,
         )
-        files.append(FileChange(path=bashrc_path, action=("created" if not exists else "updated"), backup=bkp))
+        files.append(
+            FileChange(
+                path=bashrc_path,
+                action=("created" if not exists else "updated"),
+                backup=bkp,
+            )
+        )
         return True
 
     @staticmethod
@@ -575,7 +610,9 @@ class BashAliasManager:
         return n
 
     @staticmethod
-    def _validate_aliases(raw: Sequence[Mapping[str, Any]], scope: str) -> Tuple[AliasSpec, ...]:
+    def _validate_aliases(
+        raw: Sequence[Mapping[str, Any]], scope: str
+    ) -> Tuple[AliasSpec, ...]:
         """
         Validate and normalize alias specs.
 
@@ -595,13 +632,17 @@ class BashAliasManager:
             if not name or not _ALIAS_NAME_RE.match(name):
                 raise ValueError(f"{scope}[{idx}].alias: invalid alias name: {name!r}")
             if cmd == "":
-                raise ValueError(f"{scope}[{idx}].command: must not be empty for alias {name!r}")
+                raise ValueError(
+                    f"{scope}[{idx}].command: must not be empty for alias {name!r}"
+                )
 
             out.append(AliasSpec(name=name, command=cmd, comment=comment))
         return tuple(out)
 
     @staticmethod
-    def _validate_functions(raw: Sequence[Mapping[str, Any]], scope: str) -> Tuple[FunctionSpec, ...]:
+    def _validate_functions(
+        raw: Sequence[Mapping[str, Any]], scope: str
+    ) -> Tuple[FunctionSpec, ...]:
         """
         Validate and normalize function specs.
 
@@ -619,9 +660,13 @@ class BashAliasManager:
             comment = str(item.get("comment", "") or "").strip()
 
             if not name or not _FUNC_NAME_RE.match(name):
-                raise ValueError(f"{scope}[{idx}].name: invalid function name: {name!r}")
+                raise ValueError(
+                    f"{scope}[{idx}].name: invalid function name: {name!r}"
+                )
             if content.strip() == "":
-                raise ValueError(f"{scope}[{idx}].content: must not be empty for function {name!r}")
+                raise ValueError(
+                    f"{scope}[{idx}].content: must not be empty for function {name!r}"
+                )
 
             out.append(FunctionSpec(name=name, content=content, comment=comment))
         return tuple(out)
@@ -644,18 +689,28 @@ class BashAliasManager:
 
         home = pw.pw_dir
         if not home or not os.path.isabs(home) or not os.path.isdir(home):
-            raise ValueError(f"User {name!r} has invalid or missing home directory: {home!r}")
+            raise ValueError(
+                f"User {name!r} has invalid or missing home directory: {home!r}"
+            )
 
         manage_bashrc = bool(entry.get("manage_bashrc", True))
-        aliases_filename = self._validate_filename(entry.get("aliases_filename", ".bash_aliases"), "aliases_filename")
-        functions_filename = self._validate_filename(entry.get("functions_filename", ".bash_functions"), "functions_filename")
-        bashrc_filename = self._validate_filename(entry.get("bashrc_filename", ".bashrc"), "bashrc_filename")
+        aliases_filename = self._validate_filename(
+            entry.get("aliases_filename", ".bash_aliases"), "aliases_filename"
+        )
+        functions_filename = self._validate_filename(
+            entry.get("functions_filename", ".bash_functions"), "functions_filename"
+        )
+        bashrc_filename = self._validate_filename(
+            entry.get("bashrc_filename", ".bashrc"), "bashrc_filename"
+        )
 
         aliases_raw = entry.get("aliases", []) or []
         funcs_raw = entry.get("functions", []) or []
 
         aliases = self._validate_aliases(aliases_raw, scope=f"users[{name}].aliases")
-        functions = self._validate_functions(funcs_raw, scope=f"users[{name}].functions")
+        functions = self._validate_functions(
+            funcs_raw, scope=f"users[{name}].functions"
+        )
 
         return UserSpec(
             name=name,
@@ -743,7 +798,9 @@ class BashAliasManager:
             return True, None
 
     @staticmethod
-    def _atomic_write_text(path: str, content: str, mode: int, uid: int, gid: int, check_mode: bool) -> None:
+    def _atomic_write_text(
+        path: str, content: str, mode: int, uid: int, gid: int, check_mode: bool
+    ) -> None:
         """
         Write file atomically with desired ownership and permissions.
 
@@ -821,7 +878,9 @@ def main() -> None:
         users=dict(type="list", elements="dict", required=True),
         common_aliases=dict(type="list", elements="dict", required=False, default=[]),
         common_functions=dict(type="list", elements="dict", required=False, default=[]),
-        state=dict(type="str", required=False, default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str", required=False, default="present", choices=["present", "absent"]
+        ),
         backup=dict(type="bool", required=False, default=False),
         fail_on_error=dict(type="bool", required=False, default=True),
     )
