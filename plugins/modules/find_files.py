@@ -1,5 +1,9 @@
-# Copyright: (c) 2017, Ansible Project
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+# (c) 2026, Bodo Schulz <bodo@boone-schulz.de>
+# Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
+# SPDX-License-Identifier: Apache-2.0
 
 """Ansible module to collect stat information for multiple paths."""
 
@@ -19,7 +23,7 @@ DOCUMENTATION = r"""
 ---
 module: find_files
 version_added: "2.12.0"
-author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+author: "Bodo Schulz (@bodsch) <me+ansible@bodsch.me>"
 
 short_description: Collect file status information for multiple paths
 description:
@@ -186,10 +190,14 @@ class FindFiles:
         self.module = module
         self.module.log("FindFiles::__init__()")
 
-        self.file_list: List[str] = self._normalize_file_list(module.params.get("file_list"))
+        self.file_list: List[str] = self._normalize_file_list(
+            module.params.get("file_list")
+        )
         self.follow: bool = bool(module.params.get("follow"))
         self.get_checksum: bool = bool(module.params.get("get_checksum"))
-        self.checksum_algorithm: str = cast(str, module.params.get("checksum_algorithm"))
+        self.checksum_algorithm: str = cast(
+            str, module.params.get("checksum_algorithm")
+        )
 
     def run(self) -> ModuleResult:
         """Collect stat information for all requested paths.
@@ -314,7 +322,9 @@ class FindFiles:
 def main() -> None:
     """Entrypoint for the Ansible module."""
     argument_spec: Dict[str, Any] = {
-        "file_list": dict(type="list", elements="str", required=True, aliases=["names"]),
+        "file_list": dict(
+            type="list", elements="str", required=True, aliases=["names"]
+        ),
         "follow": dict(type="bool", default=False),
         "get_checksum": dict(type="bool", default=False),
         "checksum_algorithm": dict(
