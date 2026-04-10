@@ -77,6 +77,7 @@ pip install netaddr
 | [bodsch.core.apt_sources](.plugins/modules/apt_sources.py)                          | Manage APT deb822 (.sources) repositories with repo-specific keyrings. |
 | [bodsch.core.account_defaults](.plugins/modules/account_defaults.py)                | Resolve account defaults and primary group information. |
 | [bodsch.core.bash_aliases](.plugins/modules/bash_aliases.py)                        | Ansible module to manage bash aliases and functions for many users efficiently. |
+| [bodsch.core.find_files](.plugins/modules/find_files.py)                            | Ansible module to collect file status information for multiple paths. |
 
 
 ### Module utils
@@ -84,6 +85,8 @@ pip install netaddr
 | Name                      | Description |
 |:--------------------------|:----|
 | [bodsch.core.passlib_bcrypt5_compat](./plugins/module_utils/passlib_bcrypt5_compat.py) | Compatibility helpers for using `passlib` 1.7.4 with `bcrypt` 5.x |
+| [bodsch.core.atomic_file](./plugins/module_utils/atomic_file.py)                       | atomic file replacement. |
+
 
 
 ### Actions
@@ -427,6 +430,53 @@ or you can call modules by their short name if you list the `bodsch.core` collec
         functions: []
 ```
 
+### `bodsch.core.find_files`
+
+```yaml
+- name: Collect file information for multiple paths
+  bodsch.core.find_files:
+    file_list:
+      - /etc/passwd
+      - /etc/shadow
+      - /does/not/exist
+      
+- name: Use SHA-512 for checksums
+  bodsch.core.find_files:
+    names:
+      - /etc/hosts
+      - /etc/resolv.conf
+    get_checksum: true
+    checksum_algorithm: sha512
+```
+
+
+
+### `bodsch.core.atomic_file`
+
+```yaml
+from ansible_collections.bodsch.php.plugins.module_utils.atomic_file import AtomicFileWriter
+
+try:
+    with AtomicFileWriter(
+        destination=data_file,
+        mode="w",
+        encoding="utf-8",
+    ) as file_handle:
+        file_handle.write(data)
+
+    exists = data_path.exists()
+
+    if not exists:
+        raise OSError(
+            f"Atomic write reported success, but destination is missing: {data_file}"
+        )
+
+    os.chmod(data_file, 0o0664)
+
+except (FileNotFoundError, NotADirectoryError, PermissionError, OSError) as exc:
+    self.module.log(f"ERROR: Atomic file write failed: {exc}")
+    raise
+```
 
 ## Contribution
 
