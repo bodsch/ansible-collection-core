@@ -1,18 +1,14 @@
-import os
+# coding: utf-8
+from __future__ import annotations, unicode_literals
 
 import pytest
-import testinfra.utils.ansible_runner
-import yaml
+from helper.molecule import get_vars, infra_hosts, local_facts
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ["MOLECULE_INVENTORY_FILE"]
-).get_hosts("all")
+testinfra_hosts = infra_hosts(host_name="all")
 
+# --- tests -----------------------------------------------------------------
 
-@pytest.fixture()
-def AnsibleDefaults():
-    with open("../../defaults/main.yml", "r") as stream:
-        return yaml.load(stream)
+# _facts = local_facts(host=host, fact="fail2ban")
 
 
 @pytest.mark.parametrize(
@@ -27,7 +23,6 @@ def AnsibleDefaults():
 def test_directories(host, dirs):
     d = host.file(dirs)
     assert d.is_directory
-    assert d.exists
 
 
 @pytest.mark.parametrize(
@@ -40,5 +35,4 @@ def test_directories(host, dirs):
 )
 def test_files(host, files):
     f = host.file(files)
-    assert f.exists
     assert f.is_file
