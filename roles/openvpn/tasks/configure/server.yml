@@ -150,7 +150,7 @@
 # ------------------------------------------------------------------------------------------------
 
 - name: create or revoke client certificate
-  delegate_to: "{{ openvpn_server.name }}"
+  delegate_to: "{{ openvpn_server.name }}" # has no name
   bodsch.core.openvpn_client_certificate:
     clients: "{{ openvpn_client_list }}"
     working_dir: '{{ openvpn_easyrsa.directory }}'

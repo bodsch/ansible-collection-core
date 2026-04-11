@@ -19,7 +19,7 @@ module: openvpn
 short_description: Generate OpenVPN tls-auth key or create an Easy-RSA client and inline .ovpn configuration
 version_added: "1.1.3"
 author:
-  - Bodo Schulz (@bodsch) <bodsch@boone-schulz.de>
+  - Bodo Schulz (@bodsch) <me+ansible@bodsch.me>
 
 description:
   - Generates an OpenVPN static key (tls-auth / ta.key) using C(openvpn --genkey).

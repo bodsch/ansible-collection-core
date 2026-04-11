@@ -1,6 +1,20 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# (c) 2024-2026, Bodo Schulz <bodo@boone-schulz.de>
+# Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
+# SPDX-License-Identifier: Apache-2.0
+
+"""
+Ansible module to create or remove an inline OpenVPN client configuration.
+
+This module builds an inline OpenVPN client configuration file from an
+Easy-RSA-style PKI layout. It reads the client private key and certificate,
+renders them into a fixed Jinja2 template, writes the resulting ``.ovpn`` file,
+and stores a checksum sidecar file for basic change validation. It can also
+remove the generated configuration and its checksum file.
+"""
+
 # (c) 2022, Bodo Schulz <bodo@boone-schulz.de>
 
 from __future__ import absolute_import, division, print_function
@@ -19,7 +33,7 @@ module: openvpn_ovpn
 short_description: Create or remove an inline OpenVPN client configuration (.ovpn) from Easy-RSA client credentials
 version_added: "1.1.3"
 author:
-  - Bodo Schulz (@bodsch) <bodo@boone-schulz.de>
+  - Bodo Schulz (@bodsch) <me+ansible@bodsch.me>
 
 description:
   - Creates an inline OpenVPN client configuration file (C(.ovpn)) containing embedded client key and certificate.
@@ -149,14 +163,22 @@ message:
 
 class OpenVPNOvpn(object):
     """
-    Main Class to implement the Icinga2 API Client
+    Manage creation and removal of inline OpenVPN client configuration files.
+
+    The class resolves all relevant paths, validates checksum state, creates
+    rendered ``.ovpn`` files from client credentials, and removes generated
+    artifacts when requested.
     """
 
     module = None
 
     def __init__(self, module):
         """
-        Initialize all needed Variables
+        Initialize the module wrapper and resolve all file paths.
+
+        Args:
+            module: Active Ansible module instance providing parameters,
+                logging, and result handling.
         """
         self.module = module
 
@@ -183,7 +205,14 @@ class OpenVPNOvpn(object):
 
     def run(self):
         """
-        runner
+        Execute the requested module workflow.
+
+        The method optionally changes into the configured working directory,
+        validates checksum state, applies force handling, honors the optional
+        marker file, and dispatches to the requested present or absent action.
+
+        Returns:
+            dict: Result dictionary describing the module outcome.
         """
         result = dict(failed=False, changed=False, ansible_module_results="none")
 
@@ -215,7 +244,18 @@ class OpenVPNOvpn(object):
         return result
 
     def __create_ovpn_config(self):
-        """ """
+        """
+        Create the inline OpenVPN client configuration file.
+
+        The method reads the client key and certificate from the Easy-RSA PKI,
+        renders the fixed client template, writes the resulting ``.ovpn`` file,
+        creates the checksum sidecar file, and sets file permissions to
+        ``0600``.
+
+        Returns:
+            dict: Result dictionary describing whether the configuration was
+            created successfully or why creation failed.
+        """
         if os.path.exists(self.dst_file):
             return dict(
                 failed=False,
@@ -224,7 +264,6 @@ class OpenVPNOvpn(object):
             )
 
         if os.path.exists(self.key_file) and os.path.exists(self.crt_file):
-            """ """
             from jinja2 import Template
 
             with open(self.key_file, "r") as k_file:
@@ -264,7 +303,15 @@ class OpenVPNOvpn(object):
             )
 
     def __remove_ovpn_config(self):
-        """ """
+        """
+        Remove the generated OpenVPN client configuration artifacts.
+
+        The method removes the ``.ovpn`` file, the checksum sidecar file, and
+        the optional marker file when present.
+
+        Returns:
+            dict: Result dictionary describing the removal outcome.
+        """
         if os.path.exists(self.dst_file):
             os.remove(self.dst_file)
 
@@ -281,7 +328,19 @@ class OpenVPNOvpn(object):
         )
 
     def __extract_certs_as_strings(self, cert_file):
-        """ """
+        """
+        Extract PEM certificate blocks from a certificate file.
+
+        The method parses the file line by line and returns all complete
+        certificate blocks as individual strings.
+
+        Args:
+            cert_file: Path to the certificate file that may contain one or
+                more PEM certificate blocks.
+
+        Returns:
+            list: List of PEM certificate strings in the order they were found.
+        """
         certs = []
         with open(cert_file) as whole_cert:
             cert_started = False
@@ -313,7 +372,16 @@ class OpenVPNOvpn(object):
         return certs
 
     def __validate_checksums(self):
-        """ """
+        """
+        Validate the checksum of the generated client configuration file.
+
+        If the checksum sidecar file is missing but the destination file exists,
+        the checksum file is created automatically.
+
+        Returns:
+            bool: C(True) when the current checksum matches the stored checksum,
+            otherwise C(False).
+        """
         dst_checksum = None
         dst_old_checksum = None
 
@@ -339,7 +407,16 @@ class OpenVPNOvpn(object):
         return valid
 
     def __create_checksum_file(self, filename, checksumfile):
-        """ """
+        """
+        Create or update the checksum sidecar file for a given file.
+
+        Args:
+            filename: Path to the file whose checksum should be calculated.
+            checksumfile: Path to the checksum sidecar file to write.
+
+        Returns:
+            str: SHA256 checksum value of the input file content.
+        """
         if os.path.exists(filename):
             with open(filename, "r") as d:
                 _data = d.read().rstrip("\n")
@@ -351,19 +428,28 @@ class OpenVPNOvpn(object):
         return _checksum
 
     def __checksum(self, plaintext):
-        """ """
+        """
+        Calculate the SHA256 checksum of a text value.
+
+        Args:
+            plaintext: Text value that should be hashed.
+
+        Returns:
+            str: Hexadecimal SHA256 digest of the input text.
+        """
         _bytes = plaintext.encode("utf-8")
         _hash = hashlib.sha256(_bytes)
         return _hash.hexdigest()
 
 
-# ===========================================
-# Module execution.
-#
-
-
 def main():
-    """ """
+    """
+    Create the Ansible module instance and execute the module workflow.
+
+    The function defines the module argument specification, instantiates the
+    module wrapper, executes the requested action, and returns the final result
+    to Ansible.
+    """
     module = AnsibleModule(
         argument_spec=dict(
             state=dict(default="present", choices=["present", "absent"]),

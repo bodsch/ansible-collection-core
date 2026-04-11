@@ -1,7 +1,17 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# (c) 2023, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2024-2026, Bodo Schulz <bodo@boone-schulz.de>
+# Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
+# SPDX-License-Identifier: Apache-2.0
+
+"""
+Ansible module to read and parse the installed OpenVPN version.
+
+This module executes ``openvpn --version`` on the target host, extracts the
+semantic version string from the command output, and returns both the parsed
+version and the raw stdout for troubleshooting purposes.
+"""
 
 from __future__ import absolute_import, division, print_function
 
@@ -17,7 +27,7 @@ module: openvpn_version
 short_description: Read the installed OpenVPN version
 version_added: "1.1.3"
 author:
-  - Bodo Schulz (@bodsch) <bodo@boone-schulz.de>
+  - Bodo Schulz (@bodsch) <me+ansible@bodsch.me>
 
 description:
   - Executes C(openvpn --version) on the target host.
@@ -80,19 +90,38 @@ failed:
 
 
 class OpenVPN(object):
-    """ """
+    """
+    Query and parse the installed OpenVPN version.
+
+    The class encapsulates binary discovery, command execution, and extraction
+    of the semantic version string from the OpenVPN version output.
+    """
 
     module = None
 
     def __init__(self, module):
-        """ """
+        """
+        Initialize the module wrapper and resolve the OpenVPN binary path.
+
+        Args:
+            module: Active Ansible module instance used for parameter access,
+                logging, and command execution.
+        """
         self.module = module
 
         self._openvpn = module.get_bin_path("openvpn", True)
 
     def run(self):
         """
-        runner
+        Execute the version lookup workflow.
+
+        The method runs ``openvpn --version``, searches the command output for a
+        semantic version string, and returns the parsed version together with
+        the raw stdout content.
+
+        Returns:
+            dict: Result dictionary containing C(stdout), C(stdout_lines),
+            C(failed), and C(version).
         """
         _failed = True
         _version = "unknown"
@@ -126,7 +155,18 @@ class OpenVPN(object):
         )
 
     def _exec(self, commands):
-        """ """
+        """
+        Execute a command through the Ansible module helper.
+
+        If the command exits with a non-zero return code, stdout and stderr are
+        written to the module log for troubleshooting.
+
+        Args:
+            commands: Command argument list passed to C(run_command).
+
+        Returns:
+            tuple: Two-element tuple containing the return code and stdout.
+        """
         rc, out, err = self.module.run_command(commands, check_rc=False)
 
         if int(rc) != 0:
@@ -137,13 +177,14 @@ class OpenVPN(object):
         return rc, out
 
 
-# ===========================================
-# Module execution.
-#
-
-
 def main():
+    """
+    Create the Ansible module instance and execute the version lookup.
 
+    The function defines the argument specification, instantiates the module
+    wrapper class, executes the workflow, and returns the final result to
+    Ansible.
+    """
     args = dict()
 
     module = AnsibleModule(

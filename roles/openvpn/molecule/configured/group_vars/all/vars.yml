@@ -18,8 +18,8 @@ openvpn_certificate:
   req_city: Eastvilage
 
 openvpn_server:
-  # external IP of VPN server (EIP)
-  external_ip: "{{ ansible_default_ipv4.address | default(ansible_all_ipv4_addresses[0]) }}"
+  name: instance
+  external_ip: "{{ ansible_facts.default_ipv4.address | default(ansible_facts.all_ipv4_addresses[0]) }}"
 
 openvpn_config_save_dir: ""
 

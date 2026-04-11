@@ -93,6 +93,6 @@ openvpn_mobile_clients:
     tls_auth:
       enabled: true
 
-openvpn_config_save_dir: "~/openvpn-configs"
+openvpn_config_save_dir: "/tmp/openvpn-configs"
 
 ...

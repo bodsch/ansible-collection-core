@@ -8,6 +8,7 @@ openvpn_persistent_pool:
     static_ip: 10.8.3.10
 
 openvpn_server:
+  name: instance
   user: "{{ openvpn_owner }}"
   group: "{{ openvpn_group }}"
 
