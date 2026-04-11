@@ -33,8 +33,6 @@ bash_alias_aliases: []
 bash_alias_functions: []
 ```
 
-
-
 ---
 
 ## Author

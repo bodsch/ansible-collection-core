@@ -8,46 +8,4 @@
     common_aliases: "{{ bash_alias_common_aliases | default([]) }}"
     common_functions: "{{ bash_alias_common_functions | default([]) }}"
 
-# - name: "Deploy global aliases/functions script (idempotent) with backup on change"
-#   ansible.builtin.template:
-#     src: "ansible-bash-aliases.sh.j2"
-#     dest: "{{ bash_alias_profiled_path }}"
-#     owner: "root"
-#     group: "root"
-#     mode: "{{ bash_alias_mode }}"
-#     backup: true
-#
-# - name: "Check candidate global bashrc paths"
-#   ansible.builtin.stat:
-#     path: "{{ item }}"
-#   loop:
-#     - /etc/bash.bashrc
-#     - /etc/bashrc
-#   register: _bashrc_stats
-#
-# - name: "Select global bashrc path"
-#   ansible.builtin.set_fact:
-#     bash_alias_global_bashrc_path_resolved: >-
-#       {{
-#         (_bashrc_stats.results | selectattr('stat.exists','equalto',true) | map(attribute='stat.path') | list | first)
-#         | default(
-#             (ansible_facts.os_family == 'Debian') | ternary('/etc/bash.bashrc', '/etc/bashrc')
-#           )
-#       }}
-#
-# - name: "Ensure global bashrc sources the Ansible script (idempotent) with backup on change"
-#   ansible.builtin.blockinfile:
-#     path: "{{ bash_alias_global_bashrc_path_resolved }}"
-#     create: true
-#     owner: "root"
-#     group: "root"
-#     mode: "0644"
-#     marker: "# {mark} ANSIBLE MANAGED BASH ALIASES"
-#     block: |
-#       # Load Ansible-managed aliases/functions
-#       if [ -f "{{ bash_alias_profiled_path }}" ]; then
-#         . "{{ bash_alias_profiled_path }}"
-#       fi
-#     backup: true
-
 ...

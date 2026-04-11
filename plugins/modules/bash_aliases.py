@@ -1,5 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
+
+# (c) 2026, Bodo Schulz <bodo@boone-schulz.de>
+# Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
+# SPDX-License-Identifier: Apache-2.0
 
 """
 Ansible module to manage bash aliases and functions for many users efficiently.
@@ -35,7 +39,8 @@ DOCUMENTATION = r"""
 module: bash_aliases
 version_added: 2.11.0
 author:
-  - "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+  - "Bodo Schulz (@bodsch) <me+ansible@bodsch.me>"
+
 short_description: Manage bash aliases and functions for many users (idempotent, fast)
 description:
   - Validates users and their home directories.
@@ -43,6 +48,7 @@ description:
   - Optionally ensures C(.bashrc) sources these files via a managed marker block.
   - Designed to avoid Ansible task loops by handling all users in a single module run.
   - Continues processing all users and collects results; optionally fails at end if any user failed.
+
 options:
   users:
     description:

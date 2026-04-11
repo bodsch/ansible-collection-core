@@ -16,10 +16,10 @@ def test_directories(host, dirs):
     assert d.is_directory
 
 @pytest.mark.parametrize("files", [
-    "/home/alice/.profile",
-    "/home/alice/.bashrc",
-    "/home/bob/.profile",
-    "/home/bob/.bashrc",
+    "/home/alice/.bash_aliases",
+    "/home/alice/.bash_functions",
+    "/home/bob/.bash_aliases",
+    "/home/bob/.bash_functions",
 ])
 def test_files(host, files):
 
