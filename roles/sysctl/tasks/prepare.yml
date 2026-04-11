@@ -20,4 +20,18 @@
         - default.yml
       skip: true
 
+- name: detect ansible check_mode
+  bodsch.core.check_mode:
+  register: _check_mode
+
+- name: define running_in_check_mode
+  ansible.builtin.set_fact:
+    running_in_check_mode: '{{ _check_mode.check_mode }}'
+
+- name: detect docker environment
+  ansible.builtin.set_fact:
+    is_docker_guest: "{{
+      ansible_facts.virtualization_role | default('host') == 'guest' and
+      ansible_facts.virtualization_type | default('none') == 'docker' }}"
+
 ...

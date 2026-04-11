@@ -13,8 +13,5 @@
     - reload sysctl
   when:
     - item.name is defined
-    - item.rules is defined
-    - item.rules | count > 0
-    - ansible_connection not in [ "container", "docker", "community.docker.docker" ]
-  loop_control:
-    label: "{{ item.name }}"
+  #loop_control:
+  #  label: "{{ item.name }}"
