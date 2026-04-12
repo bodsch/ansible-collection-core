@@ -26,6 +26,10 @@ def test_directories(host, dirs):
     "files",
     [
         "/etc/logrotate.conf",
+        "/etc/logrotate.d/nofunc",
+        "/etc/logrotate.d/audit",
+        "/etc/logrotate.d/system",
+        "/etc/logrotate.d/icinga2",
     ],
 )
 def test_files(host, files):
