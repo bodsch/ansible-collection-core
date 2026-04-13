@@ -2,7 +2,7 @@
 
 mount_fstab: /etc/fstab
 
-mount_devices: []
+mount_smb_share: []
 #   - username: "bar"
 #     password: "foo"
 #     passwordfile: "/tmp/zorg.pass"
@@ -10,7 +10,7 @@ mount_devices: []
 #     password: "bar"
 #     passwordfile: "/tmp/foo.pass"
 
-mount_smb_share: []
+mount_devices: []
 #   - source: /dev/mapper/root        # NO default
 #     mountpoint: /                   # NO default
 #     fstype: ext4                    # NO default
