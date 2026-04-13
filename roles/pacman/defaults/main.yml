@@ -1,13 +1,71 @@
 ---
 
 pacman_config: {}
+#   architecture: auto
+#   color: true
+#   verbose_pkg_lists: true
+#   parallel_downloads: 2
+#   no_progress_bar: false
 
 pacman_options: {}
+#   no_extract:
+#     - "usr/share/help/* !usr/share/help/en*"
+#     - "usr/share/gtk-doc/html/*"
+#     - "usr/share/doc/*"
+#     - "usr/share/man/*"
+#     - "usr/share/info/*"
+#     - "usr/share/vim/vim*/lang/*"
 
 pacman_repositories: {}
+#   custom:
+#     enabled: false
+#     sig_level:
+#       - Optional
+#       - TrustAll
+#     server: file:///home/custompkgs
+#     usage:
+#       - All
+#
+#   core:
+#     enabled: true
+#     include: /etc/pacman.d/mirrorlist
 
 pacman_mirrors: {}
+#   "Default mirrors":
+#     enabled: true
+#     servers:
+#       - https://geo.mirror.pkgbuild.com/$repo/os/$arch
+#       - https://mirror.rackspace.com/archlinux/$repo/os/$arch
+#       - https://mirror.leaseweb.net/archlinux/$repo/os/$arch
 
+# primary useable for Artix
 pacman_custom_mirrors: []
+#   - file: /etc/pacman.d/mirrorlist-universe
+#     "universe":
+#       enabled: true
+#       servers:
+#         - https://universe.artixlinux.org/$arch
+#         - https://mirror1.artixlinux.org/universe/$arch
+#         - https://mirror.pascalpuffke.de/artix-universe/$arch
+#         - https://artixlinux.qontinuum.space/artixlinux/universe/os/$arch
+#         - https://mirror1.cl.netactuate.com/artix/universe/$arch
+#         - https://ftp.crifo.org/artix-universe/
+
+pacman_hooks: []
+#   - name: linux-modules-post
+#     trigger:
+#       operations:
+#         - Upgrade
+#       type: Package
+#       targets:
+#         - linux
+#     action:
+#       description: "Restore Linux kernel modules"
+#       when: PostTransaction
+#       depends:
+#         - coreutils
+#         - rsync
+#       exec:
+#         - /bin/sh -xc 'KVER="${KVER:-$(uname -r)}"; if test -e "/lib/modules/backup/${KVER}"; then rsync -AHXal --ignore-existing "/lib/modules/backup/${KVER}" /lib/modules/; fi; rm -rf /lib/modules/backup'
 
 ...
