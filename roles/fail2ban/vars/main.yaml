@@ -12,6 +12,8 @@ fail2ban_defaults_conf:
     socket: /run/fail2ban/fail2ban.sock
     # Set the PID file. This is used to store the process ID of the fail2ban server.
     pidfile: /run/fail2ban/fail2ban.pid
+    # Allows IPv6 interface
+    allowipv6: ""
     # Set the file for the fail2ban persistent data to be stored.
     dbfile: /var/lib/fail2ban/fail2ban.sqlite3
     # Sets age at which bans should be purged from the database

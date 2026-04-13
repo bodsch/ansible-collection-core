@@ -1,6 +1,6 @@
 ---
 
-name: syslog_ng
+name: bash_aliases
 
 on:
   workflow_dispatch:
@@ -23,8 +23,8 @@ on:
     paths:
       - "!Makefile"
       - "!README.md"
-      - 'roles/syslog_ng/**'
-      - '.github/workflows/syslog_ng.yml'
+      - 'roles/bash_aliases/**'
+      - '.github/workflows/bash_aliases.yml'
 
   pull_request:
     branches:
@@ -35,8 +35,8 @@ on:
     paths:
       - "!Makefile"
       - "!README.md"
-      - 'roles/syslog_ng/**'
-      - '.github/workflows/syslog_ng.yml'
+      - 'roles/bash_aliases/**'
+      - '.github/workflows/bash_aliases.yml'
 
 env:
   COLLECTION_NAMESPACE: bodsch
@@ -53,6 +53,7 @@ jobs:
       matrix:
         image:
           - debian:12
+          - debian:13
         ansible-version:
           - '9.5'
         python_version:
@@ -60,13 +61,11 @@ jobs:
         scenario:
           - default
         collection_role:
-          - syslog_ng
+          - bash_aliases
 
     steps:
       - name: check out the codebase.
         uses: actions/checkout@v6.0.2
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: 🐍 set up python
         uses: actions/setup-python@v6.2.0
@@ -116,69 +115,11 @@ jobs:
         scenario:
           - default
         collection_role:
-          - syslog_ng
+          - bash_aliases
 
     steps:
       - name: check out the codebase.
         uses: actions/checkout@v6.0.2
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
-
-      - name: 🐍 set up python
-        uses: actions/setup-python@v6.2.0
-        with:
-          python-version: "${{ matrix.python_version }}"
-
-      - name: install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r test-requirements.txt
-
-      - name: force reinstall of community.docker
-        run: |
-          mkdir -p /home/runner/.ansible/collections
-          ansible-galaxy collection install community.docker --force
-
-      - name: Install collection
-        run: |
-          make \
-            install
-
-      - name: test ${{ matrix.collection_role }} - ${{ matrix.scenario }}
-        run: |
-          make \
-            test \
-              -e TOX_ANSIBLE="ansible_${{ matrix.ansible-version }}" \
-              -e DISTRIBUTION="${{ matrix.image }}" \
-              -e COLLECTION_ROLE="${{ matrix.collection_role }}" \
-              -e COLLECTION_SCENARIO="${{ matrix.scenario }}"
-
-  scenarios:
-    name: "${{ matrix.image }} / ${{ matrix.scenario }} / ${{ matrix.ansible-version }} / ${{ matrix.python_version }}"
-    runs-on: ubuntu-22.04
-    needs:
-      - debian
-    strategy:
-      fail-fast: false
-      matrix:
-        image:
-          - debian:12
-        ansible-version:
-          - '9.5'
-        python_version:
-          - '3.12'
-        scenario:
-          - configured
-          - server-clients
-          - check_mode
-        collection_role:
-          - syslog_ng
-
-    steps:
-      - name: check out the codebase.
-        uses: actions/checkout@v6.0.2
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: 🐍 set up python
         uses: actions/setup-python@v6.2.0

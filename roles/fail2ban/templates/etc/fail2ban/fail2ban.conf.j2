@@ -48,6 +48,16 @@ socket = {{ fail2ban_conf.default.socket | default('/run/fail2ban/fail2ban.sock'
 #
 pidfile = {{ fail2ban_conf.default.pidfile | default('/run/fail2ban/fail2ban.pid') }}
 
+# Option: allowipv6
+# Notes.: Allows IPv6 interface:
+#         Default: auto
+# Values: [ auto yes (on, true, 1) no (off, false, 0) ] Default: auto
+{% if fail2ban_conf.default.allowipv6 is defined and
+      fail2ban_conf.default.allowipv6 | string | length > 0 and
+      fail2ban_conf.default.allowipv6 in ["auto", "true", "false"] %}
+allowipv6 = {{ fail2ban_conf.default.allowipv6 }}
+{% endif %}
+
 # Options: dbfile
 # Notes.: Set the file for the fail2ban persistent data to be stored.
 #         A value of ":memory:" means database is only stored in memory

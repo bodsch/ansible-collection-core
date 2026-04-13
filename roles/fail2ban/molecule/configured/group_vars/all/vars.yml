@@ -31,7 +31,6 @@ fail2ban_filters:
       before: common.conf
     definition:
       daemon: sshd
-    definition:
       failregex:
         - '^[iI]nvalid user <F-USER>.*?</F-USER> (?:from )?<HOST>'
         - '^Connection closed by invalid user <F-USER>.*?</F-USER>?<HOST>'
