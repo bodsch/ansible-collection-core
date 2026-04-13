@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2024-2026, Bodo Schulz <bodo@boone-schulz.de>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
@@ -27,7 +27,7 @@ __metaclass__ = type
 DOCUMENTATION = """
 module: pip_requirements
 version_added: 1.0.16
-author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+author: "Bodo Schulz (@bodsch) <me+ansible@bodsch.me>"
 
 short_description: This modules creates an requirement file to install python modules via pip.
 
@@ -223,11 +223,6 @@ class PipRequirements:
                     result.append(name)
 
         return result
-
-
-# ===========================================
-# Module execution.
-#
 
 
 def main():

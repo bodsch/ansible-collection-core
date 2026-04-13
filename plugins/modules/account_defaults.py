@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # (c) 2026, Bodo Schulz <bodo@boone-schulz.de>
+# Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
+# SPDX-License-Identifier: Apache-2.0
 
 """
 Ansible module to normalize account defaults and resolve a user's primary group.
@@ -23,7 +25,7 @@ DOCUMENTATION = r"""
 module: account_defaults
 version_added: "2.11.0"
 author:
-  - "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+  - "Bodo Schulz (@bodsch) <me+ansible@bodsch.me>"
 
 short_description: Resolve account defaults and primary group information
 

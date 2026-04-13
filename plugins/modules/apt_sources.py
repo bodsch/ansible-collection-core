@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020-2025, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2026, Bodo Schulz <bodo@boone-schulz.de>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
@@ -20,7 +20,7 @@ from ansible_collections.bodsch.core.plugins.module_utils.deb822_repo import (
 DOCUMENTATION = r"""
 module: apt_sources
 version_added: '2.9.0'
-author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+author: "Bodo Schulz (@bodsch) <me+ansible@bodsch.me>"
 
 short_description: "Manage APT deb822 (.sources) repositories with repo-specific keyrings."
 description:
@@ -28,6 +28,7 @@ description:
   - "Supports importing repo-specific signing keys either via downloading a key file (with optional
     dearmor/validation) or by installing a keyring .deb package (e.g. Sury keyring)."
   - "Optionally runs apt-get update when changes occur."
+
 options:
   name:
     description: "Logical name of the repository (used for defaults like filename)."

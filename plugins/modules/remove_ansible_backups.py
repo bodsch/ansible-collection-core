@@ -1,14 +1,24 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2024-2026, Bodo Schulz <bodo@boone-schulz.de>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
+
+"""
+Ansible module to remove older Ansible backup files.
+
+This module scans a directory tree for files that match the backup file naming
+pattern typically produced by Ansible. Matching files are grouped by their
+original file path, sorted chronologically by filename, and older backups are
+removed while retaining the configured number of most recent entries.
+"""
 
 from __future__ import absolute_import, division, print_function
 
 import os
 import re
+from typing import Dict, List, Optional, Pattern
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -16,43 +26,91 @@ __metaclass__ = type
 
 # ---------------------------------------------------------------------------------------
 
-DOCUMENTATION = """
+DOCUMENTATION = r"""
+---
 module: remove_ansible_backups
-version_added: 0.9.0
-author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+version_added: "0.9.0"
+author:
+  - "Bodo Schulz (@bodsch) <me+ansible@bodsch.me>"
 
-short_description: Remove older backup files created by ansible
+short_description: Remove older backup files created by Ansible.
 
 description:
-    - Remove older backup files created by ansible
+  - Search a directory recursively for backup files created by Ansible.
+  - Group matching backup files by their original file path.
+  - Remove older backups while keeping the configured number of newest files.
 
 options:
   path:
     description:
-      - Path for the search for backup files
-    type: str
+      - Root directory used to search recursively for backup files.
+    type: path
     required: true
+
   hold:
     description:
-      - How many backup files should be retained
+      - Number of most recent backup files to retain for each original file.
+      - A value of C(0) removes all matching backups.
     type: int
     default: 2
     required: false
+
+  verbose:
+    description:
+      - Reserved for compatibility with existing playbooks.
+      - Currently not used by the module logic.
+    type: bool
+    required: false
+
+notes:
+  - The module supports check mode.
+  - Only files matching the expected Ansible backup filename pattern are considered.
 """
 
-EXAMPLES = """
-- name: remove older ansible backup files
+EXAMPLES = r"""
+- name: Remove older Ansible backup files below /etc and keep four backups
   bodsch.core.remove_ansible_backups:
     path: /etc
-    holds: 4
+    hold: 4
+
+- name: Remove all matching backup files
+  bodsch.core.remove_ansible_backups:
+    path: /etc
+    hold: 0
+
+- name: Preview which backup files would be removed
+  bodsch.core.remove_ansible_backups:
+    path: /etc
+    hold: 2
+  check_mode: true
 """
 
-RETURN = """
+RETURN = r"""
+failed:
+  description:
+    - Indicates whether the module execution failed.
+  returned: always
+  type: bool
+  sample: false
+
+changed:
+  description:
+    - Indicates whether one or more backup files were removed or would be removed in check mode.
+  returned: always
+  type: bool
+  sample: true
+
 removed:
-    returned: on success
-    description: >
-        Job's up to date information
-    type: dict
+  description:
+    - Removal result payload.
+    - Returns a human-readable message when no matching backups were found.
+    - Returns a dictionary keyed by original file path when backups were removed.
+  returned: always
+  type: raw
+  sample:
+    /etc/example.conf:
+      - /etc/example.conf.2024-01-01@12:00:00~
+      - /etc/example.conf.2024-01-02@12:00:00~
 """
 
 # ---------------------------------------------------------------------------------------
@@ -60,142 +118,173 @@ removed:
 
 class RemoveAnsibleBackups(object):
     """
-    Main Class
+    Remove older Ansible backup files from a directory tree.
+
+    The class encapsulates backup file discovery, grouping, and conditional
+    removal logic while keeping the public module API small and stable.
     """
 
     module = None
 
-    def __init__(self, module):
+    BACKUP_FILE_PATTERN: Pattern[str] = re.compile(
+        r"""
+        ^
+        (?P<file_name>.+?)              # Original file name without the backup suffix
+        \.
+        .*                              # Optional extension or additional name segment
+        \.
+        (?P<year>\d{4})-
+        (?P<month>\d{2})-
+        (?P<day>\d{2})@
+        (?P<hour>\d{2}):
+        (?P<minute>\d{2}):
+        (?P<second>\d{2})
+        ~
+        $
+        """,
+        re.VERBOSE,
+    )
+
+    def __init__(self, module: AnsibleModule) -> None:
         """
-        Initialize all needed Variables
+        Initialize the module wrapper and resolve module parameters.
+
+        Args:
+            module: Active Ansible module instance providing parameters,
+                logging, check mode handling, and result delivery.
         """
         self.module = module
 
-        self.verbose = module.params.get("verbose")
-        self.path = module.params.get("path")
-        self.hold = module.params.get("hold")
+        self.verbose: Optional[bool] = module.params.get("verbose")
+        self.path: str = module.params.get("path")
+        self.hold: int = module.params.get("hold")
 
-    def run(self):
+    def run(self) -> Dict[str, object]:
         """
-        runner
+        Execute the module workflow.
+
+        The method searches for matching backup files, removes older entries
+        according to the configured retention count, and returns the final
+        module result.
+
+        Returns:
+            dict: Result dictionary containing C(failed), C(changed), and
+            C(removed).
         """
-        _failed = False
-        _changed = False
-        _msg = "no backups found"
+        failed = False
+        changed = False
+        removed_result: object = "no backups found"
 
         backups = self.find_backup_files()
         removed = self.remove_backups(backups)
 
         if len(removed) > 0:
-            _changed = True
-            _msg = removed
+            changed = True
+            removed_result = removed
 
-        return dict(failed=_failed, changed=_changed, removed=_msg)
+        return dict(failed=failed, changed=changed, removed=removed_result)
 
-    def find_backup_files(self):
-        """ """
-        _files = []
-        _name = None
-        backup_files = []
-        backups = dict()
+    def find_backup_files(self) -> Optional[Dict[str, List[str]]]:
+        """
+        Search the configured path recursively for Ansible backup files.
 
-        if os.path.isdir(self.path):
-            """ """
-            os.chdir(self.path)
+        Matching files are grouped by their original file path, which is
+        derived from the backup filename.
 
-            # file_pattern = re.compile(r"
-            #   (?P<file_name>.*)\.(.*)\.(?P<year>\d{4})-(?P<month>.{2})-
-            #   (?P<day>\d+)@(?P<hour>\d+):(?P<minute>\d+):(?P<second>\d{2})~", re.MULTILINE)
+        Returns:
+            Optional[Dict[str, List[str]]]: Dictionary keyed by original file
+            path, containing sorted backup file paths. Returns C(None) when the
+            configured path does not exist or is not a directory.
+        """
+        backups: Dict[str, List[str]] = {}
 
-            file_pattern = re.compile(
-                r"""
-                (?P<file_name>.*)\.           # Alles vor dem ersten Punkt (Dateiname)
-                (.*)\.                        # Irgendein Teil nach dem ersten Punkt (z.B. Erweiterung)
-                (?P<year>\d{4})-              # Jahr (4-stellig)
-                (?P<month>.{2})-             # Monat (2 Zeichen – ggf. besser \d{2}?)
-                (?P<day>\d+)@                # Tag, dann @
-                (?P<hour>\d+):               # Stunde
-                (?P<minute>\d+):             # Minute
-                (?P<second>\d{2})~           # Sekunde, dann Tilde
-                """,
-                re.VERBOSE | re.MULTILINE,
-            )
-
-            # self.module.log(msg=f"search files in {self.path}")
-
-            # recursive file list
-            for root, dirnames, filenames in os.walk(self.path):
-                for filename in filenames:
-                    _files.append(os.path.join(root, filename))
-
-            # filter file list wirth regex
-            backup_files = list(filter(file_pattern.match, _files))
-            backup_files.sort()
-
-            for f in backup_files:
-                """ """
-                file_name = os.path.basename(f)
-                path_name = os.path.dirname(f)
-
-                name = re.search(file_pattern, file_name)
-
-                if name:
-                    n = name.group("file_name")
-                    _idx = os.path.join(path_name, n)
-
-                    if str(n) == str(_name):
-                        backups[_idx].append(f)
-                    else:
-                        backups[_idx] = []
-                        backups[_idx].append(f)
-
-                    _name = n
-
-            return backups
-
-        else:
+        if not os.path.isdir(self.path):
             return None
 
-    def remove_backups(self, backups):
-        """ """
-        _backups = dict()
+        matched_files: List[str] = []
 
-        for k, v in backups.items():
-            backup_count = len(v)
+        for root, _dirnames, filenames in os.walk(self.path):
+            for filename in filenames:
+                full_path = os.path.join(root, filename)
+                if self.BACKUP_FILE_PATTERN.match(filename):
+                    matched_files.append(full_path)
 
-            self.module.log(msg=f"  - file: {k} has  {backup_count} backup(s)")
+        matched_files.sort()
 
-            if backup_count > self.hold:
-                """ """
-                _backups[k] = []
+        for backup_file in matched_files:
+            file_name = os.path.basename(backup_file)
+            path_name = os.path.dirname(backup_file)
 
-                # bck_hold = v[self.hold:]
-                bck_to_remove = v[: -self.hold]
-                # self.module.log(msg=f"  - hold backups: {bck_hold}")
-                # self.module.log(msg=f"  - remove backups: {bck_to_remove}")
+            match = self.BACKUP_FILE_PATTERN.search(file_name)
+            if not match:
+                continue
 
-                for bck in bck_to_remove:
-                    if os.path.isfile(bck):
-                        if self.module.check_mode:
-                            self.module.log(msg=f"CHECK MODE - remove {bck}")
-                        else:
-                            self.module.log(msg=f"  - remove {bck}")
+            original_name = match.group("file_name")
+            original_path = os.path.join(path_name, original_name)
 
-                        if not self.module.check_mode:
-                            os.remove(bck)
+            backups.setdefault(original_path, []).append(backup_file)
 
-                        _backups[k].append(bck)
+        return backups
 
-        return _backups
+    def remove_backups(
+        self,
+        backups: Optional[Dict[str, List[str]]],
+    ) -> Dict[str, List[str]]:
+        """
+        Remove old backup files while retaining the configured number of newest entries.
+
+        Args:
+            backups: Backup file mapping created by C(find_backup_files()).
+
+        Returns:
+            Dict[str, List[str]]: Dictionary keyed by original file path
+            containing the list of removed backup files.
+        """
+        removed_backups: Dict[str, List[str]] = {}
+
+        if not backups:
+            return removed_backups
+
+        for original_file, backup_files in backups.items():
+            backup_count = len(backup_files)
+
+            self.module.log(
+                msg=f"  - file: {original_file} has {backup_count} backup(s)"
+            )
+
+            if backup_count <= self.hold:
+                continue
+
+            removed_backups[original_file] = []
+
+            if self.hold == 0:
+                backups_to_remove = backup_files
+            else:
+                backups_to_remove = backup_files[: -self.hold]
+
+            for backup_file in backups_to_remove:
+                if not os.path.isfile(backup_file):
+                    continue
+
+                if self.module.check_mode:
+                    self.module.log(msg=f"CHECK MODE - remove {backup_file}")
+                else:
+                    self.module.log(msg=f"  - remove {backup_file}")
+                    os.remove(backup_file)
+
+                removed_backups[original_file].append(backup_file)
+
+        return removed_backups
 
 
-# ===========================================
-# Module execution.
-#
+def main() -> None:
+    """
+    Create the Ansible module instance and execute the backup cleanup workflow.
 
-
-def main():
-
+    The function defines the module argument specification, initializes the
+    wrapper class, executes the module logic, and returns the final result to
+    Ansible.
+    """
     args = dict(
         verbose=dict(
             type="bool",
@@ -205,7 +294,11 @@ def main():
             type="path",
             required=True,
         ),
-        hold=dict(type="int", required=False, default=2),
+        hold=dict(
+            type="int",
+            required=False,
+            default=2,
+        ),
     )
 
     module = AnsibleModule(
@@ -213,11 +306,10 @@ def main():
         supports_check_mode=True,
     )
 
-    postfix = RemoveAnsibleBackups(module)
-    result = postfix.run()
+    module_wrapper = RemoveAnsibleBackups(module)
+    result = module_wrapper.run()
 
     module.log(msg=f"= result: {result}")
-
     module.exit_json(**result)
 
 

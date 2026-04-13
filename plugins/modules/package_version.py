@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2024-2026, Bodo Schulz <bodo@boone-schulz.de>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
@@ -20,7 +20,7 @@ DOCUMENTATION = r"""
 ---
 module: package_version
 version_added: 0.9.0
-author: "Bodo Schulz (@bodsch) <bodo@boone-schulz.de>"
+author: "Bodo Schulz (@bodsch) <me+ansible@bodsch.me>"
 
 short_description: Attempts to determine the version of a package to be installed or already installed.
 
@@ -368,11 +368,6 @@ class PackageVersion(object):
             self.module.log(msg=f"  err: '{err}'")
 
         return rc, out, err
-
-
-# ---------------------------------------------------------------------------------------
-# Module execution.
-#
 
 
 def main():
