@@ -22,15 +22,15 @@
 - name: detect docker environment
   ansible.builtin.set_fact:
     is_docker_guest: "{{
-      ansible_virtualization_role | default('host') == 'guest' and
-      ansible_virtualization_type | default('none') == 'docker' }}"
+      ansible_facts.virtualization_role | default('host') == 'guest' and
+      ansible_facts.virtualization_role | default('none') == 'docker' }}"
 
-- name: install requirements
+- name: install dependencies
+  when:
+    - sshd_dependencies | default([]) | count > 0
   ansible.builtin.package:
     name: "{{ sshd_dependencies }}"
     state: present
-  when:
-    - sshd_dependencies | default([]) | count > 0
 
 - name: gathering facts now
   ansible.builtin.setup:

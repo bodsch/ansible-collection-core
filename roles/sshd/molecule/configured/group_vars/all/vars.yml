@@ -4,7 +4,7 @@ sshd_config:
   #Port: 22
   #address_family: inet
   listen_address:
-    - "{{ ansible_default_ipv4.address }}:2222"
+    - "{{ ansible_facts.default_ipv4.address }}:2222"
     - "0.0.0.0:22"
   log_level: INFO
   syslog_facility: AUTHPRIV
