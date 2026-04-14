@@ -10,8 +10,8 @@ Tested on
 
 * ArchLinux
 * Debian based
-    - Debian 10 / 11 / 12 / 13
-    - Ubuntu 20.04 / 22.04 / 24.04
+    - Debian 11 / 12 / 13
+    - Ubuntu 22.04 / 24.04
 
 > **RedHat-based systems are no longer officially supported! May work, but does not have to.**
 

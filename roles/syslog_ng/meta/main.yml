@@ -11,14 +11,14 @@ galaxy_info:
     - name: ArchLinux
     - name: Debian
       versions:
-        # 10
-        - buster
-        - bullseye
         - bookworm
+        - trixie
     - name: Ubuntu
       versions:
-        # 20.04
-        - focal
+        # 22.04 LTS (Jammy Jellyfish)
+        - jammy
+        # 24.04 LTS (Noble Numbat)
+        - noble
 
   galaxy_tags:
     - system
