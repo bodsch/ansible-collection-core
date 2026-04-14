@@ -6,6 +6,11 @@ from helper.molecule import get_vars, infra_hosts, local_facts
 
 testinfra_hosts = infra_hosts(host_name="all")
 
+def merge_two_dicts(x, y):
+    z = x.copy() # start with keys and values of x
+    z.update(y)  # modifies z with keys and values of y
+    return z
+
 # --- tests -----------------------------------------------------------------
 
 # _facts = local_facts(host=host, fact="openvpn")
