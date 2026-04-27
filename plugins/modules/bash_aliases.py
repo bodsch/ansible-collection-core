@@ -562,12 +562,12 @@ class BashAliasManager:
         end = existing_text.find(_MARKER_END)
 
         if begin != -1 and end != -1 and end > begin:
-            current_block = existing_text[begin : end + len(_MARKER_END)].strip("\n")
+            current_block = existing_text[begin: end + len(_MARKER_END)].strip("\n")
             if current_block == desired_block:
                 files.append(FileChange(path=bashrc_path, action="unchanged"))
                 return False
             pre = existing_text[:begin].rstrip("\n")
-            post = existing_text[end + len(_MARKER_END) :].lstrip("\n")
+            post = existing_text[end + len(_MARKER_END):].lstrip("\n")
             merged = (pre + "\n" + desired_block + "\n" + post).rstrip("\n") + "\n"
         else:
             merged = (
@@ -871,7 +871,7 @@ class BashAliasManager:
             return False, existing
 
         pre = existing[:begin].rstrip("\n")
-        post = existing[end + len(_MARKER_END) :].lstrip("\n")
+        post = existing[end + len(_MARKER_END):].lstrip("\n")
         new_content = (pre + "\n" + post).strip("\n") + "\n"
         if new_content == existing:
             return False, existing

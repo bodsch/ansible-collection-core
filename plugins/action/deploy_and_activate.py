@@ -355,6 +355,24 @@ class ActionModule(ActionBase):
 
         return remote_stage_dir, created_by_us
 
+    def _is_local_connection(self) -> bool:
+        """
+        Return True when the Ansible connection is local (controller == target).
+
+        On a local connection _transfer_file() runs as the unprivileged
+        controller user while _execute_module() runs via become (root).
+        That privilege split makes it impossible to write into a become-owned
+        temp directory, so the staging step must be skipped entirely.
+        """
+        # Primary check: connection plugin name (local, chroot, jail, …)
+        load_name: str = getattr(self._connection, "_load_name", "") or ""
+        if load_name in ("local",):
+            return True
+
+        # Fallback: remote_addr heuristic
+        remote_addr: str = getattr(self._play_context, "remote_addr", "") or ""
+        return remote_addr in ("localhost", "127.0.0.1", "::1", "")
+
     def run(
         self, tmp: str | None = None, task_vars: Dict[str, Any] | None = None
     ) -> Dict[str, Any]:
@@ -373,8 +391,6 @@ class ActionModule(ActionBase):
         if task_vars is None:
             task_vars = {}
 
-        display.vv(f" - task_vars               : {task_vars}")
-
         _ = super().run(tmp, task_vars)
         args: Dict[str, Any] = self._task.args.copy()
 
@@ -390,8 +406,6 @@ class ActionModule(ActionBase):
 
         items = self._get_items(args)
 
-        display.vv(f" - args               : {args}")
-
         display.vv(f" - remote_src         : {remote_src}")
         display.vv(f" - install_dir        : {install_dir}")
         display.vv(f" - src_dir            : {src_dir}")
@@ -400,6 +414,7 @@ class ActionModule(ActionBase):
         display.vv(f" - group              : {group}")
         display.vv(f" - cleanup_on_failure : {cleanup_on_failure}")
         display.vv(f" - activation_name    : {activation_name}")
+        display.vv(f" - is_local           : {self._is_local_connection()}")
 
         # --- Probe (remote) ---
         probe_args: Dict[str, Any] = {
@@ -453,7 +468,7 @@ class ActionModule(ActionBase):
                     tmp=tmp, task_vars=task_vars, module_args=apply_args
                 )
 
-            # Controller -> Remote staging -> Remote apply(copy=True)
+            # Controller-local source.
             if not src_dir:
                 raise AnsibleError(
                     "deploy_and_activate: 'src_dir' is required when remote_src=false (controller path)"
@@ -462,6 +477,40 @@ class ActionModule(ActionBase):
             controller_src_dir = str(src_dir)
             self._ensure_local_files_exist(controller_src_dir, items)
 
+            if self._is_local_connection():
+                # ---------------------------------------------------------------
+                # Localhost fast-path: controller IS the target.
+                #
+                # _transfer_file() uses the connection layer (no become), while
+                # _execute_module() runs with become.  On localhost that split
+                # causes EPERM when the become-owned temp dir is created by root
+                # but the connection user tries to write into it.
+                #
+                # Because src_dir already exists on the target we pass it
+                # directly to the worker module and skip staging entirely.
+                # ---------------------------------------------------------------
+                display.vv(
+                    "ActionModule::run - local connection detected, skipping staging, "
+                    f"passing src_dir={controller_src_dir!r} directly to module"
+                )
+                apply_args = {
+                    "install_dir": install_dir,
+                    "link_dir": link_dir,
+                    "items": list(items),
+                    "activation_name": activation_name,
+                    "owner": owner,
+                    "group": group,
+                    "mode": mode,
+                    "cleanup_on_failure": cleanup_on_failure,
+                    "check_only": False,
+                    "copy": True,
+                    "src_dir": controller_src_dir,
+                }
+                return self._probe_remote(
+                    tmp=tmp, task_vars=task_vars, module_args=apply_args
+                )
+
+            # Remote host: stage controller-local files onto the target first.
             stage_dir, stage_created_by_us = self._stage_files_to_remote(
                 tmp=tmp,
                 task_vars=task_vars,
@@ -501,6 +550,8 @@ class ActionModule(ActionBase):
 
         finally:
             # Best-effort cleanup of the remote staging dir only if we created it.
+            # On localhost fast-path stage_created_by_us is always False,
+            # so the original controller src_dir is never deleted.
             if stage_dir and stage_created_by_us:
                 try:
                     self._execute_module(

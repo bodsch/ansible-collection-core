@@ -233,9 +233,7 @@ class FilterModule(object):
         Returns:
             list: Sorted list of merged jail dictionaries.
         """
-        display.vv(
-            f"bodsch.core.f2b_merge_jails(defaults={defaults}, data={data})"
-        )
+        display.vv(f"bodsch.core.f2b_merge_jails(defaults={defaults}, data={data})")
 
         normalized_defaults = self.__validate_entries(defaults, "defaults")
         normalized_data = self.__validate_entries(data, "data")
