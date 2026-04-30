@@ -2,7 +2,7 @@
 namespace: bodsch
 name: core
 
-version: 2.12.1
+version: 2.13.0
 
 readme: README.md
 
@@ -36,17 +36,19 @@ homepage: https://github.com/bodsch/ansible-collection-core
 issues: https://github.com/bodsch/ansible-collection-core/issues
 
 build_ignore:
-  - galaxy.yml
-  - ".config"
-  - ".git"
-  - hooks
-  - Makefile
-  - "*/molecule"
   - "*.pyc"
   - "*.retry"
+  - "*/molecule"
   - ".ansible-lint"
+  - ".config"
   - ".editorconfig"
   - ".flake8"
+  - ".git"
+  - ".github"
   - ".gitignore"
   - ".yamllint"
-  - ".github"
+  - "Makefile"
+  - "galaxy.yml"
+  - "hooks"
+  - "test-requirements.txt"
+  - "tox.ini"

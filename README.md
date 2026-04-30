@@ -75,9 +75,11 @@ pip install netaddr
 | [bodsch.core.pip_requirements](.plugins/modules/pip_requirements.py)                | This modules creates an requirement file to install python modules via pip. |
 | [bodsch.core.syslog_cmd](.plugins/modules/syslog_cmd.py)                            | Run syslog-ng with arbitrary command-line parameters |
 | [bodsch.core.apt_sources](.plugins/modules/apt_sources.py)                          | Manage APT deb822 (.sources) repositories with repo-specific keyrings. |
+| [bodsch.core.deploy_and_activate](./plugins/modules/deploy_and_activate.py)         | Ansible module for deploying versioned binaries and activating them via symlinks. |
 | [bodsch.core.account_defaults](.plugins/modules/account_defaults.py)                | Resolve account defaults and primary group information. |
 | [bodsch.core.bash_aliases](.plugins/modules/bash_aliases.py)                        | Ansible module to manage bash aliases and functions for many users efficiently. |
 | [bodsch.core.find_files](.plugins/modules/find_files.py)                            | Ansible module to collect file status information for multiple paths. |
+| [bodsch.core.directories](.plugins/modules/directories.py)                          | Ansible module to create a tree of directories with per-path ownership and permissions. |
 
 
 ### Module utils
@@ -93,7 +95,7 @@ pip install netaddr
 
 | Name                      | Description |
 |:--------------------------|:----|
-| [bodsch.core.deploy_and_activate](./plugins/sction/deploy_and_activate.py) | Controller-side orchestration for deploying versioned binaries and activating them via symlinks. |
+| [bodsch.core.deploy_and_activate](./plugins/action/deploy_and_activate.py) | Controller-side orchestration for deploying versioned binaries and activating them via symlinks. |
 
 
 ## Installing this collection
@@ -476,6 +478,43 @@ try:
 except (FileNotFoundError, NotADirectoryError, PermissionError, OSError) as exc:
     self.module.log(f"ERROR: Atomic file write failed: {exc}")
     raise
+```
+
+### `bodsch.core.directories`
+
+```yaml
+- name: Create custom directory tree
+  bodsch.core.directories:
+    base_path: /srv/app
+    owner: appuser
+    group: appgroup
+    mode: "0775"
+    paths:
+      - path: data/cache          # → /srv/app/data/cache  (global owner/group/mode)
+        owner: cacheuser          # owner override
+        mode: "0770"
+      - path: /opt/shared         # → /opt/shared          (absolute, global defaults)
+      - path: tmp                 # → /srv/app/tmp
+        mode: "0700"
+      - path: /var/log/myapp      # → /var/log/myapp
+        owner: syslog
+        group: adm
+        mode: "0750"
+
+- name: create vaultwarden custom directory tree
+  when:
+    - not running_in_check_mode
+  bodsch.core.directories:
+    owner: vaultwarden
+    group: vaultwarden
+    mode: "0775"
+    base_path: "{{ vaultwarden_config.directories.data }}"
+    paths:
+      - path: icon_cache
+      - path: attachments
+      - path: sends
+      - path: tmp
+      - path: templates
 ```
 
 ## Contribution
