@@ -426,7 +426,7 @@ class BinaryDeploy:
 
     def __init__(self, module: AnsibleModule) -> None:
         self._module = module
-        self._module.log("BinaryDeploy::__init__()")
+        # self._module.log("BinaryDeploy::__init__()")
         self._caps = _Caps(module)
 
     @staticmethod
@@ -469,7 +469,7 @@ class BinaryDeploy:
           - link_name (optional, defaults to name)
           - capability (optional)
         """
-        self._module.log(f"BinaryDeploy::_parse_items(raw: {raw})")
+        # self._module.log(f"BinaryDeploy::_parse_items(raw: {raw})")
 
         items: List[BinaryItem] = []
         for it in raw:
@@ -509,12 +509,12 @@ class BinaryDeploy:
               - needs_update: whether any operation would be required
               - per_item_plan: dict(item.name -> {copy, perms, cap, link})
         """
-        self._module.log(
-            "BinaryDeploy::_plan("
-            f"install_dir: {install_dir}, link_dir: {link_dir}, src_dir: {src_dir}, "
-            f"do_copy: {do_copy}, items: {items}, activation_name: {activation_name}, "
-            f"owner: {owner}, group: {group}, mode: {mode})"
-        )
+        # self._module.log(
+        #     "BinaryDeploy::_plan("
+        #     f"install_dir: {install_dir}, link_dir: {link_dir}, src_dir: {src_dir}, "
+        #     f"do_copy: {do_copy}, items: {items}, activation_name: {activation_name}, "
+        #     f"owner: {owner}, group: {group}, mode: {mode})"
+        # )
 
         activation = next(
             (
@@ -608,7 +608,7 @@ class BinaryDeploy:
             owner (optional str), group (optional str), mode (str),
             cleanup_on_failure (bool), check_only (bool).
         """
-        self._module.log("BinaryDeploy::run()")
+        # self._module.log("BinaryDeploy::run()")
 
         p = self._module.params
 

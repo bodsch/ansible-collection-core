@@ -267,7 +267,7 @@ class ActionModule(ActionBase):
         tmp: Optional[str],
         task_vars: Mapping[str, Any],
         path: str,
-        mode: str = "0700",
+        mode: str = "0755",
     ) -> None:
         """Ensure a directory exists on the remote host."""
         display.vv(
@@ -281,28 +281,33 @@ class ActionModule(ActionBase):
             tmp=tmp,
         )
 
-    def _create_remote_temp_dir(
-        self, *, tmp: Optional[str], task_vars: Mapping[str, Any]
-    ) -> str:
+    def _create_remote_temp_dir(self) -> str:
         """
-        Create a remote temporary directory.
+        Create a temporary remote staging directory.
 
-        This avoids using ActionBase._make_tmp_path(), which is not available in all Ansible versions.
+        The directory is created using Ansible's internal temporary
+        directory handling to ensure compatibility with all supported
+        connection and privilege escalation backends.
+
+        Returns:
+            Absolute path to the remote temporary directory.
+
+        Raises:
+            AnsibleError:
+                If the temporary directory can not be created.
         """
-        display.vv(f"ActionModule::_create_remote_temp_dir(tmp: {tmp}, task_vars)")
+        display.vv("ActionModule::_create_remote_temp_dir()")
 
-        res = self._execute_module(
-            module_name="ansible.builtin.tempfile",
-            module_args={"state": "directory", "prefix": "deploy-and-activate-"},
-            task_vars=dict(task_vars),
-            tmp=tmp,
-        )
-        path = res.get("path")
-        if not path:
+        remote_tmp: str = self._make_tmp_path()
+
+        if not remote_tmp:
             raise AnsibleError(
-                "deploy_and_activate: failed to create remote temporary directory"
+                "deploy_and_activate: failed to create remote temp directory"
             )
-        return str(path)
+
+        display.vv(f" - remote_stage_dir: {remote_tmp}")
+
+        return remote_tmp
 
     def _stage_files_to_remote(
         self,
@@ -320,22 +325,14 @@ class ActionModule(ActionBase):
         """
         normalized = self._normalize_local_items(controller_src_dir, items)
 
-        if tmp:
-            remote_stage_dir = tmp
-            created_by_us = False
-        else:
-            remote_stage_dir = self._create_remote_temp_dir(
-                tmp=tmp, task_vars=task_vars
-            )
-            created_by_us = True
+        remote_stage_dir = self._create_remote_temp_dir()
+        created_by_us = True
 
         display.vv(
             f"ActionModule::_stage_files_to_remote(remote_stage_dir: {remote_stage_dir}, created_by_us: {created_by_us})"
         )
 
-        self._ensure_remote_dir(
-            tmp=tmp, task_vars=task_vars, path=remote_stage_dir, mode="0700"
-        )
+        self._ensure_remote_dir(tmp=tmp, task_vars=task_vars, path=remote_stage_dir)
 
         # Create required subdirectories on remote if src_rel contains paths.
         needed_dirs: Set[str] = set()
@@ -345,13 +342,22 @@ class ActionModule(ActionBase):
                 needed_dirs.add(os.path.join(remote_stage_dir, rel_dir))
 
         for d in sorted(needed_dirs):
-            self._ensure_remote_dir(tmp=tmp, task_vars=task_vars, path=d, mode="0700")
+            self._ensure_remote_dir(tmp=tmp, task_vars=task_vars, path=d)
 
         # Transfer files.
         for it in normalized:
             remote_dst = os.path.join(remote_stage_dir, it.src_rel)
             display.vv(f"ActionModule::_transfer_file({it.local_src} -> {remote_dst})")
-            self._transfer_file(it.local_src, remote_dst)
+
+            # self._transfer_file(it.local_src, remote_dst)
+
+            try:
+                self._transfer_file(it.local_src, remote_dst)
+            except Exception as e:
+                raise AnsibleError(
+                    f"deploy_and_activate: failed to transfer "
+                    f"{it.local_src} -> {remote_dst}: {e}"
+                ) from e
 
         return remote_stage_dir, created_by_us
 
@@ -455,9 +461,7 @@ class ActionModule(ActionBase):
         stage_created_by_us = False
 
         try:
-            self._ensure_remote_dir(
-                tmp=tmp, task_vars=task_vars, path=install_dir, mode="0755"
-            )
+            self._ensure_remote_dir(tmp=tmp, task_vars=task_vars, path=install_dir)
 
             if remote_src:
                 apply_args = dict(probe_args)
@@ -537,6 +541,7 @@ class ActionModule(ActionBase):
 
         except Exception:
             if cleanup_on_failure:
+                # self._remove_tmp_path(remote_stage_dir)
                 try:
                     self._execute_module(
                         module_name="ansible.builtin.file",
@@ -553,6 +558,7 @@ class ActionModule(ActionBase):
             # On localhost fast-path stage_created_by_us is always False,
             # so the original controller src_dir is never deleted.
             if stage_dir and stage_created_by_us:
+                # self._remove_tmp_path(tmp)
                 try:
                     self._execute_module(
                         module_name="ansible.builtin.file",

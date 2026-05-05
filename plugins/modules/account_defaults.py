@@ -180,7 +180,7 @@ class AccountDefaults(object):
     def __init__(self, module: AnsibleModule) -> None:
         """Store the Ansible module instance."""
         self.module = module
-        self.module.log("AccountDefaults::__init__()")
+        # self.module.log("AccountDefaults::__init__()")
 
     def run(self) -> Dict[str, Any]:
         """
@@ -189,7 +189,7 @@ class AccountDefaults(object):
         Returns:
             A result dictionary for Ansible.
         """
-        self.module.log("AccountDefaults::run()")
+        # self.module.log("AccountDefaults::run()")
 
         result: Dict[str, Any] = {
             "changed": False,
@@ -213,7 +213,7 @@ class AccountDefaults(object):
             AnsibleModule.fail_json: If no usable user value is available or
                 if user resolution fails and fail_on_missing_user is enabled.
         """
-        self.module.log("AccountDefaults::resolve_account()")
+        # self.module.log("AccountDefaults::resolve_account()")
 
         explicit_user = self._normalized_str(self.module.params.get("user"))
         default_user = self._normalized_str(self.module.params.get("default_user"))
@@ -279,7 +279,7 @@ class AccountDefaults(object):
         Returns:
             The passwd entry if the user exists, otherwise C(None).
         """
-        self.module.log(f"AccountDefaults::user_data(username: {username})")
+        # self.module.log(f"AccountDefaults::user_data(username: {username})")
 
         try:
             return pwd.getpwnam(username)
@@ -299,7 +299,7 @@ class AccountDefaults(object):
         Raises:
             AnsibleModule.fail_json: If the group cannot be resolved.
         """
-        self.module.log(f"AccountDefaults::group_data(gid: {gid})")
+        # self.module.log(f"AccountDefaults::group_data(gid: {gid})")
 
         try:
             return grp.getgrgid(gid).gr_name
@@ -381,7 +381,7 @@ def main() -> None:
     resolver = AccountDefaults(module)
     result = resolver.run()
 
-    module.log(msg=f"= result: {result}")
+    # module.log(msg=f"= result: {result}")
     module.exit_json(**result)
 
 

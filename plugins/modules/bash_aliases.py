@@ -562,7 +562,7 @@ class BashAliasManager:
         end = existing_text.find(_MARKER_END)
 
         if begin != -1 and end != -1 and end > begin:
-            current_block = existing_text[begin: end + len(_MARKER_END)].strip("\n")
+            current_block = existing_text[begin:end + len(_MARKER_END)].strip("\n")
             if current_block == desired_block:
                 files.append(FileChange(path=bashrc_path, action="unchanged"))
                 return False
