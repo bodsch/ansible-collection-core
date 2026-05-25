@@ -154,7 +154,7 @@ class FilterModule(object):
             )
         else:
             pattern = re.compile(
-                rf"^(?P<checksum>[0-9a-fA-F]+)\s+.*{app_escaped}[-_].*{os_escaped}[-_]{arch_escaped}"
+                rf"^(?P<checksum>[0-9a-fA-F]+)\s+.*{app_escaped}[-_].*{os_escaped}[-_]{arch_escaped}$"
             )
 
         display.vvv(f"  pattern: {pattern.pattern}")
