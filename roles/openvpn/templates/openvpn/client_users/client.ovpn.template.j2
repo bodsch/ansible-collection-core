@@ -14,7 +14,11 @@ client
 
 remote          {{ external_ip }} {{ openvpn_server.port }} {{ openvpn_server.proto }}
 
+{% if openvpn_server.proto == 'tcp' %}
 proto           tcp-client
+{% else %}
+proto           udp
+{% endif %}
 dev             {{ openvpn_server.device }}
 
 remote-cert-tls server

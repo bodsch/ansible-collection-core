@@ -33,6 +33,22 @@ def test_files(host, get_vars):
         assert f.is_file
 
 
+def test_client_ovpn_template_proto(host, get_vars):
+    """Client template must match server transport protocol."""
+    _defaults = get_vars.get("openvpn_defaults_server")
+    _configure = get_vars.get("openvpn_server")
+    data = merge_two_dicts(_defaults, _configure)
+
+    proto = data.get("proto", "udp")
+    template = host.file("/etc/openvpn/client.ovpn.template").content_string
+
+    if proto == "tcp":
+        assert "proto           tcp-client" in template
+    else:
+        assert "proto           udp" in template
+        assert "proto           tcp-client" not in template
+
+
 def test_user(host, get_vars):
     """ """
     _defaults = get_vars.get("openvpn_defaults_server")
