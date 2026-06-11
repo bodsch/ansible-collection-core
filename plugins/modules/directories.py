@@ -305,10 +305,43 @@ class Directories:
         except (ValueError, TypeError) as exc:
             raise ValueError(f"Invalid mode '{mode_str}': {exc}") from exc
 
+    def _expand(self, value: str) -> str:
+        """Expand environment variables and a leading ``~`` in *value*.
+
+        Both ``base_path`` and individual path entries may contain shell-style
+        references that Ansible passes through verbatim:
+
+        - **Environment variables** (``$HOME``, ``${HOME}``) are substituted via
+          ``os.path.expandvars`` using the environment of the running module
+          process (which, under ``become_user``, is that target user's
+          environment).
+        - **A leading ``~``** (or ``~user``) is resolved to the corresponding
+          home directory via ``os.path.expanduser``.  This works even when the
+          ``HOME`` environment variable is unset, because ``expanduser`` falls
+          back to the ``pwd`` database for the current UID.
+
+        Variable expansion runs first so that a value such as ``$HOME/foo`` is
+        resolved before the (now redundant) tilde pass.
+
+        Args:
+            value (str): Raw path fragment, possibly containing ``~`` or
+                environment-variable references.
+
+        Returns:
+            str: The fully expanded string.  Returns *value* unchanged when it
+            is falsy (e.g. ``None`` or empty).
+        """
+        if not value:
+            return value
+        return os.path.expanduser(os.path.expandvars(value))
+
     def _resolve_path(self, base_path: str, path: str) -> str:
         """Resolve *path* to a normalised absolute filesystem path.
 
-        The resolution strategy depends on whether *path* is absolute:
+        Both *base_path* and *path* are first run through :meth:`_expand` so
+        that ``~`` and environment-variable references (``$HOME``,
+        ``${HOME}``) are resolved.  The resolution strategy then depends on
+        whether the expanded *path* is absolute:
 
         - **Absolute path** (starts with ``/``): returned as-is after
           ``os.path.normpath`` normalisation (removes redundant separators and
@@ -329,8 +362,13 @@ class Directories:
             '/srv/app/data/cache'
             >>> self._resolve_path("/srv/app", "/opt/shared")
             '/opt/shared'
+            >>> self._resolve_path("~/.config/pipewire", "client.conf.d")
+            '/home/alice/.config/pipewire/client.conf.d'
         """
         # self.module.log(f"Directories::_resolve_path(base_path: {base_path}, path: {path})")
+
+        base_path = self._expand(base_path)
+        path = self._expand(path)
 
         if os.path.isabs(path):
             return os.path.normpath(path)
