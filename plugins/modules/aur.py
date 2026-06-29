@@ -11,6 +11,7 @@ import json
 import os
 import re
 import tarfile
+import tempfile
 import urllib.parse
 from contextlib import contextmanager
 from pathlib import Path
@@ -235,13 +236,11 @@ class Aur:
         exists as a fallback when no repository URL is provided.
     """
 
-    module = None
-
     def __init__(self, module: AnsibleModuleLike):
         """
         Initialize helper state from Ansible module parameters.
         """
-        self.module = module
+        self.module: AnsibleModuleLike = module
         self.module.log("Aur::__init__()")
 
         self.state: str = module.params.get("state")
@@ -265,13 +264,13 @@ class Aur:
         """
         self.module.log("Aur::run()")
 
-        installed, installed_version = self.package_installed(self.name)
+        installed, installed_version, installed_version_full = self.package_installed(
+            self.name
+        )
 
         # Store installed version for use by other code paths (e.g. AUR tarball installs).
         self._installed_version = installed_version
-        self._installed_version_full = (
-            self._package_installed_full_version(self.name) if installed else None
-        )
+        self._installed_version_full = installed_version_full
 
         if self._installed_version_full:
             self.module.log(
@@ -310,12 +309,12 @@ class Aur:
         if self.state == "present":
             if self.repository:
                 rc, out, err, changed = self.install_from_repository(installed_version)
-
-                if rc == 99:
-                    msg = out
-                    rc = 0
-                else:
-                    msg = f"Package {self.name} successfully installed."
+                # An unchanged result carries the idempotency message in ``out``.
+                msg = (
+                    out
+                    if rc == 0 and not changed and out
+                    else f"Package {self.name} successfully installed."
+                )
             else:
                 rc, out, err, changed = self.install_from_aur()
                 msg = (
@@ -334,17 +333,24 @@ class Aur:
             msg="It's all right. Keep moving! There is nothing to see!",
         )
 
-    def package_installed(self, package: str) -> Tuple[bool, Optional[str]]:
+    def package_installed(
+        self, package: str
+    ) -> Tuple[bool, Optional[str], Optional[str]]:
         """
-        Determine whether a package is installed and return its version key (epoch+pkgver, without pkgrel).
+        Query pacman once and return the installation state and version strings.
+
+        A single "pacman --query" call yields both the comparable version key
+        (epoch+pkgver, without pkgrel) and the full version string. The full string
+        matches pacman's "<epoch>:<pkgver>-<pkgrel>" format (epoch optional).
 
         Args:
           package: Pacman package name to check.
 
         Returns:
-          Tuple (installed, version_string)
+          Tuple (installed, version_key, full_version)
             - installed: True if pacman reports the package is installed.
-            - version_string: comparable version key '<epoch>:<pkgver>' without pkgrel (epoch optional) or None if not installed.
+            - version_key: '<epoch>:<pkgver>' without pkgrel (epoch optional) or None.
+            - full_version: '<epoch>:<pkgver>-<pkgrel>' (epoch optional) or None.
         """
         self.module.log(f"Aur::package_installed(package: {package})")
 
@@ -356,51 +362,20 @@ class Aur:
 
         rc, out, _ = self._exec(args, check=False)
 
-        version_string: Optional[str] = None
+        version_key: Optional[str] = None
+        full_version: Optional[str] = None
         if out:
             m = _PACMAN_Q_RE.search(out)
             if m and m.group("name") == package:
                 full_version = m.group("ver")
                 # pacman prints "<epoch>:<pkgver>-<pkgrel>" (epoch optional).
-                version_string = (
+                version_key = (
                     full_version.rsplit("-", 1)[0]
                     if "-" in full_version
                     else full_version
                 )
 
-        return (rc == 0, version_string)
-
-    def _package_installed_full_version(self, package: str) -> Optional[str]:
-        """
-        Return the full pacman version string for an installed package.
-
-        The returned string includes both epoch and pkgrel if present, matching the output
-        format of "pacman -Q":
-          - "<epoch>:<pkgver>-<pkgrel>" (epoch optional)
-
-        Args:
-          package: Pacman package name to check.
-
-        Returns:
-          The full version string or None if the package is not installed.
-        """
-        self.module.log(f"Aur::_package_installed_full_version(package: {package})")
-
-        args: List[str] = [
-            self.pacman_binary or "pacman",
-            "--query",
-            package,
-        ]
-
-        rc, out, _ = self._exec(args, check=False)
-        if rc != 0 or not out:
-            return None
-
-        m = _PACMAN_Q_RE.search(out)
-        if m and m.group("name") == package:
-            return m.group("ver")
-
-        return None
+        return (rc == 0, version_key, full_version)
 
     def run_makepkg(self, directory: str) -> Tuple[int, str, str]:
         """
@@ -446,8 +421,6 @@ class Aur:
         """
         self.module.log("Aur::install_from_aur()")
 
-        import tempfile
-
         try:
             rpc = self._aur_rpc_info(self.name)
         except Exception as exc:
@@ -483,8 +456,11 @@ class Aur:
                         False,
                     )
 
-                upstream_version = self._read_upstream_version_key(build_dir)
-                upstream_full_version = self._read_upstream_full_version(build_dir)
+                pkgver, pkgrel, epoch = self._read_upstream_metadata(build_dir)
+                upstream_version = self._make_version_key(pkgver=pkgver, epoch=epoch)
+                upstream_full_version = self._make_full_version(
+                    pkgver=pkgver, pkgrel=pkgrel, epoch=epoch
+                )
 
                 # Prefer comparing full versions (epoch:pkgver-pkgrel). This ensures pkgrel-only
                 # bumps trigger a rebuild, matching pacman's notion of a distinct package version.
@@ -523,8 +499,8 @@ class Aur:
         Returns:
           Tuple (rc, out, err, changed)
 
-        Special return code:
-          - rc == 99 indicates "already installed / no change" (kept for backward compatibility).
+        When the requested version is already installed, the function returns rc=0
+        with changed=False and an idempotency message in ``out``.
         """
         self.module.log(
             f"Aur::install_from_repository(installed_version: {installed_version})"
@@ -550,15 +526,18 @@ class Aur:
             if not os.path.exists(pkgbuild_file):
                 return (1, "", "Unable to find PKGBUILD.", False)
 
-            upstream_version = self._read_upstream_version_key(os.getcwd())
-            upstream_full_version = self._read_upstream_full_version(os.getcwd())
+            pkgver, pkgrel, epoch = self._read_upstream_metadata(os.getcwd())
+            upstream_version = self._make_version_key(pkgver=pkgver, epoch=epoch)
+            upstream_full_version = self._make_full_version(
+                pkgver=pkgver, pkgrel=pkgrel, epoch=epoch
+            )
 
             # Prefer comparing full versions (epoch:pkgver-pkgrel). This ensures pkgrel-only bumps
             # trigger a rebuild even if pkgver stayed constant.
             if self._installed_version_full and upstream_full_version:
                 if self._installed_version_full == upstream_full_version:
                     return (
-                        99,
+                        0,
                         f"Version {self._installed_version_full} is already installed.",
                         "",
                         False,
@@ -566,7 +545,7 @@ class Aur:
             elif installed_version and upstream_version:
                 if installed_version == upstream_version:
                     return (
-                        99,
+                        0,
                         f"Version {installed_version} is already installed.",
                         "",
                         False,
@@ -714,74 +693,54 @@ class Aur:
                 return dirpath
         return None
 
-    def _read_pkgbuild_pkgver(self, pkgbuild_path: str) -> str:
+    def _read_pkgbuild_fields(
+        self, pkgbuild_path: str
+    ) -> Tuple[str, str, Optional[str]]:
         """
-        Read pkgver from a PKGBUILD file.
+        Read pkgver, pkgrel and epoch from a PKGBUILD file in a single pass.
 
         Note:
-          This is a best-effort parse of 'pkgver='. It does not execute PKGBUILD code.
+          This is a best-effort parse. It does not execute PKGBUILD code, so values
+          relying on shell expansion or a pkgver() function are not resolved.
+
+        Returns:
+          Tuple (pkgver, pkgrel, epoch); missing fields are "" / None.
         """
-        self.module.log(f"Aur::_read_pkgbuild_pkgver(pkgbuild_path: {pkgbuild_path})")
+        self.module.log(f"Aur::_read_pkgbuild_fields(pkgbuild_path: {pkgbuild_path})")
 
         try:
             with open(pkgbuild_path, "r", encoding="utf-8") as f:
                 data = f.read()
         except OSError as exc:
             self.module.log(msg=f"Unable to read PKGBUILD: {exc}")
-            return ""
+            return ("", "", None)
 
-        m = _PKGBUILD_PKGVER_RE.search(data)
-        return self._sanitize_scalar(m.group("version")) if m else ""
+        pkgver_m = _PKGBUILD_PKGVER_RE.search(data)
+        pkgrel_m = _PKGBUILD_PKGREL_RE.search(data)
+        epoch_m = _PKGBUILD_EPOCH_RE.search(data)
 
-    def _read_pkgbuild_pkgrel(self, pkgbuild_path: str) -> str:
+        pkgver = self._sanitize_scalar(pkgver_m.group("version")) if pkgver_m else ""
+        pkgrel = self._sanitize_scalar(pkgrel_m.group("pkgrel")) if pkgrel_m else ""
+        epoch = self._sanitize_scalar(epoch_m.group("epoch")) if epoch_m else None
+
+        return (pkgver, pkgrel, epoch)
+
+    def _read_srcinfo_fields(
+        self, srcinfo_path: str
+    ) -> Tuple[str, str, Optional[str]]:
         """
-        Read pkgrel from a PKGBUILD file.
+        Read pkgver, pkgrel and epoch from a .SRCINFO file in a single pass.
 
-        Note:
-          This is a best-effort parse of 'pkgrel='. It does not execute PKGBUILD code.
+        Returns:
+          Tuple (pkgver, pkgrel, epoch); missing fields are "" / None.
         """
-        self.module.log(f"Aur::_read_pkgbuild_pkgrel(pkgbuild_path: {pkgbuild_path})")
-
-        try:
-            with open(pkgbuild_path, "r", encoding="utf-8") as f:
-                data = f.read()
-        except OSError as exc:
-            self.module.log(msg=f"Unable to read PKGBUILD: {exc}")
-            return ""
-
-        m = _PKGBUILD_PKGREL_RE.search(data)
-        return self._sanitize_scalar(m.group("pkgrel")) if m else ""
-
-    def _read_pkgbuild_full_version(self, pkgbuild_path: str) -> str:
-        """
-        Read epoch/pkgver/pkgrel from PKGBUILD and return a comparable full version string.
-
-        The returned format matches pacman's version string without architecture:
-          - "<epoch>:<pkgver>-<pkgrel>" (epoch optional)
-        """
-        self.module.log(
-            f"Aur::_read_pkgbuild_full_version(pkgbuild_path: {pkgbuild_path})"
-        )
-
-        pkgver = self._read_pkgbuild_pkgver(pkgbuild_path)
-        pkgrel = self._read_pkgbuild_pkgrel(pkgbuild_path)
-        epoch = self._read_pkgbuild_epoch(pkgbuild_path)
-
-        return self._make_full_version(pkgver=pkgver, pkgrel=pkgrel, epoch=epoch)
-
-    def _read_srcinfo_full_version(self, srcinfo_path: str) -> str:
-        """
-        Read epoch/pkgver/pkgrel from a .SRCINFO file.
-        """
-        self.module.log(
-            f"Aur::_read_srcinfo_full_version(srcinfo_path: {srcinfo_path})"
-        )
+        self.module.log(f"Aur::_read_srcinfo_fields(srcinfo_path: {srcinfo_path})")
 
         try:
             with open(srcinfo_path, "r", encoding="utf-8") as f:
                 data = f.read()
         except OSError:
-            return ""
+            return ("", "", None)
 
         pkgver_m = _SRCINFO_PKGVER_RE.search(data)
         pkgrel_m = _SRCINFO_PKGREL_RE.search(data)
@@ -791,101 +750,33 @@ class Aur:
         pkgrel = self._sanitize_scalar(pkgrel_m.group("pkgrel")) if pkgrel_m else ""
         epoch = self._sanitize_scalar(epoch_m.group("epoch")) if epoch_m else None
 
-        return self._make_full_version(pkgver=pkgver, pkgrel=pkgrel, epoch=epoch)
+        return (pkgver, pkgrel, epoch)
 
-    def _read_upstream_full_version(self, directory: str) -> str:
+    def _read_upstream_metadata(self, directory: str) -> Tuple[str, str, Optional[str]]:
         """
-        Determine the upstream full version for idempotency decisions.
+        Read the upstream (pkgver, pkgrel, epoch) used for idempotency decisions.
 
-        The function prefers .SRCINFO (static metadata) and falls back to PKGBUILD parsing.
-        If pkgrel cannot be determined, the function may return an epoch/pkgver-only key.
+        Static metadata in .SRCINFO is preferred; the function falls back to parsing
+        PKGBUILD when .SRCINFO is missing or yields no usable fields. Each source file
+        is read at most once. Callers derive the version key and the full version from
+        the returned fields via _make_version_key() / _make_full_version().
+
+        Returns:
+          Tuple (pkgver, pkgrel, epoch); missing fields are "" / None.
         """
-        self.module.log(f"Aur::_read_upstream_full_version(directory: {directory})")
+        self.module.log(f"Aur::_read_upstream_metadata(directory: {directory})")
 
         srcinfo_path = os.path.join(directory, ".SRCINFO")
         if os.path.exists(srcinfo_path):
-            v = self._read_srcinfo_full_version(srcinfo_path)
-            if v:
-                return v
+            pkgver, pkgrel, epoch = self._read_srcinfo_fields(srcinfo_path)
+            if pkgver or pkgrel or epoch:
+                return (pkgver, pkgrel, epoch)
 
         pkgbuild_path = os.path.join(directory, "PKGBUILD")
         if os.path.exists(pkgbuild_path):
-            v = self._read_pkgbuild_full_version(pkgbuild_path)
-            if v:
-                return v
+            return self._read_pkgbuild_fields(pkgbuild_path)
 
-        return ""
-
-    def _read_pkgbuild_version_key(self, pkgbuild_path: str) -> str:
-        """
-        Read epoch/pkgver from PKGBUILD and return a comparable version key.
-        """
-        self.module.log(
-            f"Aur::_read_pkgbuild_version_key(pkgbuild_path: {pkgbuild_path})"
-        )
-
-        pkgver = self._read_pkgbuild_pkgver(pkgbuild_path)
-        epoch = self._read_pkgbuild_epoch(pkgbuild_path)
-
-        return self._make_version_key(pkgver=pkgver, epoch=epoch)
-
-    def _read_srcinfo_version_key(self, srcinfo_path: str) -> str:
-        """
-        Read epoch/pkgver from a .SRCINFO file.
-        """
-        self.module.log(f"Aur::_read_srcinfo_version_key(srcinfo_path: {srcinfo_path})")
-
-        try:
-            with open(srcinfo_path, "r", encoding="utf-8") as f:
-                data = f.read()
-        except OSError:
-            return ""
-
-        pkgver_m = _SRCINFO_PKGVER_RE.search(data)
-        epoch_m = _SRCINFO_EPOCH_RE.search(data)
-
-        pkgver = self._sanitize_scalar(pkgver_m.group("version")) if pkgver_m else ""
-        epoch = self._sanitize_scalar(epoch_m.group("epoch")) if epoch_m else None
-
-        return self._make_version_key(pkgver=pkgver, epoch=epoch)
-
-    def _read_pkgbuild_epoch(self, pkgbuild_path: str) -> Optional[str]:
-        """
-        Read epoch from a PKGBUILD file.
-        """
-        self.module.log(f"Aur::_read_pkgbuild_epoch(pkgbuild_path: {pkgbuild_path})")
-
-        try:
-            with open(pkgbuild_path, "r", encoding="utf-8") as f:
-                data = f.read()
-        except OSError as exc:
-            self.module.log(msg=f"Unable to read PKGBUILD: {exc}")
-            return None
-
-        m = _PKGBUILD_EPOCH_RE.search(data)
-
-        return self._sanitize_scalar(m.group("epoch")) if m else None
-
-    def _read_upstream_version_key(self, directory: str) -> str:
-        """
-        Determine the upstream package version key for idempotency decisions.
-
-        The function prefers .SRCINFO (static metadata) and falls back to PKGBUILD
-        parsing if .SRCINFO is missing.
-        """
-        self.module.log(f"Aur::_read_upstream_version_key(directory: {directory})")
-
-        srcinfo_path = os.path.join(directory, ".SRCINFO")
-        if os.path.exists(srcinfo_path):
-            v = self._read_srcinfo_version_key(srcinfo_path)
-            if v:
-                return v
-
-        pkgbuild_path = os.path.join(directory, "PKGBUILD")
-        if os.path.exists(pkgbuild_path):
-            return self._read_pkgbuild_version_key(pkgbuild_path)
-
-        return ""
+        return ("", "", None)
 
     def _sanitize_scalar(self, value: str) -> str:
         """
@@ -957,7 +848,7 @@ def main() -> None:
         state=dict(default="present", choices=["present", "absent"]),
         repository=dict(type="str", required=False),
         name=dict(type="str", required=True),
-        extra_args=dict(type="list", required=False),
+        extra_args=dict(type="list", elements="str", required=False),
     )
     module = AnsibleModule(
         argument_spec=args,

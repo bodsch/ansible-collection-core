@@ -61,6 +61,7 @@ pip install netaddr
 | Name                      | Description |
 |:--------------------------|:----|
 | [bodsch.core.aur](./plugins/modules/aur.py)                                         | Installing packages for ArchLinux with aur |
+| [bodsch.core.yay](./plugins/modules/yay.py)                                         | Install, upgrade or remove ArchLinux packages with the yay AUR helper |
 | [bodsch.core.check_mode](./plugins/modules/check_mode.py)                           | Replacement for `ansible_check_mode`. |
 | [bodsch.core.facts](./plugins/modules/facts.py)                                     | Creates a facts file for ansible. |
 | [bodsch.core.remove_ansible_backups](./plugins/modules/remove_ansible_backups.py)   | Remove older backup files created by ansible |
@@ -151,6 +152,27 @@ or you can call modules by their short name if you list the `bodsch.core` collec
   async: 3200
   poll: 10
   register: _collabora_installed
+```
+
+### `bodsch.core.yay`
+
+```yaml
+- name: install packages via yay
+  become: true
+  become_user: aur_builder
+  bodsch.core.yay:
+    state: present
+    name:
+      - visual-studio-code-bin
+      - google-chrome
+
+- name: keep packages up to date via yay
+  become: true
+  become_user: aur_builder
+  bodsch.core.yay:
+    state: latest
+    name:
+      - yay
 ```
 
 ### `bodsch.core.check_mode`
