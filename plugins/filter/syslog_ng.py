@@ -32,13 +32,14 @@ class FilterModule(object):
 
         match = {k: v for k, v in data.items() if re.match(regex_list_compiled, k)}
 
-        # display.vv(f"found: {match}  {type(match)} {len(match)}")
+        display.vv(f"found: {match}  {type(match)} {len(match)}")
 
         if isinstance(match, dict) and len(match) > 0:
             values = list(match.values())[0]
             name = values.get("name", search_for).replace(".service", "")
 
-        # display.vv(f"= result {name}")
+        display.vv(f"= result {name}")
+
         return name
 
     def log_directories(self, data, base_directory):
