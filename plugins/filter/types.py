@@ -1,13 +1,10 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import absolute_import, print_function
-
-__metaclass__ = type
+from __future__ import annotations
 
 # filter_plugins/var_type.py
 from collections.abc import Mapping, Sequence
@@ -21,7 +18,7 @@ _STR_WRAPPERS = {"AnsibleUnsafeText", "AnsibleUnicode", "AnsibleVaultEncryptedUn
 display = Display()
 
 
-class FilterModule(object):
+class FilterModule:
     def filters(self):
         return {
             "type": self.var_type,

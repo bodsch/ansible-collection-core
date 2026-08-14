@@ -1,9 +1,8 @@
 # python 3 headers, required if submitting to Ansible
-from __future__ import absolute_import, division, print_function
+from __future__ import annotations
 
-__metaclass__ = type
-
-from typing import Any, Dict, Iterable, Optional, Tuple
+from collections.abc import Iterable
+from typing import Any
 
 from ansible.errors import AnsibleFilterError
 from ansible.utils.display import Display
@@ -35,9 +34,9 @@ class FilterModule:
 
     def hostname(
         self,
-        facts: Optional[Dict[str, Any]] = None,
-        inventory_hostname: Optional[str] = None,
-        prefer: Optional[Iterable[str]] = None,
+        facts: dict[str, Any] | None = None,
+        inventory_hostname: str | None = None,
+        prefer: Iterable[str] | None = None,
         default: str = "",
     ) -> str:
         """
@@ -57,25 +56,25 @@ class FilterModule:
         )
 
         facts_dict = self._as_dict(facts)
-        keys: Tuple[str, ...] = (
+        keys: tuple[str, ...] = (
             tuple(prefer) if prefer is not None else ("host", "hostname")
         )
 
         for key in keys:
             val = facts_dict.get(key)
             if val not in (None, ""):
-                display.vv(f"= result: {str(val)}")
+                display.vv(f"= result: {val!s}")
                 return str(val)
 
         if inventory_hostname not in (None, ""):
-            display.vv(f"= result: {str(inventory_hostname)}")
+            display.vv(f"= result: {inventory_hostname!s}")
             return str(inventory_hostname)
 
-        display.vv(f"= result: {str(default)}")
+        display.vv(f"= result: {default!s}")
 
         return str(default)
 
-    def _as_dict(self, value: Any) -> Dict[str, Any]:
+    def _as_dict(self, value: Any) -> dict[str, Any]:
         """ """
         if value is None:
             return {}

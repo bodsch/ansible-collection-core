@@ -1,19 +1,17 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import absolute_import, print_function
+from __future__ import annotations
 
 from ansible.utils.display import Display
 
-__metaclass__ = type
 display = Display()
 
 
-class FilterModule(object):
+class FilterModule:
     def filters(self):
         return {"python_extra_args": self.python_extra_args}
 

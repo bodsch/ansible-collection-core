@@ -1,13 +1,12 @@
 # python 3 headers, required if submitting to Ansible
-from __future__ import absolute_import, division, print_function
+from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from copy import deepcopy
-from typing import Any, Dict, List, Mapping, Optional, Sequence
+from typing import Any
 
 from ansible.errors import AnsibleFilterError
 from ansible.utils.display import Display
-
-__metaclass__ = type
 
 display = Display()
 
@@ -85,16 +84,15 @@ _value:
 """
 
 
-class FilterModule(object):
+class FilterModule:
     """
     Ansible filter plugin for merging Fail2Ban jail definitions.
 
-    The plugin exposes two filter names that both delegate to the same merge
-    implementation:
-    C(f2b_merge_jails) and C(merge_jails).
+    The plugin exposes a filter:
+    C(f2b_merge_jails)
     """
 
-    def filters(self) -> Dict[str, Any]:
+    def filters(self) -> dict[str, Any]:
         """
         Return the filter mapping exposed to Ansible.
 
@@ -103,14 +101,13 @@ class FilterModule(object):
         """
         return {
             "f2b_merge_jails": self.merge_jails,
-            "merge_jails": self.merge_jails,
         }
 
     def __merge_two_dicts(
         self,
         x: Mapping[str, Any],
         y: Mapping[str, Any],
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Merge two dictionaries without mutating the inputs.
 
@@ -131,7 +128,7 @@ class FilterModule(object):
         self,
         data: Sequence[Mapping[str, Any]],
         name: str,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any] | None:
         """
         Search a list of jail definitions for a given jail name.
 
@@ -152,7 +149,7 @@ class FilterModule(object):
         self,
         items: Sequence[Mapping[str, Any]],
         sort_key: str,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Return a new list sorted by the given dictionary key.
 
@@ -172,7 +169,7 @@ class FilterModule(object):
         self,
         value: Sequence[Mapping[str, Any]],
         variable_name: str,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Validate and normalize the input jail list.
 
@@ -196,7 +193,7 @@ class FilterModule(object):
                 f"{variable_name} must be a list of dictionaries, got {type(value).__name__}."
             )
 
-        result: List[Dict[str, Any]] = []
+        result: list[dict[str, Any]] = []
 
         for index, item in enumerate(value):
             if not isinstance(item, Mapping):
@@ -217,7 +214,7 @@ class FilterModule(object):
         self,
         defaults: Sequence[Mapping[str, Any]],
         data: Sequence[Mapping[str, Any]],
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Merge two lists of Fail2Ban jail definitions by jail name.
 
@@ -244,7 +241,7 @@ class FilterModule(object):
         if len(normalized_data) == 0:
             return self.__sort_list(normalized_defaults, "name")
 
-        result: List[Dict[str, Any]] = []
+        result: list[dict[str, Any]] = []
         consumed_default_names = set()
 
         for item in normalized_data:

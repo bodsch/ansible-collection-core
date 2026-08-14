@@ -1,5 +1,5 @@
 # python 3 headers, required if submitting to Ansible
-from __future__ import absolute_import, division, print_function
+from __future__ import annotations
 
 import os
 import re
@@ -7,12 +7,10 @@ import re
 from ansible.plugins.test.core import version_compare
 from ansible.utils.display import Display
 
-__metaclass__ = type
-
 display = Display()
 
 
-class FilterModule(object):
+class FilterModule:
     """ """
 
     def filters(self):
@@ -71,7 +69,6 @@ class FilterModule(object):
 
     def validate_syslog_destination(self, data):
         """ """
-        pass
 
     def syslog_network_definition(self, data, conf_type="source"):
         """ """

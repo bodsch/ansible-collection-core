@@ -1,19 +1,16 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 # (c) 2020-2023, Bodo Schulz <bodo@boone-schulz.de>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)
 # SPDX-License-Identifier: Apache-2.0
 
-from __future__ import absolute_import, annotations, division, print_function
+from __future__ import annotations
 
 import re
 from collections.abc import Callable
 
 from ansible.errors import AnsibleFilterError  # type: ignore[import-untyped]
 from ansible.utils.display import Display  # type: ignore[import-untyped]
-
-__metaclass__ = type
 
 display = Display()
 
@@ -93,7 +90,7 @@ _value:
 """
 
 
-class FilterModule(object):
+class FilterModule:
     """Ansible filter plugin to extract checksums from checksum file listings."""
 
     def filters(self) -> dict[str, Callable[..., str]]:

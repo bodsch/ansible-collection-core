@@ -1,16 +1,14 @@
 # python 3 headers, required if submitting to Ansible
-from __future__ import absolute_import, division, print_function
+from __future__ import annotations
 
 import json
 
 from ansible.utils.display import Display
 
-__metaclass__ = type
-
 display = Display()
 
 
-class FilterModule(object):
+class FilterModule:
     """ """
 
     def filters(self):
@@ -25,15 +23,11 @@ class FilterModule(object):
         count_data = len(data)
 
         display.vv(
-            "defaults: ({type}) {len} - {data} entries".format(
-                data=defaults, type=type(defaults), len=count_defaults
-            )
+            f"defaults: ({type(defaults)}) {count_defaults} - {defaults} entries"
         )
         display.vv(json.dumps(data, indent=2, sort_keys=False))
         display.vv(
-            "data    : ({type}) {len} - {data} entries".format(
-                data=data, type=type(data), len=count_data
-            )
+            f"data    : ({type(data)}) {count_data} - {data} entries"
         )
 
         result = []

@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 # (c) 2021-2026, Bodo Schulz <me+ansible@bodsch.me>
 # Apache-2.0 (see LICENSE or https://opensource.org/license/apache-2-0)

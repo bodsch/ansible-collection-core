@@ -1,15 +1,13 @@
 # python 3 headers, required if submitting to Ansible
 
-from __future__ import absolute_import, print_function
-
-__metaclass__ = type
+from __future__ import annotations
 
 from ansible.utils.display import Display
 
 display = Display()
 
 
-class FilterModule(object):
+class FilterModule:
     """
     Ansible file jinja2 tests
     """
@@ -25,6 +23,6 @@ class FilterModule(object):
 
         result = [d["fstype"] for d in data]
 
-        display.v("result {} {}".format(result, type(result)))
+        display.v(f"result {result} {type(result)}")
 
         return result

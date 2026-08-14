@@ -1,14 +1,12 @@
 # python 3 headers, required if submitting to Ansible
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
+from __future__ import annotations
 
 from ansible.utils.display import Display
 
 display = Display()
 
 
-class FilterModule(object):
+class FilterModule:
     """ """
 
     def filters(self):

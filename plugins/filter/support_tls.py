@@ -1,11 +1,8 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 # (c) 2022-2024, Bodo Schulz <bodo@boone-schulz.de>
 
-from __future__ import absolute_import, print_function
-
-__metaclass__ = type
+from __future__ import annotations
 
 import os
 
@@ -14,7 +11,7 @@ from ansible.utils.display import Display
 display = Display()
 
 
-class FilterModule(object):
+class FilterModule:
     """ """
 
     def filters(self):
