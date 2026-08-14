@@ -1,17 +1,25 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 # {{ ansible_managed }}
 
+{% set default_backend = fail2ban_jail.default.backend | default('systemd') %}
 {% for service in fail2ban_jails  %}
+  {% set is_enabled = service.enabled | default(true) | bool %}
 [{{ service.name }}]
-enabled = {{ service.enabled | default(true) | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+enabled         = {{ is_enabled | bodsch.core.config_bool(true_as='true', false_as='false') }}
+  {% set _ = service.pop('name') %}
+  {% set _ = service.pop('enabled') %}
+  {% set backend = service.backend | default(default_backend) %}
+  {% if (default_backend == "systemd" or backend == "systemd") and service.logpath is defined %}
+    {% set _ = service.pop('logpath') %}
+  {% endif %}
   {% for option, value in service.items() %}
-    {% if option not in ['name', 'enabled'] %}
-      {% if value | bodsch.core.type == "list" %}
-{{ "%-15s" | format(option,) }} = {{ value | join(' ') }}
-      {% elif value | bodsch.core.type in ["str", "int"] %}
-{{ "%-15s" | format(option,) }} = {{ value }}
-      {% endif %}
+    {% set is_type_list = value | bodsch.core.type == "list" %}
+    {% if is_type_list %}
+      {% set _value = value | join(' ') %}
+    {% else %}
+      {% set _value = value %}
     {% endif %}
+{{ "%-15s" | format(option,) }} = {{ _value }}
   {% endfor %}
 
 {% endfor %}

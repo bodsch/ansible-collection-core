@@ -146,20 +146,26 @@ fail2ban_actions:
 
 fail2ban_jails:
   - name: ssh
+    backend: systemd
     enabled: true
     # port: ssh
     filter: sshd
-    # logpath: /var/log/authlog.log
+    logpath: /var/log/authlog.log
     findtime: 3200
     bantime: 86400
     maxretry: 2
+
   - name: ssh-breakin
+    backend: systemd
     enabled: true
     # port: ssh
     filter: sshd-break-in
+    logpath: '%(auth_log)s'
     # logpath: /var/log/authlog.log
     maxretry: 2
+
   - name: ssh-ddos
+    backend: systemd
     enabled: true
     # port: ssh
     filter: sshd-ddos
