@@ -163,5 +163,4 @@ fail2ban_defaults_filters:
         - '^[^\[]*\[({DATE})'
         - '{^LN-BEG}'
 
-
 ...

@@ -36,3 +36,6 @@ def test_directories(host, dirs):
 def test_files(host, files):
     f = host.file(files)
     assert f.is_file
+
+#
+# def test_validate_jail(host):

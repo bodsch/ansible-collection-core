@@ -2,6 +2,7 @@
 # {{ ansible_managed }}
 
 {% set default_backend = fail2ban_jail.default.backend | default('systemd') %}
+# default_backend: {{ default_backend }}
 {% for service in fail2ban_jails  %}
   {% set is_enabled = service.enabled | default(true) | bool %}
 [{{ service.name }}]
@@ -9,7 +10,17 @@ enabled         = {{ is_enabled | bodsch.core.config_bool(true_as='true', false_
   {% set _ = service.pop('name') %}
   {% set _ = service.pop('enabled') %}
   {% set backend = service.backend | default(default_backend) %}
-  {% if (default_backend == "systemd" or backend == "systemd") and service.logpath is defined %}
+  {% if service.logpath is defined and
+        service.logpath | string | length > 0 %}
+    {% set backend = "auto" %}
+  {% endif %}
+  {% if (default_backend == "systemd" and backend not in ["pyinotify", "gamin", "polling", "auto"] ) and service.logpath is defined %}
+    {% set _ = service.pop('logpath') %}
+  {% endif %}
+  {% if default_backend == "systemd" and
+        service.logpath is defined and
+        service.logpath | string | length > 0 and
+        "%(auth_log)s" in service.logpath %}
     {% set _ = service.pop('logpath') %}
   {% endif %}
   {% for option, value in service.items() %}
