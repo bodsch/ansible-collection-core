@@ -42,5 +42,6 @@
     openvpn_certificate: "{{ openvpn_defaults_certificate | combine(openvpn_certificate, recursive=True) }}"
     openvpn_server: "{{ openvpn_defaults_server | combine(openvpn_server, recursive=True) }}"
     openvpn_push: "{{ openvpn_defaults_push | combine(openvpn_push, recursive=True) }}"
+  no_log: true
 
 ...

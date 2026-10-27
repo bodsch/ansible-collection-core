@@ -29,6 +29,18 @@ tls-server
 tls-auth        {{ openvpn_directory }}/keys/server/ta.key 0 # This file is secret
 {% endif %}
 
+{% if openvpn_server.management is defined %}
+  {% if openvpn_server.management.socket is defined and
+        openvpn_server.management.socket | string | length > 0 %}
+management      {{ openvpn_server.management.socket }} unix
+  {% else %}
+    {% if openvpn_server.management.password is defined and
+          openvpn_server.management.password | string | length > 0 %}
+management      {{ openvpn_server.management.hostname | default('127.0.0.1') }} {{ openvpn_server.management.port | default('7505') }} /etc/openvpn/server/mgmt.pass
+    {% endif %}
+  {% endif %}
+{% endif %}
+
 topology        subnet
 
 {% if openvpn_subnet is defined and
@@ -125,7 +137,7 @@ user            {{ openvpn_server.user | default('nobody') }}
 group           {{ openvpn_server.group | default('nobody') }}
 
 {% endif %}
-{% if openvpn_logging.append | default('false') | bool %}
+{% if openvpn_logging.append | default(false) | bool %}
 log-append      {{ openvpn_logging.directory }}/{{ openvpn_logging.file }}
 {% else %}
 log             {{ openvpn_logging.directory }}/{{ openvpn_logging.file }}

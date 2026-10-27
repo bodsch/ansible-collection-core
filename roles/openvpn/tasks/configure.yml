@@ -32,17 +32,35 @@
   loop_control:
     loop_var: item
   no_log: true
+  tags:
+    - setup
+    - openvpn
 
-- name: configure openvpn server
-  ansible.builtin.include_tasks: configure/server.yml
+- name: management password
   when:
     - openvpn_type == "server"
+    - openvpn_server.management.password | default('') | string | length > 0
+  ansible.builtin.copy:
+    dest: /etc/openvpn/server/mgmt.pass
+    content: "{{ openvpn_server.management.password }}"
+    owner: "{{ openvpn_owner }}"
+    group: "{{ openvpn_group }}"
+    mode: "0600"
+  no_log: true
+  tags:
+    - setup
+    - openvpn
+
+- name: configure openvpn server
+  when:
+    - openvpn_type == "server"
+  ansible.builtin.include_tasks: configure/server.yml
 
 - name: configure openvpn client
-  ansible.builtin.include_tasks: configure/client.yml
   when:
     - openvpn_mobile_clients is defined
     - openvpn_mobile_clients | count > 0
+  ansible.builtin.include_tasks: configure/client.yml
 
 # - name: change rights for created files
 #   ansible.builtin.file:

@@ -82,6 +82,12 @@ openvpn_defaults_server:
   cipher: AES-256-GCM
   user: nobody
   group: nogroup
+  # https://openvpn.net/community-docs/controlling-a-running-openvpn-process/#status-file
+  management:
+    hostname: ""
+    port: ""
+    password: ""
+    socket: ""
 
 openvpn_defaults_push:
   routes: []
