@@ -83,22 +83,22 @@ fail2ban_defaults_jails:
     enabled: false
     port: ssh
     filter: sshd
-    logpath: '%(auth_log)s'
+    # logpath: '%(auth_log)s'
   - name: ssh-unknown-user
     enabled: false
     mode: ddos
     filter: sshd
-    logpath: '%(auth_log)s'
+    # logpath: '%(auth_log)s'
   - name: ssh-breakin
     enabled: false
     port: ssh
     filter: sshd-break-in
-    logpath: '%(auth_log)s'
+    # logpath: '%(auth_log)s'
   - name: ssh-ddos
     enabled: false
     port: ssh
     filter: sshd-ddos
-    logpath: '%(auth_log)s'
+    # logpath: '%(auth_log)s'
 
 fail2ban_defaults_actions: []
 

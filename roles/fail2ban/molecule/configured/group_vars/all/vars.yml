@@ -160,7 +160,7 @@ fail2ban_jails:
     enabled: true
     # port: ssh
     filter: sshd-break-in
-    logpath: '%(auth_log)s'
+    # logpath: '%(auth_log)s'
     # logpath: /var/log/authlog.log
     maxretry: 2
 
