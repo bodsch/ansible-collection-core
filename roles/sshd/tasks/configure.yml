@@ -8,29 +8,16 @@
     - sshd
     - configuration
 
-- name: create /etc/ssh/sshd_config.d
-  ansible.builtin.file:
-    state: directory
-    name: /etc/ssh/sshd_config.d
-    mode: "0750"
-  tags:
-    - sshd
-    - configuration
-
-- name: create /etc/ssh/ssh_config.d
-  ansible.builtin.file:
-    state: directory
-    name: /etc/ssh/ssh_config.d
-    mode: "0750"
-  tags:
-    - sshd
-    - configuration
-
-- name: create /run/sshd for config tests
-  ansible.builtin.file:
-    state: directory
-    name: /run/sshd
+- name: create ssh directories
+  when:
+    - not running_in_check_mode
+  bodsch.core.directories:
+    base_path: /etc/ssh
     mode: "0755"
+    paths:
+      - path: sshd_config.d
+      - path: ssh_config.d
+      - path: /run/sshd
   tags:
     - sshd
     - configuration
