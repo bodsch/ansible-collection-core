@@ -1,6 +1,8 @@
 ---
 
 - name: install package
+  when:
+    - not running_in_check_mode
   ansible.builtin.package:
     name: "{{ openvpn_packages }}"
     state: present
@@ -9,20 +11,27 @@
     - openvpn_install
 
 - name: get openvpn _version
+  when:
+    - not running_in_check_mode
   bodsch.core.openvpn_version:
   register: openvpn_version
 
 - name: create custom fact file
+  when:
+    - not running_in_check_mode
   bodsch.core.facts:
     name: openvpn
     facts:
       version: "{{ openvpn_version.version }}"
 
 - name: gathering facts now
+  when:
+    - not running_in_check_mode
   ansible.builtin.setup:
 
 - name: handle easy-rsa
   when:
+    - not running_in_check_mode
     - ansible_facts.os_family | lower == "debian"
   block:
     - name: link easy-rsa into /etc
@@ -69,6 +78,7 @@
 
 - name: openrc
   when:
+    - not running_in_check_mode
     - ansible_facts.service_mgr | lower == "openrc"
     - not openvpn_type == "server"
   block:

@@ -1,6 +1,8 @@
 ---
 
 - name: create openvpn log directory
+  when:
+    - not running_in_check_mode
   ansible.builtin.file:
     state: directory
     path: '{{ openvpn_logging.directory }}'
@@ -12,6 +14,8 @@
     - openvpn
 
 - name: create client key directory
+  when:
+    - not running_in_check_mode
   ansible.builtin.file:
     state: directory
     path: '{{ openvpn_directory }}/keys'
@@ -23,6 +27,8 @@
     - openvpn
 
 - name: create a combined client list
+  when:
+    - not running_in_check_mode
   become: false
   delegate_to: localhost
   run_once: true
@@ -38,6 +44,7 @@
 
 - name: management password
   when:
+    - not running_in_check_mode
     - openvpn_type == "server"
     - openvpn_server.management.password | default('') | string | length > 0
   ansible.builtin.copy:
@@ -53,11 +60,13 @@
 
 - name: configure openvpn server
   when:
+    - not running_in_check_mode
     - openvpn_type == "server"
   ansible.builtin.include_tasks: configure/server.yml
 
 - name: configure openvpn client
   when:
+    - not running_in_check_mode
     - openvpn_mobile_clients is defined
     - openvpn_mobile_clients | count > 0
   ansible.builtin.include_tasks: configure/client.yml

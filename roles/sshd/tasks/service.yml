@@ -1,6 +1,8 @@
 ---
 
 - name: enable and start sshd
+  when:
+    - not running_in_check_mode
   ansible.builtin.service:
     name: "{{ sshd_service }}"
     enabled: true

@@ -26,15 +26,29 @@
       ansible_facts.virtualization_role | default('host') == 'guest' and
       ansible_facts.virtualization_type | default('none') == 'docker' }}"
 
+- name: detect ansible check_mode
+  bodsch.core.check_mode:
+  register: _check_mode
+
+- name: define running_in_check_mode
+  ansible.builtin.set_fact:
+    running_in_check_mode: '{{ _check_mode.check_mode }}'
+
 - name: install dependencies
+  when:
+    - not running_in_check_mode
   ansible.builtin.package:
     name: "{{ openvpn_dependencies }}"
     state: present
 
 - name: gathering facts now
+  when:
+    - not running_in_check_mode
   ansible.builtin.setup:
 
 - name: merge openvpn configuration between defaults and custom
+  when:
+    - not running_in_check_mode
   ansible.builtin.set_fact:
     openvpn_service: "{{ openvpn_defaults_service | combine(openvpn_service, recursive=True) }}"
     openvpn_logging: "{{ openvpn_defaults_logging | combine(openvpn_logging, recursive=True) }}"

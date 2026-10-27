@@ -1,11 +1,15 @@
 ---
 
 - name: install sshd
+  when:
+    - not running_in_check_mode
   ansible.builtin.package:
     name: "{{ sshd_packages }}"
     state: present
 
 - name: ensure host keys are created
+  when:
+    - not running_in_check_mode
   block:
     # find sshd host keys:
     #   - /etc/ssh/ssh_host_ecdsa_key.pub
@@ -32,6 +36,7 @@
 
 - name: create sshd host keys
   when:
+    - not running_in_check_mode
     - sshd_host_keys | count == 0
   ansible.builtin.command:
     cmd: /usr/bin/ssh-keygen -A

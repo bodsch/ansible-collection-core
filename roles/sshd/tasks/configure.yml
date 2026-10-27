@@ -1,9 +1,12 @@
 ---
 
 - name: merge sshd configuration between defaults and custom
+  when:
+    - not running_in_check_mode
   ansible.builtin.set_fact:
     ssh_config: "{{ ssh_defaults_config | bodsch.core.merge_lists(ssh_config) | bodsch.core.sshd_values }}"
     sshd_config: "{{ sshd_defaults_config | combine(sshd_config, recursive=True) | bodsch.core.sshd_values }}"
+  no_log: true
   tags:
     - sshd
     - configuration
@@ -23,6 +26,8 @@
     - configuration
 
 - name: configure ssh_config
+  when:
+    - not running_in_check_mode
   ansible.builtin.template:
     src: sshd/ssh_config.j2
     dest: /etc/ssh/ssh_config
@@ -33,6 +38,8 @@
     - configuration
 
 - name: configure sshd.conf
+  when:
+    - not running_in_check_mode
   ansible.builtin.template:
     src: sshd/sshd_config.j2
     dest: /etc/ssh/sshd_config
@@ -46,9 +53,13 @@
     - configuration
 
 - name: restart sshd if needed
+  when:
+    - not running_in_check_mode
   ansible.builtin.meta: flush_handlers
 
 - name: create overriding settings on a per-user basis
+  when:
+    - not running_in_check_mode
   ansible.builtin.template:
     src: sshd/sshd_config.d/match_users.conf.j2
     dest: /etc/ssh/sshd_config.d/match_users.conf
@@ -62,6 +73,8 @@
     - configuration
 
 - name: create subsystem configuration
+  when:
+    - not running_in_check_mode
   ansible.builtin.template:
     src: sshd/sshd_config.d/subsystem.conf.j2
     dest: /etc/ssh/sshd_config.d/subsystem.conf

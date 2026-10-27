@@ -1,6 +1,10 @@
 ---
 
 - name: start and enable service
+  when:
+    - not running_in_check_mode
+    - openvpn_type == "server" or
+      (openvpn_client_name is defined and openvpn_client_name | string | length > 0)
   ansible.builtin.service:
     name: "{{ openvpn_service_name }}"
     state: "{{ openvpn_service.state | default('started') }}"
@@ -10,8 +14,5 @@
   tags:
     - openvpn
     - start-enable-service
-  when:
-    - openvpn_type == "server" or
-      (openvpn_client_name is defined and openvpn_client_name | string | length > 0)
 
 ...
