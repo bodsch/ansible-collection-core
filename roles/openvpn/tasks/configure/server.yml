@@ -69,6 +69,13 @@
     force: true
     working_dir: '{{ openvpn_easyrsa.directory }}/pki'
 
+- name: publish crl
+  ansible.builtin.copy:
+    src: "{{ openvpn_easyrsa.directory }}/pki/crl.pem"
+    dest: "{{ openvpn_directory }}/keys/server/crl.pem"
+    remote_src: true
+    mode: "0644"
+
 # ------------------------------------------------------------------------------------------------
 
 - name: copy CA certificate to openvpn server directory

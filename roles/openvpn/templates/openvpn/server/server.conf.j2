@@ -155,4 +155,4 @@ verb            {{ openvpn_logging.verbosity }}
 mute            {{ openvpn_logging.mute }}
 
 explicit-exit-notify 1
-crl-verify      {{ openvpn_easyrsa.directory }}/pki/crl.pem
+crl-verify      {{ openvpn_directory }}/keys/server/crl.pem
