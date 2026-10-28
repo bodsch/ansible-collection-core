@@ -13,7 +13,7 @@ openvpn_server:
   group: "{{ openvpn_group }}"
   management:
     socket: "/run/openvpn/server.sock"
-    client_group: openvpn-exporter
+    client_group: openvpn-mgmt
 
 openvpn_subnet:
   ip: 10.8.3.0
