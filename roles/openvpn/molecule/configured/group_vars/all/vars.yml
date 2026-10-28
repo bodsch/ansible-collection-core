@@ -21,10 +21,7 @@ openvpn_server:
   name: instance
   external_ip: "{{ ansible_facts.default_ipv4.address | default(ansible_facts.all_ipv4_addresses[0]) }}"
   management:
-    hostname: ""
-    port: ""
-    password: ""
-    socket: "/run/openvpn-server/server.sock"
+    socket: "/run/openvpn/server.sock"
 
 openvpn_config_save_dir: ""
 

@@ -39,6 +39,10 @@ management      {{ openvpn_server.management.socket }} unix
 management      {{ openvpn_server.management.hostname | default('127.0.0.1') }} {{ openvpn_server.management.port | default('7505') }} /etc/openvpn/server/mgmt.pass
     {% endif %}
   {% endif %}
+  {% if openvpn_server.management.client_group is defined and
+        openvpn_server.management.client_group | string | length > 0 %}
+management-client-group {{ openvpn_server.management.client_group }}
+  {% endif %}
 {% endif %}
 
 topology        subnet
